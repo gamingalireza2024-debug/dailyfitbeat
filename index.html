@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="DailyFitBeat — غذای سالم که واقعاً خوشمزه به نظر می‌رسد">
+<title>DailyFitBeat | غذای سالم، زندگی بهتر</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+</head>
+<body>
+<header>
+  <div class="logo">Daily<span>Fit</span>Beat</div>
+  <nav>
+    <a href="#fridge" data-fa="امروز چی داری؟" data-en="Fridge AI">امروز چی داری؟</a>
+    <a href="#popular" data-fa="دستورها" data-en="Recipes">دستورها</a>
+    <a href="#cats" data-fa="دسته‌بندی‌ها" data-en="Categories">دسته‌بندی‌ها</a>
+    <a href="#club" data-fa="باشگاه مشتریان" data-en="Club">باشگاه مشتریان</a>
+  </nav>
+  <button id="langBtn" class="lang">EN</button>
+</header>
+
+<section class="hero">
+  <div class="hero-text">
+    <h1 data-fa="غذای سالم، زندگی بهتر، هر روز" data-en="Healthy food, better life, every day">غذای سالم، زندگی بهتر، هر روز</h1>
+    <p data-fa="دستورهای هوشمند، ساده و خوشمزه برای تناسب اندام و سبک زندگی بهتر" data-en="Smart, simple, delicious recipes for a fit body and a better lifestyle">دستورهای هوشمند، ساده و خوشمزه برای تناسب اندام و سبک زندگی بهتر</p>
+    <a class="btn" href="#fridge" data-fa="امروز چی داری؟" data-en="What's in your fridge?">امروز چی داری؟</a>
+  </div>
+  <div class="hero-img"><img src="img/hero.jpg" alt="DailyFitBeat"></div>
+</section>
+
+<section id="fridge">
+  <h2 data-fa="یخچالت چی داره؟" data-en="What's in your fridge?">یخچالت چی داره؟</h2>
+  <p class="sub" data-fa="مواد رو انتخاب کن، ۱۰ پیشنهاد فوری بگیر" data-en="Tap what you have, get 10 instant ideas">مواد رو انتخاب کن، ۱۰ پیشنهاد فوری بگیر</p>
+  <div id="chips" class="chips"></div>
+  <button id="goBtn" class="btn" data-fa="نشون بده چی بپزم" data-en="Show me what to cook">نشون بده چی بپزم</button>
+  <div id="results" class="cards"></div>
+</section>
+
+<section id="popular">
+  <h2 data-fa="دستورهای محبوب" data-en="Popular Recipes">دستورهای محبوب</h2>
+  <div id="popularCards" class="cards"></div>
+</section>
+
+<section id="cats">
+  <h2 data-fa="دسته‌بندی‌ها" data-en="Categories">دسته‌بندی‌ها</h2>
+  <div class="cats">
+    <div class="cat"><img src="img/iranian.jpg" alt=""><span data-fa="غذای ایرانی" data-en="Iranian">غذای ایرانی</span></div>
+    <div class="cat"><img src="img/salad.jpg" alt=""><span data-fa="سالادها" data-en="Salads">سالادها</span></div>
+    <div class="cat"><img src="img/sandwich.jpg" alt=""><span data-fa="ساندویچ‌ها" data-en="Sandwiches">ساندویچ‌ها</span></div>
+    <div class="cat"><img src="img/breakfast.jpg" alt=""><span data-fa="صبحانه" data-en="Breakfast">صبحانه</span></div>
+    <div class="cat"><img src="img/fridge.jpg" alt=""><span data-fa="سوپ و سس" data-en="Soups & Sauces">سوپ و سس</span></div>
+  </div>
+</section>
+
+<section id="club" class="club">
+  <h2 data-fa="باشگاه مشتریان DailyFitBeat" data-en="DailyFitBeat Club">باشگاه مشتریان DailyFitBeat</h2>
+  <p data-fa="برنامه غذایی شخصی‌سازی‌شده با قد، وزن و هدف تو — به‌زودی" data-en="Personalized meal plans based on your body and goals — coming soon">برنامه غذایی شخصی‌سازی‌شده با قد، وزن و هدف تو — به‌زودی</p>
+  <a class="btn ghost" data-fa="عضویت" data-en="Join">عضویت</a>
+</section>
+
+<footer>DailyFitBeat — Instagram @dailyfitbeat</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
