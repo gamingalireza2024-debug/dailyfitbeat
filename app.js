@@ -136,7 +136,7 @@ function initOrder(){
     const res = await r.json();
     const ok = $('#orderOk');
     ok.style.display = 'block';
-    ok.innerHTML = `سفارش تو با کد <b>${res.id ?? '—'}</b> ثبت شد ✅<br>اطلاع به فروشنده (تلگرام): ${res.tg ? '✅' : '❌'}<br>ایمیل تأیید: ${res.mail === 'ok' ? 'ارسال شد ✅' : '❌ ' + (res.mail || '')}`;
+    ok.innerHTML = `سفارش تو با کد <b>${res.id ?? '—'}</b> ثبت شد ✅<br>اطلاع به فروشنده (تلگرام): ${res.tg ? '✅' : '❌'}<br>ایمیل تأیید: ${res.mail === 'ok' ? 'ارسال شد ✅' : '❌ ' + (res.mail || '')}${res.id ? '' : '<br>خطای ثبت کد: ' + JSON.stringify(res.raw || '').slice(0, 220)}`;
     f.reset();
   };
 }
