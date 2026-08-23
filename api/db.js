@@ -4,6 +4,7 @@ const h = { apikey: KEY, Authorization: "Bearer " + KEY };
 
 export default async function handler(req, res) {
   const t = req.query.t || "";
+  if (t === "ping") { res.status(200).json({ v: 3 }); return; }
   let out = [];
   try {
     if (t === "ingredients") {
