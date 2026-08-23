@@ -17,14 +17,18 @@ async function gen(prompt) {
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
       });
       const j = await r.json();
+      if (!r.ok) { console.log("API-ERR", m, r.status, JSON.stringify(j).slice(0, 400)); continue; }
       const b64 = j?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
       if (b64) return b64;
-    } catch (e) {}
+      console.log("NO-IMG", m, JSON.stringify(j).slice(0, 400));
+    } catch (e) { console.log("FETCH-ERR", m, String(e)); }
   }
   return null;
 }
 
+console.log("KEY-LOADED:", GKEY ? GKEY.slice(0, 6) + "..." : "MISSING");
 const recipes = await (await fetch(SB_URL + "/rest/v1/recipes?select=slug,name_en,desc_en,image", { headers: H })).json();
+console.log("recipes:", recipes.length);
 let done = 0;
 for (const r of recipes) {
   const path = "img/" + r.slug + ".jpg";
