@@ -41,5 +41,4 @@ export const R2 = [
 "kookoo-mahi|کوکو ماهی|Fish Kookoo|iranian|40|280|24|high-protein|fish,egg|ماهی:۳۰۰گ,تخم‌مرغ:۲,سبزی:۱۰۰گ|کوکوی معطر ماهی جنوبی",
 "kookoo-gharch|کوکو قارچ|Mushroom Kookoo|iranian|30|220|12|vegetarian|egg,mushroom|تخم‌مرغ:۳,قارچ:۲۰گ|کوکوی ترد قارچ",
 "kookoo-havij|کوکو هویج|Carrot Kookoo|iranian|30|210|10|vegetarian|egg|هویج:۳,تخم‌مرغ:۳|کوکوی شیرین هویج",
-"khoresht-aloo-karaj? no placeholder"
 ];
