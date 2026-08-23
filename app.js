@@ -131,12 +131,12 @@ function initOrder(){
   const f = $('#orderForm'); if(!f) return;
   f.onsubmit = async e => {
     e.preventDefault();
-    const o = { name: $('#oName').value, phone: $('#oPhone').value, product: $('#oProduct').value, qty: $('#oQty').value, note: $('#oNote').value, ref: $('#oRef').value };
+    const o = { name: $('#oName').value, phone: $('#oPhone').value, email: $('#oEmail').value, product: $('#oProduct').value, note: $('#oNote').value, ref: $('#oRef').value };
     const r = await fetch('/api/db?t=order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(o) });
     const res = await r.json();
     const ok = $('#orderOk');
     ok.style.display = 'block';
-    ok.innerHTML = `سفارش تو با کد <b>${res.id || '—'}</b> ثبت شد ✅<br>ایمیل تأیید برات ارسال شد؛ منتظر اطلاع‌رسانی ما باش.`;
+    ok.innerHTML = `سفارش تو با کد <b>${res.id ?? '—'}</b> ثبت شد ✅<br>اطلاع به فروشنده (تلگرام): ${res.tg ? '✅' : '❌'}<br>ایمیل تأیید: ${res.mail === 'ok' ? 'ارسال شد ✅' : '❌ ' + (res.mail || '')}`;
     f.reset();
   };
 }
