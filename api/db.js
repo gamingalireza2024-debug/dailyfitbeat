@@ -3,17 +3,13 @@ const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 const h = { apikey: KEY, Authorization: "Bearer " + KEY };
 
 export default async function handler(req, res) {
-  const t = req.query.t || "";
-  let out = [];
+  const out = {};
   try {
-    if (t === "ingredients") {
-      out = await (await fetch(SB_URL + "/rest/v1/ingredients?select=key,fa,en&key=in.(chicken,beef,egg,tomato,rice,potato,onion,garlic,mushroom,spinach,avocado,bread,greek-yogurt,salmon,chickpea,lentil)", { headers: h })).json();
-    } else if (t === "popular") {
-      out = await (await fetch(SB_URL + "/rest/v1/recipes?select=*&limit=4", { headers: h })).json();
-    } else if (t === "match") {
-      const have = String(req.query.a || "").split(",").filter(Boolean);
-      out = await (await fetch(SB_URL + "/rest/v1/rpc/match_recipes", { method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ have }) })).json();
-    }
-  } catch (e) { out = []; }
+    const r = await fetch(SB_URL + "/rest/v1/ingredients?select=key,fa&limit=3", { headers: h });
+    out.status = r.status;
+    out.body = await r.json().catch(() => "not-json");
+  } catch (e) {
+    out.error = String(e);
+  }
   res.status(200).json(out);
 }
