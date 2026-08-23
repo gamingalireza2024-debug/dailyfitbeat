@@ -33,12 +33,13 @@
     <div class="order-wrap">
       <div class="pay-card">
         <h3 data-fa="روش پرداخت" data-en="Payment">روش پرداخت</h3>
-        <p data-fa="۱. محصولت رو انتخاب کن<br>۲. مبلغ رو به کارت زیر واریز کن<br>۳. کد پیگیری رو توی فرم بنویس<br>۴. تا چند ساعت بعد، محصول برات ارسال می‌شه" data-en="Transfer to the card below, then submit the reference code.">۱. محصولت رو انتخاب کن<br>۲. مبلغ رو به کارت زیر واریز کن<br>۳. کد پیگیری رو توی فرم بنویس<br>۴. تا چند ساعت بعد، محصول برات ارسال می‌شه</p>
+        <p>۱. محصولت رو انتخاب کن<br>۲. مبلغ رو به کارت زیر واریز کن<br>۳. کد پیگیری رو توی فرم بنویس<br>۴. محصول به ایمیلت ارسال می‌شه</p>
         <div class="pay-num">6037-9911-0000-0000</div>
         <p data-fa="به نام: (نام صاحب کارت — به‌زودی)" data-en="Account holder: coming soon">به نام: (نام صاحب کارت — به‌زودی)</p>
       </div>
       <form id="orderForm" class="order-form">
-        <div class="two"><input id="oName" required placeholder="نام و نام خانوادگی"><input id="oPhone" required placeholder="شماره موبایل"></div>
+        <div class="two"><input id="oName" required placeholder="نام و نام خانوادگی"><input id="oPhone" type="tel" inputmode="numeric" required pattern="09[0-9]{9}" maxlength="11" title="شماره موبایل ایرانی معتبر وارد کن (مثال: 09123456789)" placeholder="09xxxxxxxxx"></div>
+        <input id="oEmail" type="email" required placeholder="ایمیل (محصول و تأییدیه به همین ایمیل می‌رسه)">
         <div class="two">
           <select id="oProduct">
             <option>برنامه ۷ روزه</option><option>High Protein Pack</option><option>30 Healthy Dinners</option><option>۳۰ غذای ایرانی سالم</option><option>Meal Prep 7-Day</option><option>برنامه ۲۱ روزه</option>
