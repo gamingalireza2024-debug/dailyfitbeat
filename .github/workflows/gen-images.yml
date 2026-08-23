@@ -19,7 +19,7 @@ jobs:
       - run: npm i sharp
       - name: Generate
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY: ${{AQ.Ab8RN6L1Ek_21-sA-cpUSL4ByDeMbGDB44UmFhXbnS6krooAoA}}
           FORCE: ${{ github.event.inputs.force }}
         run: node scripts/gen-images.mjs
       - name: Commit
