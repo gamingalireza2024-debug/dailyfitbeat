@@ -22,10 +22,10 @@ function injectHeader(){
 }
 function injectFooter(){
   $('#ftr').innerHTML = `<div class="container f-cols">
-  <div><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><p data-fa="غذای سالم که واقعاً خوشمزه به نظر می‌رسه." data-en="Healthy food that actually looks delicious.">${lang==='fa'?'غذای سالم که واقعاً خوشمزه به نظر می‌رسه.':'Healthy food that actually looks delicious.'}</p></div>
-  <div><b data-fa="رسپی‌ها" data-en="Recipes">${lang==='fa'?'رسپی‌ها':'Recipes'}</b><a href="recipes.html">ایرانی</a><a href="recipes.html">سالادها</a><a href="recipes.html">ساندویچ‌ها</a></div>
-  <div><b data-fa="محصول" data-en="Product">${lang==='fa'?'محصول':'Product'}</b><a href="planner.html">برنامه غذایی</a><a href="index.html#finder">امروز چی داری؟</a><a href="pro.html">PRO</a></div>
-  <div><b data-fa="فیت مارکت" data-en="Fit Market">${lang==='fa'?'فیت مارکت':'Fit Market'}</b><a href="market.html">محصولات دیجیتال</a><a href="https://instagram.com/dailyfitbeat">اینستاگرام</a><a href="market.html">ثبت سفارش</a></div>
+  <div><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><p>غذای سالم که واقعاً خوشمزه به نظر می‌رسه.</p></div>
+  <div><b>رسپی‌ها</b><a href="recipes.html">ایرانی</a><a href="recipes.html">سالادها</a><a href="recipes.html">ساندویچ‌ها</a></div>
+  <div><b>محصول</b><a href="planner.html">برنامه غذایی</a><a href="index.html#finder">امروز چی داری؟</a><a href="pro.html">PRO</a></div>
+  <div><b>فیت مارکت</b><a href="market.html">محصولات دیجیتال</a><a href="https://instagram.com/dailyfitbeat">اینستاگرام</a><a href="market.html">ثبت سفارش</a></div>
   </div><div class="f-bottom">© DailyFitBeat</div>`;
 }
 function toggleLang(){
@@ -131,7 +131,7 @@ function initOrder(){
   const f = $('#orderForm'); if(!f) return;
   f.onsubmit = async e => {
     e.preventDefault();
-    const o = { name: f.name.value, phone: f.phone.value, product: f.product.value, qty: f.qty.value, note: f.note.value, ref: f.ref.value };
+    const o = { name: $('#oName').value, phone: $('#oPhone').value, product: $('#oProduct').value, qty: $('#oQty').value, note: $('#oNote').value, ref: $('#oRef').value };
     const r = await fetch('/api/db?t=order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(o) });
     const res = await r.json();
     const ok = $('#orderOk');
@@ -150,4 +150,4 @@ document.documentElement.dir = lang==='fa' ? 'rtl' : 'ltr';
 initSearch(); initFinder(); initRecipes(); initDetail(); initOrder(); watchRev();
 if(page === 'home'){ loadPopular(); loadAll(); }
 if(page === 'recipes'){ loadAll().then(renderRecipes); }
-if(page === 'home' || page === 'recipes'){ /* ING for search hay */ if(!ING.length) fetch('/api/db?t=ingredients').then(r=>r.json()).then(d=>ING=d); }
+if(!ING.length) fetch('/api/db?t=ingredients').then(r=>r.json()).then(d=>ING=d);
