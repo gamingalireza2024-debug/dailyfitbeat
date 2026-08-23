@@ -23,7 +23,7 @@ async function sendMail(o, id) {
 
 export default async function handler(req, res) {
   const t = req.query.t || "";
-  if (t === "ping") { res.status(200).json({ v: 8 }); return; }
+  if (t === "ping") { res.status(200).json({ v: 9 }); return; }
   let out = [];
   try {
     if (t === "ingredients") {
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       const id = Array.isArray(arr) && arr[0] ? arr[0].id : null;
       const tg = await sendTelegram("🛒 سفارش #" + id + "\n" + b.name + " | " + b.phone + "\n" + b.product + "\nکد واریز: " + b.ref + (b.note ? "\nیادداشت: " + b.note : ""));
       const mail = await sendMail(b, id);
-      out = { id, tg, mail };
+      out = { id, tg, mail, raw: id ? null : arr };
     }
   } catch (e) { out = { error: String(e) }; }
   res.status(200).json(out);
