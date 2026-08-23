@@ -11,10 +11,10 @@ async function sendTelegram(text) {
   } catch (e) { return false; }
 }
 async function sendMail(o, id) {
-  const S = process.env.EJ_SERVICE, T = process.env.EJ_TEMPLATE, U = process.env.EJ_USER;
+  const S = process.env.EJ_SERVICE, T = process.env.EJ_TEMPLATE, U = process.env.EJ_USER, P = process.env.EJ_PRIVATE;
   if (!S || !T || !U || !o.email) return "no-config";
   try {
-    const r = await fetch("https://api.emailjs.com/api/v1.0/email/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ service_id: S, template_id: T, user_id: U, template_params: { to_email: o.email, to_name: o.name, order_id: String(id), product: o.product } }) });
+    const r = await fetch("https://api.emailjs.com/api/v1.0/email/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ service_id: S, template_id: T, user_id: U, accessToken: P || U, template_params: { to_email: o.email, to_name: o.name, order_id: String(id), product: o.product } }) });
     if (r.ok) return "ok";
     const j = await r.text();
     return "err:" + r.status + " " + j.slice(0, 100);
@@ -23,7 +23,7 @@ async function sendMail(o, id) {
 
 export default async function handler(req, res) {
   const t = req.query.t || "";
-  if (t === "ping") { res.status(200).json({ v: 7 }); return; }
+  if (t === "ping") { res.status(200).json({ v: 8 }); return; }
   let out = [];
   try {
     if (t === "ingredients") {
