@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="همه رسپی‌های سالم DailyFitBeat — ایرانی، سالاد، ساندویچ، صبحانه و سوپ با اطلاعات کامل تغذیه‌ای">
+<title>رسپی‌ها | DailyFitBeat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="recipes">
+<header id="hdr"></header>
+
+<div class="page-head"><div class="container"><h1 data-fa="رسپی‌ها" data-en="Recipes">رسپی‌ها</h1><p data-fa="هر غذا، صفحه اختصاصی، اطلاعات کامل" data-en="Every dish, its own page">هر غذا، صفحه اختصاصی، اطلاعات کامل</p></div></div>
+
+<section style="padding-top:50px">
+  <div class="container">
+    <div class="search-bar" style="margin-bottom:26px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchInput" placeholder="جستجو: اسم غذا، ماده، شهر...">
+    </div>
+    <div id="searchRes" class="cards" style="margin-top:0"></div>
+    <div class="filters">
+      <button class="chip on" data-cat="all">همه</button>
+      <button class="chip" data-cat="iranian">ایرانی</button>
+      <button class="chip" data-cat="salad">سالادها</button>
+      <button class="chip" data-cat="sandwich">ساندویچ‌ها</button>
+      <button class="chip" data-cat="breakfast">صبحانه</button>
+      <button class="chip" data-cat="soup">سوپ و سس</button>
+      <button class="chip" data-cat="main">اصلی</button>
+      <button class="chip" data-goal="high-protein">پروتئین بالا</button>
+      <button class="chip" data-goal="quick">سریع</button>
+      <button class="chip" data-goal="weight-loss">کاهش وزن</button>
+      <button class="chip" data-goal="vegetarian">گیاهی</button>
+    </div>
+    <div id="recipeGrid" class="cards" style="margin-top:0"></div>
+  </div>
+</section>
+
+<footer id="ftr"></footer>
+<script src="app.js"></script>
+</body>
+</html>
