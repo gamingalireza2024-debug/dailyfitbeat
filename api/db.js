@@ -1,4 +1,4 @@
-const SB_URL = "https://hvqchqqlfjcjxsohxywbd.supabase.co";
+const SB_URL = "https://hvqchqqlfcjxsohxywbd.supabase.co/rest/v1/";
 const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cWNocXFsZmNqeHNvaHh5d2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTI3ODYsImV4cCI6MjEwMjk4ODc4Nn0.yJursP15upa_-nE8P41l4uUssITBK319dzfaa2tbJ1k";
 const h = { apikey: KEY, Authorization: "Bearer " + KEY };
 
