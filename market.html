@@ -38,15 +38,13 @@
         <p data-fa="به نام: (نام صاحب کارت — به‌زودی)" data-en="Account holder: coming soon">به نام: (نام صاحب کارت — به‌زودی)</p>
       </div>
       <form id="orderForm" class="order-form">
-        <div class="two"><input id="oName" required placeholder="نام و نام خانوادگی"><input id="oPhone" type="tel" inputmode="numeric" required pattern="09[0-9]{9}" maxlength="11" title="شماره موبایل ایرانی معتبر وارد کن (مثال: 09123456789)" placeholder="09xxxxxxxxx"></div>
-        <input id="oEmail" type="email" required placeholder="ایمیل (محصول و تأییدیه به همین ایمیل می‌رسه)">
-        <div class="two">
-          <select id="oProduct">
-            <option>برنامه ۷ روزه</option><option>High Protein Pack</option><option>30 Healthy Dinners</option><option>۳۰ غذای ایرانی سالم</option><option>Meal Prep 7-Day</option><option>برنامه ۲۱ روزه</option>
-          </select>
-          <input id="oQty" type="number" value="1" min="1">
-        </div>
-        <input id="oRef" required placeholder="کد پیگیری واریز">
+        <input id="oName" required placeholder="نام و نام خانوادگی">
+        <input id="oPhone" type="tel" inputmode="numeric" required pattern="09[0-9]{9}" maxlength="11" title="شماره موبایل ایرانی معتبر وارد کن (مثال: 09123456789)" placeholder="09xxxxxxxxx (اجباری)">
+        <input id="oEmail" type="email" required placeholder="ایمیل (اجباری — محصول و تأییدیه به همین ایمیل می‌رسه)">
+        <select id="oProduct">
+          <option>برنامه ۷ روزه</option><option>High Protein Pack</option><option>30 Healthy Dinners</option><option>۳۰ غذای ایرانی سالم</option><option>Meal Prep 7-Day</option><option>برنامه ۲۱ روزه</option>
+        </select>
+        <input id="oRef" required placeholder="کد پیگیری واریز (اجباری)">
         <textarea id="oNote" rows="3" placeholder="یادداشت (اختیاری)"></textarea>
         <button class="btn big" type="submit" data-fa="ثبت سفارش" data-en="Submit order">ثبت سفارش</button>
         <div id="orderOk" class="order-ok"></div>
