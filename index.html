@@ -3,85 +3,168 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="DailyFitBeat — غذای سالم که واقعاً خوشمزه به نظر می‌رسد">
-<title>DailyFitBeat | غذای سالم، زندگی بهتر</title>
+<meta name="description" content="DailyFitBeat — غذای سالم که واقعاً خوشمزه است؛ رسپی‌های هوشمند، برنامه غذایی و سبک زندگی سالم">
+<title>DailyFitBeat | خوب بخور، بهتر زندگی کن</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <a class="logo" href="#">Daily<span>Fit</span>Beat</a>
+<header id="hdr">
+  <a class="logo" href="#"><img src="img/logo.png" alt="DailyFitBeat"></a>
   <nav>
-    <a href="#fridge" data-fa="امروز چی داری؟" data-en="Fridge AI">امروز چی داری؟</a>
-    <a href="#popular" data-fa="دستورها" data-en="Recipes">دستورها</a>
-    <a href="#cats" data-fa="دسته‌بندی‌ها" data-en="Categories">دسته‌بندی‌ها</a>
-    <a href="#club" data-fa="باشگاه مشتریان" data-en="Club">باشگاه مشتریان</a>
+    <a href="#popular" data-fa="رسپی‌ها" data-en="Recipes">رسپی‌ها</a>
+    <a href="#planner" data-fa="برنامه غذایی" data-en="Meal Plan">برنامه غذایی</a>
+    <a href="#finder" data-fa="امروز چی داری؟" data-en="Fridge AI">امروز چی داری؟</a>
+    <a href="#shop" data-fa="فروشگاه" data-en="Shop">فروشگاه</a>
   </nav>
-  <button id="langBtn" class="lang">EN</button>
-  <a href="#fridge" class="btn small" data-fa="شروع کن" data-en="Start">شروع کن</a>
+  <div class="hactions">
+    <button id="langBtn" class="lang">EN</button>
+    <a class="btn small" href="#pro" data-fa="شروع رایگان" data-en="Start Free">شروع رایگان</a>
+  </div>
 </header>
 
 <section class="hero">
-  <div class="hero-text">
-    <span class="badge" data-fa="غذای سالم، بدون حس رژیم" data-en="Healthy, never boring">غذای سالم، بدون حس رژیم</span>
-    <h1 data-fa="غذای سالم، زندگی بهتر، هر روز" data-en="Healthy food, better life, every day">غذای سالم، <span class="hl">زندگی بهتر</span>، هر روز</h1>
-    <p data-fa="دستورهای هوشمند، سریع و خوشمزه برای تناسب اندام — بدون اینکه مزه زندگی از یادت بره" data-en="Smart, quick, delicious recipes for a fit body — without losing the joy of eating">دستورهای هوشمند، سریع و خوشمزه برای تناسب اندام — بدون اینکه مزه زندگی از یادت بره</p>
+  <div class="hero-bg"><img src="img/hero-wide.jpg" alt=""></div>
+  <div class="hero-inner">
+    <h1 data-fa="خوب بخور، بهتر زندگی کن" data-en="Eat well, live better">خوب بخور، <span>بهتر زندگی کن</span></h1>
+    <p data-fa="رسپی‌های سالم و اشتهابرانگیز، برنامه غذایی هوشمند و دستیاری که می‌دونه توی یخچالت چی داری" data-en="Delicious healthy recipes, smart meal plans, and a fridge assistant">رسپی‌های سالم و اشتهابرانگیز، برنامه غذایی هوشمند و دستیاری که می‌دونه توی یخچالت چی داری</p>
     <div class="hero-cta">
-      <a class="btn" href="#fridge" data-fa="امروز چی داری؟" data-en="What's in your fridge?">امروز چی داری؟</a>
-      <a class="btn ghost" href="#popular" data-fa="دیدن دستورها" data-en="Browse recipes">دیدن دستورها</a>
+      <a class="btn big" href="#finder" data-fa="غذای بعدی من رو پیدا کن" data-en="Find my next meal">غذای بعدی من رو پیدا کن</a>
+      <a class="btn ghost-light" href="#planner" data-fa="برنامه غذایی من" data-en="My meal plan">برنامه غذایی من</a>
     </div>
-    <div class="stats">
-      <div><b>+۳۵</b><span data-fa="دستور تست‌شده" data-en="Tested recipes">دستور تست‌شده</span></div>
-      <div><b>۱۰</b><span data-fa="دقیقه میانگین پخت" data-en="Min avg. cook">دقیقه میانگین پخت</span></div>
-      <div><b>۱۰۰٪</b><span data-fa="اشتهابرانگیز" data-en="Appetizing">اشتهابرانگیز</span></div>
-    </div>
-  </div>
-  <div class="hero-img">
-    <img src="img/hero.jpg" alt="DailyFitBeat">
-    <div class="float a" data-fa="کالری کنترل‌شده" data-en="Controlled calories">کالری کنترل‌شده</div>
-    <div class="float b" data-fa="پروتئین بالا" data-en="High protein">پروتئین بالا</div>
   </div>
 </section>
 
-<section id="fridge" class="search-card">
-  <h2 data-fa="امروز با چی می‌تونی آشپزی کنی؟" data-en="What can you cook today?">امروز با چی می‌تونی آشپزی کنی؟</h2>
-  <p class="sub" data-fa="مواد داخل یخچالت رو بزن، ۱۰ پیشنهاد فوری و خوشمزه بگیر" data-en="Tap what's in your fridge, get 10 instant tasty ideas">مواد داخل یخچالت رو بزن، ۱۰ پیشنهاد فوری و خوشمزه بگیر</p>
-  <div id="chips" class="chips"></div>
-  <button id="goBtn" class="btn" data-fa="نشون بده چی بپزم" data-en="Show me what to cook">نشون بده چی بپزم</button>
-  <div id="results" class="cards"></div>
+<section id="finder">
+  <div class="container">
+    <div class="sec-head"><h2 data-fa="توی یخچالت چی داری؟" data-en="What's in your fridge?">توی یخچالت چی داری؟</h2>
+    <p data-fa="موادت رو انتخاب کن؛ DailyFitBeat می‌گه با اینا چی می‌شه پخت" data-en="Pick ingredients, we'll tell you what to cook">موادت رو انتخاب کن؛ DailyFitBeat می‌گه با اینا چی می‌شه پخت</p></div>
+    <div class="finder-box rev">
+      <div class="ing-add"><input id="ingInput" placeholder="مثلاً: قارچ، جو، اسفناج..."><button id="ingAdd" class="btn small" data-fa="افزودن" data-en="Add">افزودن</button></div>
+      <div id="chips" class="chips"></div>
+      <button id="goBtn" class="btn big" data-fa="با اینا چی بپزم؟" data-en="What can I cook?">با اینا چی بپزم؟</button>
+      <div id="results" class="cards"></div>
+    </div>
+  </div>
+</section>
+
+<section class="goals">
+  <div class="container">
+    <div class="sec-head"><h2 data-fa="بر اساس هدفت انتخاب کن" data-en="Choose by your goal">بر اساس هدفت انتخاب کن</h2></div>
+    <div class="goal-grid">
+      <a class="goal tall" href="#popular"><span class="g-t" data-fa="کاهش وزن" data-en="Weight loss">کاهش وزن</span><span class="g-s" data-fa="سبک و سیرکننده" data-en="Light & filling">سبک و سیرکننده</span></a>
+      <a class="goal g2" href="#popular"><span class="g-t" data-fa="پروتئین بالا" data-en="High protein">پروتئین بالا</span><span class="g-s" data-fa="عضله‌ساز" data-en="Muscle building">عضله‌ساز</span></a>
+      <a class="goal g3" href="#popular"><span class="g-t" data-fa="سریع و آسان" data-en="Quick & easy">سریع و آسان</span><span class="g-s" data-fa="زیر ۲۰ دقیقه" data-en="Under 20 min">زیر ۲۰ دقیقه</span></a>
+      <a class="goal g4" href="#popular"><span class="g-t" data-fa="غذای ایرانی" data-en="Iranian food">غذای ایرانی</span><span class="g-s" data-fa="نسخه سالم محبوب‌ها" data-en="Healthy classics">نسخه سالم محبوب‌ها</span></a>
+      <a class="goal g5" href="#popular"><span class="g-t" data-fa="کم‌کالری" data-en="Low calorie">کم‌کالری</span><span class="g-s" data-fa="انتخاب‌های سبک‌تر" data-en="Lighter picks">انتخاب‌های سبک‌تر</span></a>
+    </div>
+  </div>
 </section>
 
 <section id="popular">
-  <div class="row"><h2 data-fa="دستورهای محبوب" data-en="Popular recipes">دستورهای محبوب</h2></div>
-  <div id="popularCards" class="cards"></div>
-</section>
-
-<section id="cats">
-  <div class="row"><h2 data-fa="دسته‌بندی‌ها" data-en="Categories">دسته‌بندی‌ها</h2></div>
-  <div class="cats">
-    <div class="cat"><img src="img/iranian.jpg" alt="" loading="lazy"><span data-fa="غذای ایرانی" data-en="Iranian">غذای ایرانی</span></div>
-    <div class="cat"><img src="img/salad.jpg" alt="" loading="lazy"><span data-fa="سالادها" data-en="Salads">سالادها</span></div>
-    <div class="cat"><img src="img/sandwich.jpg" alt="" loading="lazy"><span data-fa="ساندویچ‌ها" data-en="Sandwiches">ساندویچ‌ها</span></div>
-    <div class="cat"><img src="img/breakfast.jpg" alt="" loading="lazy"><span data-fa="صبحانه" data-en="Breakfast">صبحانه</span></div>
-    <div class="cat"><img src="img/soup.jpg" alt="" loading="lazy"><span data-fa="سوپ و سس" data-en="Soups & Sauces">سوپ و سس</span></div>
+  <div class="container">
+    <div class="sec-head"><h2 data-fa="رسپی‌های محبوب" data-en="Popular recipes">رسپی‌های محبوب</h2></div>
+    <div id="popularCards" class="ed-grid"></div>
   </div>
 </section>
 
-<section class="features">
-  <div class="feat"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 4c-9 0-16 7-16 16 9 0 16-7 16-16z"/><path d="M4 20C10 14 20 4 20 4"/></svg></i><b data-fa="سالم و مقوی" data-en="Healthy & rich">سالم و مقوی</b><span data-fa="مواد واقعی، بدون هوس" data-en="Real ingredients">مواد واقعی، بدون هوس</span></div>
-  <div class="feat"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></i><b data-fa="سریع و آسان" data-en="Quick & easy">سریع و آسان</b><span data-fa="زیر ۳۰ دقیقه" data-en="Under 30 min">زیر ۳۰ دقیقه</span></div>
-  <div class="feat"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg></i><b data-fa="پروتئین بالا" data-en="High protein">پروتئین بالا</b><span data-fa="سیرکننده و عضله‌ساز" data-en="Filling & lean">سیرکننده و عضله‌ساز</span></div>
-  <div class="feat"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2s6 6 6 11a6 6 0 0 1-12 0c0-5 6-11 6-11z"/></svg></i><b data-fa="کالری کنترل‌شده" data-en="Controlled calories">کالری کنترل‌شده</b><span data-fa="مناسب کاهش وزن" data-en="Weight-loss friendly">مناسب کاهش وزن</span></div>
+<section class="featured">
+  <div class="container f-wrap">
+    <div class="f-img rev"><img src="img/fajita.jpg" alt="فاخیتا مرغ"></div>
+    <div class="f-info">
+      <span class="tag">High Protein</span>
+      <h2 data-fa="فاخیتا مرغ با برنج قهوه‌ای" data-en="Chicken Fajita Bowl">فاخیتا مرغ با برنج قهوه‌ای</h2>
+      <p data-fa="مرغ گریل‌شده با فلفل دلمه‌ای و پیاز روی برنج قهوه‌ای — سریع، ساده و پر از پروتئین" data-en="Grilled chicken with peppers over brown rice">مرغ گریل‌شده با فلفل دلمه‌ای و پیاز روی برنج قهوه‌ای — سریع، ساده و پر از پروتئین</p>
+      <div class="f-stats"><div><b>۳۰</b><span data-fa="دقیقه" data-en="min">دقیقه</span></div><div><b>۴۸۰</b><span data-fa="کالری" data-en="kcal">کالری</span></div><div><b>۳۸</b><span data-fa="پروتئین" data-en="protein">پروتئین</span></div></div>
+      <div class="f-cta"><a class="btn" href="#finder" data-fa="دیدن رسپی" data-en="View recipe">دیدن رسپی</a><a class="btn ghost" href="#planner" data-fa="افزودن به برنامه" data-en="Add to plan">افزودن به برنامه</a></div>
+    </div>
+  </div>
 </section>
 
-<section id="club" class="club">
-  <h2 data-fa="باشگاه مشتریان DailyFitBeat" data-en="DailyFitBeat Club">باشگاه مشتریان DailyFitBeat</h2>
-  <p data-fa="برنامه غذایی شخصی‌سازی‌شده با قد، وزن و هدف تو — به‌زودی" data-en="Personalized meal plans based on your body & goals — soon">برنامه غذایی شخصی‌سازی‌شده با قد، وزن و هدف تو — به‌زودی</p>
-  <a class="btn" data-fa="عضویت" data-en="Join">عضویت</a>
+<section id="planner">
+  <div class="container p-wrap">
+    <div class="p-info">
+      <h2 data-fa="هفته‌ات رو از همین امروز بچین" data-en="Plan your week today">هفته‌ات رو از همین امروز بچین</h2>
+      <ul>
+        <li data-fa="برنامه غذایی هفتگی شخصی‌سازی‌شده" data-en="Personalized weekly plan">برنامه غذایی هفتگی شخصی‌سازی‌شده</li>
+        <li data-fa="لیست خرید خودکار از رسپی‌هات" data-en="Auto shopping list">لیست خرید خودکار از رسپی‌هات</li>
+        <li data-fa="ذخیره علاقه‌مندی‌ها و پیشنهادهای هوشمند" data-en="Saved favorites & smart picks">ذخیره علاقه‌مندی‌ها و پیشنهادهای هوشمند</li>
+      </ul>
+      <a class="btn big" href="#pro" data-fa="برنامه غذایی من رو بساز" data-en="Build my plan">برنامه غذایی من رو بساز</a>
+    </div>
+    <div class="p-app rev">
+      <div class="p-day on"><b data-fa="شنبه" data-en="Sat">شنبه</b><span>اوورنایت اوتس</span><span>فاخیتا مرغ</span><span>سوپ عدس</span></div>
+      <div class="p-day"><b data-fa="یکشنبه" data-en="Sun">یکشنبه</b><span>کاسه ماست یونانی</span><span>ساندویچ مرغ و حمص</span><span>مرغ و بروکلی</span></div>
+      <div class="p-day"><b data-fa="دوشنبه" data-en="Mon">دوشنبه</b><span>تست آووکادو</span><span>سالاد نخود</span><span>قلیه ماهی</span></div>
+    </div>
+  </div>
 </section>
 
-<footer>DailyFitBeat — Instagram @dailyfitbeat</footer>
+<section id="pro" class="pro">
+  <div class="container pro-wrap">
+    <div class="pro-info">
+      <span class="badge">DailyFitBeat PRO</span>
+      <h2 data-fa="غذا رو انتخاب نکن؛ بذار DailyFitBeat برات انتخاب کنه" data-en="Let DailyFitBeat choose for you">غذا رو انتخاب نکن؛ بذار DailyFitBeat برات انتخاب کنه</h2>
+      <ul>
+        <li data-fa="برنامه شخصی با قد، وزن و هدف تو" data-en="Plan based on your body & goal">برنامه شخصی با قد، وزن و هدف تو</li>
+        <li data-fa="پیشنهاد هوشمند بر اساس یخچالت" data-en="Smart fridge suggestions">پیشنهاد هوشمند بر اساس یخچالت</li>
+        <li data-fa="لیست خرید و برنامه‌ریزی هفتگی خودکار" data-en="Auto shopping & weekly planning">لیست خرید و برنامه‌ریزی هفتگی خودکار</li>
+      </ul>
+      <a class="btn big" data-fa="شروع رایگان" data-en="Start free">شروع رایگان</a>
+    </div>
+    <div class="pro-phone rev">
+      <div class="phone">
+        <div class="ph-head" data-fa="برنامه این هفته" data-en="This week">برنامه این هفته</div>
+        <div class="ph-row"><i class="d g"></i><span>شنبه — فاخیتا مرغ · ۴۸۰ کالری</span></div>
+        <div class="ph-row"><i class="d o"></i><span>یکشنبه — مرغ و بروکلی · ۳۲۰ کالری</span></div>
+        <div class="ph-row"><i class="d g"></i><span>دوشنبه — قلیه ماهی · ۳۸۰ کالری</span></div>
+        <div class="ph-row"><i class="d o"></i><span>سه‌شنبه — سالاد نخود · ۲۸۰ کالری</span></div>
+        <div class="ph-sum" data-fa="میانگین پروتئین روزانه: ۱۲۰g" data-en="Avg daily protein: 120g">میانگین پروتئین روزانه: ۱۲۰g</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="reels">
+  <div class="container">
+    <div class="sec-head row"><h2 data-fa="از آشپزخانه DailyFitBeat" data-en="From our kitchen">از آشپزخانه DailyFitBeat</h2><a class="link" href="https://instagram.com/dailyfitbeat" data-fa="فالو در اینستاگرام" data-en="Follow on Instagram">فالو در اینستاگرام</a></div>
+    <div class="reel-grid">
+      <a class="reel r1" href="https://instagram.com/dailyfitbeat"><i class="play"></i><span>سالمون با حمص — شام ۲۵ دقیقه‌ای</span></a>
+      <a class="reel r2" href="https://instagram.com/dailyfitbeat"><i class="play"></i><span>۵ ساندویچ سالم با یه خرید</span></a>
+      <a class="reel r3" href="https://instagram.com/dailyfitbeat"><i class="play"></i><span>زرشک‌پلو، نسخه رژیمی</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="trust">
+  <div class="container">
+    <h2 data-fa="غذای سالم قرار نیست خسته‌کننده باشه" data-en="Healthy food shouldn't be boring">غذای سالم قرار نیست خسته‌کننده باشه</h2>
+    <div class="trust-3"><b data-fa="خوشمزه" data-en="Tasty">خوشمزه</b><b data-fa="ساده" data-en="Simple">ساده</b><b data-fa="قابل اجرا" data-en="Doable">قابل اجرا</b></div>
+  </div>
+</section>
+
+<section id="shop">
+  <div class="container">
+    <div class="sec-head"><h2 data-fa="محصولات DailyFitBeat" data-en="DailyFitBeat Products">محصولات DailyFitBeat</h2><p data-fa="به‌زودی" data-en="Coming soon">به‌زودی</p></div>
+    <div class="shop-grid">
+      <div class="prod"><b data-fa="برنامه ۷ روزه" data-en="7-Day Plan">برنامه ۷ روزه</b><span data-fa="شروع سبک" data-en="Light start">شروع سبک</span></div>
+      <div class="prod"><b>High Protein Pack</b><span data-fa="۲۰ رسپی پروتئینی" data-en="20 protein recipes">۲۰ رسپی پروتئینی</span></div>
+      <div class="prod"><b>30 Healthy Dinners</b><span data-fa="شام‌های سریع" data-en="Quick dinners">شام‌های سریع</span></div>
+      <div class="prod"><b>Meal Prep Pack</b><span data-fa="هفته آماده" data-en="Prepped week">هفته آماده</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container f-cols">
+    <div><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><p data-fa="غذای سالم که واقعاً خوشمزه به نظر می‌رسه." data-en="Healthy food that actually looks delicious.">غذای سالم که واقعاً خوشمزه به نظر می‌رسه.</p></div>
+    <div><b data-fa="رسپی‌ها" data-en="Recipes">رسپی‌ها</b><a href="#popular">ایرانی</a><a href="#popular">سالادها</a><a href="#popular">ساندویچ‌ها</a></div>
+    <div><b data-fa="محصول" data-en="Product">محصول</b><a href="#planner">برنامه غذایی</a><a href="#finder">امروز چی داری؟</a><a href="#pro">PRO</a></div>
+    <div><b data-fa="برند" data-en="Brand">برند</b><a href="https://instagram.com/dailyfitbeat">اینستاگرام</a><a href="#">درباره ما</a><a href="#">تماس</a></div>
+  </div>
+  <div class="f-bottom">© DailyFitBeat</div>
+</footer>
 <script src="app.js"></script>
 </body>
 </html>
