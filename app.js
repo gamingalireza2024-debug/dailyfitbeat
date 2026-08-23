@@ -1,4 +1,5 @@
 let have = [], lang = 'fa';
+const CAT_IMG = { iranian:'img/iranian.jpg', salad:'img/salad.jpg', sandwich:'img/sandwich.jpg', breakfast:'img/breakfast.jpg', soup:'img/soup.jpg', sauce:'img/soup.jpg', main:'img/hero.jpg' };
 
 async function loadChips(){
   const r = await fetch("/api/db?t=ingredients");
@@ -25,8 +26,9 @@ async function loadPopular(){
 }
 
 function card(r){
-  return `<div class="card"><h3>${r.name_fa}</h3><p class="en">${r.name_en}</p>
-  <div class="meta"><span>${r.kcal} کالری</span><span>${r.time_min} دقیقه</span><span>پروتئین ${r.protein}g</span></div></div>`;
+  return `<div class="card"><div class="card-img"><img src="${CAT_IMG[r.category]||'img/hero.jpg'}" loading="lazy"></div>
+  <h3>${r.name_fa}</h3><p class="en">${r.name_en}</p>
+  <div class="meta"><span>${r.time_min} دقیقه</span><span>${r.kcal} کالری</span><span>پروتئین ${r.protein}g</span></div></div>`;
 }
 
 document.getElementById('langBtn').onclick = () => {
