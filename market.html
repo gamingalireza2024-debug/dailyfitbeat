@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="فیت مارکت DailyFitBeat — برنامه‌های غذایی آماده، پک‌های رسپی و ثبت سفارش آسان">
+<title>فیت مارکت | DailyFitBeat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="market">
+<header id="hdr"></header>
+
+<div class="page-head"><div class="container"><h1 data-fa="فیت مارکت" data-en="Fit Market">فیت مارکت</h1><p data-fa="محصولات دیجیتال DailyFitBeat — یک‌بار خرید، یک عمر استفاده" data-en="Digital products, one-time purchase">محصولات دیجیتال DailyFitBeat — یک‌بار خرید، یک عمر استفاده</p></div></div>
+
+<section>
+  <div class="container">
+    <div class="prod-grid">
+      <div class="prod"><b>برنامه ۷ روزه</b><p>شروع سبک با برنامه کامل صبحانه، ناهار، شام + لیست خرید</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
+      <div class="prod"><b>High Protein Pack</b><p>۲۰ رسپی پروتئینی برای عضله‌سازی و سیری طولانی</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
+      <div class="prod"><b>30 Healthy Dinners</b><p>۳۰ شام کم‌کالری و سریع برای شب‌های شلوغ</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
+      <div class="prod"><b>۳۰ غذای ایرانی سالم</b><p>نسخه سالم محبوب‌ترین‌های سفره ایرانی، از قورمه تا فسنجان</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
+      <div class="prod"><b>Meal Prep 7-Day</b><p>هفته‌ات رو یک‌بار بپز: برنامه پخت، مقدارها و لیست خرید</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
+      <div class="prod"><b>برنامه ۲۱ روزه</b><p>سه هفته برنامه کامل برای تغییر واقعی عادت‌های غذایی</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
+    </div>
+  </div>
+</section>
+
+<section id="order" class="order-sec">
+  <div class="container">
+    <div class="sec-head"><h2 data-fa="ثبت سفارش" data-en="Place your order">ثبت سفارش</h2><p data-fa="کارت‌به‌کارت سریع، بدون دردسر" data-en="Simple card-to-card payment">کارت‌به‌کارت سریع، بدون دردسر</p></div>
+    <div class="order-wrap">
+      <div class="pay-card">
+        <h3 data-fa="روش پرداخت" data-en="Payment">روش پرداخت</h3>
+        <p data-fa="۱. محصولت رو انتخاب کن<br>۲. مبلغ رو به کارت زیر واریز کن<br>۳. کد پیگیری رو توی فرم بنویس<br>۴. تا چند ساعت بعد، محصول برات ارسال می‌شه" data-en="Transfer to the card below, then submit the reference code.">۱. محصولت رو انتخاب کن<br>۲. مبلغ رو به کارت زیر واریز کن<br>۳. کد پیگیری رو توی فرم بنویس<br>۴. تا چند ساعت بعد، محصول برات ارسال می‌شه</p>
+        <div class="pay-num">6037-9911-0000-0000</div>
+        <p data-fa="به نام: (نام صاحب کارت — به‌زودی)" data-en="Account holder: coming soon">به نام: (نام صاحب کارت — به‌زودی)</p>
+      </div>
+      <form id="orderForm" class="order-form">
+        <div class="two"><input id="oName" required placeholder="نام و نام خانوادگی"><input id="oPhone" required placeholder="شماره موبایل"></div>
+        <div class="two">
+          <select id="oProduct">
+            <option>برنامه ۷ روزه</option><option>High Protein Pack</option><option>30 Healthy Dinners</option><option>۳۰ غذای ایرانی سالم</option><option>Meal Prep 7-Day</option><option>برنامه ۲۱ روزه</option>
+          </select>
+          <input id="oQty" type="number" value="1" min="1">
+        </div>
+        <input id="oRef" required placeholder="کد پیگیری واریز">
+        <textarea id="oNote" rows="3" placeholder="یادداشت (اختیاری)"></textarea>
+        <button class="btn big" type="submit" data-fa="ثبت سفارش" data-en="Submit order">ثبت سفارش</button>
+        <div id="orderOk" class="order-ok"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer id="ftr"></footer>
+<script src="app.js"></script>
+</body>
+</html>
