@@ -6,36 +6,63 @@
 <title>PRO | DailyFitBeat</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.pr-hero{position:relative;min-height:84vh;background:#f6f3ec url('img/hero-pro.jpg') center/cover no-repeat;display:flex;align-items:center;overflow:hidden;padding:110px 0 60px}
+.pr-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(to left,rgba(246,243,236,.97) 0%,rgba(246,243,236,.92) 45%,rgba(246,243,236,.35) 78%,rgba(246,243,236,.08) 100%)}
+.pr-in{position:relative;z-index:2;width:100%}
+.pr-text{max-width:560px;margin-inline-end:auto}
+.pr-text h1{color:#1e2b1c;font-size:clamp(30px,4.4vw,52px);font-weight:900}
+.pr-text h1 span{color:#2d6a35}
+.pr-text>p{color:#4d584d;line-height:2;margin:12px 0 16px}
+.checks{list-style:none;margin:16px 0}
+.checks li{padding:8px 0;font-size:14px;color:#3c4a3c}
+.checks li:before{content:"✔";color:#2d6a35;font-weight:900;margin-inline-end:10px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin:26px 0}
+.fcard{background:#fff;border-radius:20px;padding:24px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+.fcard .ic{width:56px;height:56px;margin:0 auto 12px;background:#e8f4e9;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.fcard b{display:block;margin-bottom:6px}
+.fcard p{color:#666;font-size:13px}
+.plan-tog{display:flex;gap:6px;background:#fff;border-radius:999px;padding:6px;width:max-content;margin:0 auto 22px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.plan-tog button{border:0;background:transparent;padding:8px 22px;border-radius:999px;font:inherit;cursor:pointer}
+.plan-tog button.on{background:#2d6a35;color:#fff;font-weight:700}
+.price-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;max-width:860px;margin:20px auto}
+.price-card{position:relative;background:#fff;border-radius:24px;padding:30px;box-shadow:0 4px 16px rgba(0,0,0,.06);text-align:center}
+.price-card.hot{background:#2d6a35;color:#fff;transform:scale(1.03)}
+.price-card h3{font-size:19px}
+.price-card .p{font-size:22px;font-weight:900;margin:12px 0}
+.price-card .p small{font-size:12px;font-weight:400}
+.price-card s.oldp{opacity:.6;font-size:13px}
+.price-card ul{list-style:none;text-align:right;margin:16px 0}
+.price-card li{padding:7px 0;border-bottom:1px dashed rgba(128,128,128,.3);font-size:13px}
+.ribbon{position:absolute;top:14px;inset-inline-end:-8px;background:#e9b949;color:#333;padding:4px 14px;border-radius:8px;font-size:12px;font-weight:800;transform:rotate(6deg)}
+</style>
 </head>
 <body data-page="pro">
 <header id="hdr"></header>
 
-<section><div class="container hero-split">
-  <div>
-    <h1>DailyFitBeat<br>PRO</h1>
-    <p>تجربه‌ای کامل و پیشرفته برای رسیدن به بهترین نتیجه در کوتاه‌ترین زمان.</p>
-    <ul class="checks">
-      <li>برنامه‌های غذایی شخصی و نامحدود</li>
-      <li>دستیار هوشمند تغذیه (AI)</li>
-      <li>برنامه‌ریزی هفتگی هوشمند</li>
-      <li>گزارش پیشرفت و تحلیل بدن</li>
-      <li>دسترسی ویژه به محتوای اختصاصی</li>
-    </ul>
-    <div class="hero-btns"><a class="btn" href="market.html#order">همین حالا عضو شوید</a></div>
-  </div>
-  <img src="img/hero-pro.jpg" alt="PRO">
-</div></section>
+<section class="pr-hero"><div class="container pr-in"><div class="pr-text">
+  <h1>DailyFitBeat<br><span>PRO</span></h1>
+  <p>تجربه‌ای کامل و پیشرفته برای رسیدن به بهترین نتیجه در کوتاه‌ترین زمان.</p>
+  <ul class="checks">
+    <li>برنامه‌های غذایی شخصی و نامحدود</li>
+    <li>دستیار هوشمند تغذیه (AI)</li>
+    <li>برنامه‌ریزی هفتگی هوشمند</li>
+    <li>گزارش پیشرفت و تحلیل بدن</li>
+    <li>دسترسی ویژه به محتوای اختصاصی</li>
+  </ul>
+  <div class="hero-btns"><a class="btn" href="market.html#order">همین حالا عضو شوید</a></div>
+</div></div></section>
 
 <section><div class="container">
   <div class="sec-head"><h2>امکانات PRO</h2></div>
   <div class="fgrid">
-    <div class="fcard"><div class="ic">📋</div><b>برنامه غذایی شخصی</b><p>برنامه غذایی ساده و شخصی‌سازی‌شده بر اساس هدف سالم و شرایط شما</p></div>
+    <div class="fcard"><div class="ic">📋</div><b>برنامه غذایی شخصی</b><p>برنامه غذایی ساده و شخصی‌سازی‌شده بر اساس هدف و شرایط شما</p></div>
     <div class="fcard"><div class="ic">🤖</div><b>دستیار هوشمند تغذیه</b><p>پیشنهادهای غذایی هوشمند بر اساس مواد موجود و نیازهای بدن</p></div>
     <div class="fcard"><div class="ic">🗓️</div><b>برنامه‌ریز هفتگی</b><p>برنامه‌ریزی دقیق هفتگی با کارت‌های غذایی و لیست هفتگی کامل</p></div>
     <div class="fcard"><div class="ic">🛒</div><b>لیست خرید هوشمند</b><p>لیست خرید خودکار بر اساس برنامه غذایی و بودجه شما</p></div>
     <div class="fcard"><div class="ic">☁️</div><b>ذخیره‌سازی نامحدود</b><p>ذخیره بی‌نهایت برنامه‌ها و رسپی‌ها در حساب کاربری</p></div>
     <div class="fcard"><div class="ic">📈</div><b>گزارش پیشرفت</b><p>نمودارها و گزارش‌های پیشرفت برای رسیدن به اهداف</p></div>
-    <div class="fcard"><div class="ic"></div><b>محتوای اختصاصی</b><p>دسترسی به محتوای ویژه و دستورهای اختصاصی</p></div>
+    <div class="fcard"><div class="ic">🥗</div><b>محتوای اختصاصی</b><p>دسترسی به محتوای ویژه و دستورهای اختصاصی</p></div>
     <div class="fcard"><div class="ic">🎧</div><b>پشتیبانی ویژه</b><p>پشتیبانی اختصاصی و مشاوره تغذیه برای اعضا</p></div>
   </div>
 </div></section>
