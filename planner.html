@@ -3,45 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="برنامه غذایی هفتگی DailyFitBeat — برنامه شخصی، لیست خرید خودکار و داشبورد هفتگی">
 <title>برنامه غذایی | DailyFitBeat</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.plan-form{background:#fff;border-radius:22px;padding:26px;box-shadow:0 4px 16px rgba(0,0,0,.06);display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;max-width:900px;margin:26px auto}
+.plan-form input,.plan-form select{padding:12px;border-radius:12px;border:1px solid #ccc;font:inherit}
+.plan-form .btn{grid-column:1/-1}
+.day-card{background:#fff;border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+.day-card h4{color:#2d6a35;margin-bottom:12px}
+.meal-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #e3e3e3;font-size:14px;flex-wrap:wrap}
+.meal-row b{color:#2d6a35}
+.plan-target{background:#e8f4e9;border-radius:16px;padding:16px;text-align:center;font-weight:700;color:#2d6a35;margin-bottom:20px}
+.shop-list{background:#fff;border-radius:20px;padding:22px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+.shop-list li{padding:6px 0;border-bottom:1px dashed #eee}
+</style>
 </head>
 <body data-page="planner">
 <header id="hdr"></header>
 
-<div class="page-head"><div class="container"><h1 data-fa="برنامه غذایی" data-en="Meal Plan">برنامه غذایی</h1><p data-fa="هفته‌ات رو هوشمند بچین" data-en="Plan your week smartly">هفته‌ات رو هوشمند بچین</p></div></div>
+<div class="page-head"><div class="container"><h1>برنامه غذایی</h1><p>هفته‌ات رو هوشمند بچین</p></div></div>
 
-<section id="planner">
-  <div class="container p-wrap">
-    <div class="p-info">
-      <h2 data-fa="هفته‌ات رو از همین امروز بچین" data-en="Plan your week today">هفته‌ات رو از همین امروز بچین</h2>
-      <ul>
-        <li data-fa="برنامه غذایی هفتگی شخصی‌سازی‌شده" data-en="Personalized weekly plan">برنامه غذایی هفتگی شخصی‌سازی‌شده</li>
-        <li data-fa="لیست خرید خودکار از رسپی‌هات" data-en="Auto shopping list">لیست خرید خودکار از رسپی‌هات</li>
-        <li data-fa="ذخیره علاقه‌مندی‌ها و پیشنهادهای هوشمند" data-en="Saved favorites & smart picks">ذخیره علاقه‌مندی‌ها و پیشنهادهای هوشمند</li>
-        <li data-fa="جایگزین هوشمند مواد غذایی" data-en="Smart ingredient substitution">جایگزین هوشمند مواد غذایی</li>
-      </ul>
-      <a class="btn big" href="pro.html" data-fa="برنامه غذایی من رو بساز" data-en="Build my plan">برنامه غذایی من رو بساز</a>
-    </div>
-    <div class="p-app rev">
-      <div class="p-day on"><b>شنبه</b><span>اوورنایت اوتس</span><span>فاخیتا مرغ</span><span>سوپ عدس</span></div>
-      <div class="p-day"><b>یکشنبه</b><span>کاسه ماست یونانی</span><span>ساندویچ مرغ و حمص</span><span>مرغ و بروکلی</span></div>
-      <div class="p-day"><b>دوشنبه</b><span>تست آووکادو</span><span>سالاد نخود</span><span>قلیه ماهی</span></div>
-    </div>
-  </div>
-</section>
-
-<section class="trust">
-  <div class="container">
-    <h2 data-fa="صرفه‌جویی در زمان، بدون تصمیم‌گیری روزانه" data-en="Save time, no daily decisions">صرفه‌جویی در زمان، بدون تصمیم‌گیری روزانه</h2>
-    <div class="trust-3"><b>برنامه هفتگی</b><b>لیست خرید</b><b>تنوع هوشمند</b></div>
-  </div>
-</section>
+<section><div class="container">
+  <form class="plan-form" id="planForm">
+    <select id="pSex"><option value="m">مرد</option><option value="f">زن</option></select>
+    <input id="pAge" type="number" placeholder="سن" value="28" min="12" max="80">
+    <input id="pH" type="number" placeholder="قد (سانتی‌متر)" value="175" min="120" max="220">
+    <input id="pW" type="number" placeholder="وزن (کیلوگرم)" value="75" min="35" max="180">
+    <select id="pAct"><option value="1.2">کم‌تحرک</option><option value="1.375">فعالیت سبک</option><option value="1.55" selected>فعالیت متوسط</option><option value="1.725">فعالیت زیاد</option></select>
+    <select id="pGoal"><option value="loss">کاهش وزن</option><option value="keep" selected>ثابت</option><option value="gain">افزایش وزن</option></select>
+    <button class="btn big" type="submit">برنامه غذایی من رو بساز 🍽️</button>
+  </form>
+  <div id="planOut"></div>
+</div></section>
 
 <footer id="ftr"></footer>
 <script src="app.js"></script>
+<script src="planner.js"></script>
 </body>
 </html>
