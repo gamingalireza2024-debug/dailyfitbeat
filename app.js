@@ -179,6 +179,7 @@ async function initDetail(){
   const el = $('#rd');
   if(!r){ el.innerHTML = '<p class="no-res">پیدا نشد</p>'; return; }
   document.title = r.name_fa + ' | DailyFitBeat';
+  if (window.DFB_setRecipeMeta) window.DFB_setRecipeMeta(r);
   const ings = Array.isArray(r.ingredients) ? r.ingredients : [];
   let favOn = false;
   if(sb && USER){ const { data } = await sb.from('favorites').select('id').eq('recipe_slug', r.slug).maybeSingle(); favOn = !!data; }
@@ -268,7 +269,7 @@ async function initAdmin(){
     const t = $('#npTitle').value.trim(), d = $('#npDesc').value.trim(), pr = +$('#npPrice').value;
     if(!t || !pr){ alert('نام و قیمت لازمه'); return; }
     await sb.from('products').insert({ title_fa: t, desc_fa: d, price_rial: pr, rating: 4.8 });
-    $('#npTitle').value = $('#npDesc').value = $('#npPrice').value = '';
+    $('#npTitle').value = $('#npDesc').value = '#npPrice').value = '';
     loadProdAdmin();
   };
 }
