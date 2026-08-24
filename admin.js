@@ -1,13 +1,15 @@
 (function () {
   if (document.body.dataset.page !== 'admin') return;
-  let sb = null;
+  let sb = null, started = false;
   const wait = setInterval(() => {
-    if (window.DFB && DFB.sb && DFB.user !== undefined) {
+    if (started || !window.DFB || !DFB.sb) return;
+    if (DFB.isAdmin()) {
+      started = true;
       clearInterval(wait);
       sb = DFB.sb;
-      if (DFB.isAdmin()) init();
+      init();
     }
-  }, 300);
+  }, 400);
 
   async function init() {
     document.querySelectorAll('.atab').forEach(b => b.onclick = () => {
