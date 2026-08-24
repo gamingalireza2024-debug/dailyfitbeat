@@ -13,14 +13,63 @@ body{padding-top:96px}
 .auth-chip:hover{background:#fff}
 .auth-chip.user-on{background:#e8f4e9;border-color:#2d6a35;color:#2d6a35;font-weight:700}
 .auth-chip.admin-on{background:#2d6a35;color:#fff;font-weight:700}
-/* بخش مزایای ورود */
-.benefits{background:linear-gradient(180deg,#f4f8f2,#e8f0e6);padding:60px 0}
-.ben-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:26px 0}
-.ben{background:#fff;border-radius:20px;padding:24px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.05)}
-.ben span{font-size:34px}
-.ben b{display:block;margin:10px 0 6px;font-size:17px}
-.ben p{color:#666;font-size:13px}
-.ben-cta{text-align:center}
+/* هیرو طرح‌دار */
+.hero-split{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:center;padding:44px 0}
+.hero-split img{width:100%;border-radius:26px;box-shadow:0 14px 40px rgba(20,40,20,.12)}
+.hero-split h1{font-size:clamp(26px,4vw,42px);font-weight:900;margin-bottom:12px}
+.hero-split p{color:#555;line-height:1.9}
+.hero-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+@media(max-width:900px){.hero-split{grid-template-columns:1fr}}
+/* کارت امکانات */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin:26px 0}
+.fcard{background:#fff;border-radius:20px;padding:24px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+.fcard .ic{width:56px;height:56px;margin:0 auto 12px;background:#e8f4e9;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.fcard b{display:block;margin-bottom:6px}
+.fcard p{color:#666;font-size:13px}
+/* چک‌لیست */
+.checks{list-style:none;margin:16px 0}
+.checks li{padding:8px 0;font-size:14px}
+.checks li:before{content:"✔";color:#2d6a35;font-weight:900;margin-inline-end:10px}
+/* ماکاپ موبایل */
+.phone{width:280px;margin:0 auto;background:#151a15;border-radius:38px;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.phone .scr{background:#fff;border-radius:28px;padding:20px;text-align:center}
+.donut{width:150px;height:150px;border-radius:50%;background:conic-gradient(#2d6a35 0 45%,#7fb069 45% 75%,#d9e7d0 75% 100%);margin:16px auto;position:relative}
+.donut:after{content:"1820";position:absolute;inset:24%;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#2d6a35}
+.mrow{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px dashed #eee}
+/* فروشگاه */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.pcard{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06);display:flex;flex-direction:column}
+.p-img{position:relative}
+.p-img img{width:100%;height:170px;object-fit:cover}
+.p-rate{position:absolute;top:10px;inset-inline-start:10px;background:#fff;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;color:#b8860b}
+.p-badge{position:absolute;top:10px;inset-inline-end:10px;background:#2d6a35;color:#fff;border-radius:999px;padding:3px 10px;font-size:11px}
+.p-body{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.p-body h4{font-size:15px}
+.p-body p{color:#666;font-size:12px;flex:1}
+.p-price{font-weight:800;color:#2d6a35}
+.p-price s{color:#999;font-weight:400;font-size:11px;margin-inline-start:8px}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:26px 0}
+.cats div{background:#fff;border-radius:18px;padding:20px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.cats .ic{font-size:30px}
+.trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:34px 0}
+.trust div{background:#fff;border-radius:16px;padding:18px;text-align:center}
+.trust .ic{font-size:26px}
+.trust b{display:block;margin:8px 0 4px}
+.trust p{color:#777;font-size:12px}
+/* پلان‌ها */
+.plan-tog{display:flex;gap:6px;background:#fff;border-radius:999px;padding:6px;width:max-content;margin:0 auto 22px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.plan-tog button{border:0;background:transparent;padding:8px 22px;border-radius:999px;font:inherit;cursor:pointer}
+.plan-tog button.on{background:#2d6a35;color:#fff;font-weight:700}
+.price-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;max-width:860px;margin:20px auto}
+.price-card{position:relative;background:#fff;border-radius:24px;padding:30px;box-shadow:0 4px 16px rgba(0,0,0,.06);text-align:center}
+.price-card.hot{background:#2d6a35;color:#fff;transform:scale(1.03)}
+.price-card h3{font-size:19px}
+.price-card .p{font-size:22px;font-weight:900;margin:12px 0}
+.price-card .p small{font-size:12px;font-weight:400}
+.price-card s.oldp{opacity:.6;font-size:13px}
+.price-card ul{list-style:none;text-align:right;margin:16px 0}
+.price-card li{padding:7px 0;border-bottom:1px dashed rgba(128,128,128,.3);font-size:13px}
+.ribbon{position:absolute;top:14px;inset-inline-end:-8px;background:#e9b949;color:#333;padding:4px 14px;border-radius:8px;font-size:12px;font-weight:800;transform:rotate(6deg)}
 /* مودال */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200}
 .modal-box{background:#fff;border-radius:20px;padding:26px;width:min(420px,90%);text-align:center}
