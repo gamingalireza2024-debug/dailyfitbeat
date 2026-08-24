@@ -14,8 +14,12 @@ const countryFa = reg => 'غذای ' + (ADJ[reg] || reg || 'ایرانی');
 const NAV = [['home','index.html','خانه','Home'],['recipes','recipes.html','رسپی‌ها','Recipes'],['planner','planner.html','برنامه غذایی','Meal Plan'],['market','market.html','فیت مارکت','Fit Market'],['pro','pro.html','PRO','PRO']];
 window.DFB = { get sb(){ return sb; }, get user(){ return USER; }, isAdmin: () => isAdmin() };
 
-async function loadAdminList(){
-  try { const r = await fetch('/api/db?t=admin_check'); const d = await r.json(); ADMIN_EMAILS = Array.isArray(d) ? d.map(x => x.email) : []; } catch(e){}
+async function loadAdminList(token){
+  try {
+    const r = await fetch('/api/db?t=admin_check', token ? { headers: { Authorization: 'Bearer ' + token } } : {});
+    const d = await r.json();
+    ADMIN_EMAILS = Array.isArray(d) ? d.map(x => x.email) : [];
+  } catch(e){}
 }
 function isAdmin(){ return !!USER && ADMIN_EMAILS.includes(USER.email); }
 function doLogin(){ if(sb) sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } }); }
@@ -69,10 +73,16 @@ async function bootAuth(){
   try {
     const m = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
     sb = m.createClient(SB_URL, ANON);
-    sb.auth.onAuthStateChange((ev, sess) => { USER = (sess && sess.user) || null; injectHeader(); if(USER) ensureProfile(); initAdmin(); initUser(); });
+    sb.auth.onAuthStateChange(async (ev, sess) => {
+      USER = (sess && sess.user) || null;
+      if(USER) await loadAdminList(sess.access_token);
+      injectHeader();
+      if(USER) ensureProfile();
+      initAdmin(); initUser();
+    });
     const { data } = await sb.auth.getSession();
     USER = (data.session && data.session.user) || null;
-    await loadAdminList();
+    if(USER) await loadAdminList(data.session.access_token);
     if(USER) ensureProfile();
     injectHeader();
     initAdmin(); initUser();
@@ -125,12 +135,14 @@ function renderChips(){
 function initFinder(){
   if(!$('#chips')) return;
   loadChips();
-  $('#ingAdd').onclick = () => {
+  const add = $('#ingAdd');
+  if(add) add.onclick = () => {
     const v = $('#ingInput').value.trim(); if(!v) return;
     const m = ING.find(i => i.fa.includes(v) || i.en.toLowerCase().includes(v.toLowerCase()));
     if(m && !have.includes(m.key)){ have.push(m.key); renderChips(); $('#ingInput').value=''; }
   };
-  $('#goBtn').onclick = async () => {
+  const go = $('#goBtn');
+  if(go) go.onclick = async () => {
     if(!have.length) return alert('اول چند تا ماده رو انتخاب کن');
     const r = await fetch('/api/db?t=match&a=' + have.join(','));
     const data = await r.json();
@@ -140,6 +152,7 @@ function initFinder(){
 async function loadPopular(){
   const el = $('#popularCards'); if(!el) return;
   const r = await fetch('/api/db?t=popular'); const data = await r.json();
+  if(!Array.isArray(data)) return;
   el.innerHTML = card(data[0], true) + data.slice(1).map(x => card(x)).join('');
 }
 let curCat = 'all', curGoal = 'all';
@@ -214,7 +227,7 @@ async function initMarket(){
     <div class="p-img"><img src="${p.image || 'img/hero-store.jpg'}" alt="${p.title_fa}"><span class="p-rate">★ ${Number(p.rating).toLocaleString('fa-IR')}</span>${p.badge ? `<span class="p-badge">${p.badge}</span>` : ''}</div>
     <div class="p-body"><h4>${p.title_fa}</h4><p>${p.desc_fa || ''}</p>
     <div class="p-price">${rial(p.price_rial)}${p.old_price_rial ? `<s>${rial(p.old_price_rial)}</s>` : ''}</div>
-    <button class="btn p-cart" data-t="${p.title_fa}">رژی خرید</button></div>
+    <button class="btn p-cart" data-t="${p.title_fa}">🛒 خرید</button></div>
   </div>`).join('');
   const sel = $('#oProduct');
   if(sel) sel.innerHTML = data.map(p => `<option>${p.title_fa}</option>`).join('');
@@ -250,7 +263,8 @@ async function initAdmin(){
   await loadOrders(); await loadProdAdmin(); await loadPlansAdmin();
   $('#csvBtn').onclick = exportCSV;
   $('#filterSt').onchange = loadOrders;
-  $('#npAdd').onclick = async () => {
+  const np = $('#npAdd');
+  if(np) np.onclick = async () => {
     const t = $('#npTitle').value.trim(), d = $('#npDesc').value.trim(), pr = +$('#npPrice').value;
     if(!t || !pr){ alert('نام و قیمت لازمه'); return; }
     await sb.from('products').insert({ title_fa: t, desc_fa: d, price_rial: pr, rating: 4.8 });
@@ -347,7 +361,7 @@ async function initUser(){
   $('#uName').textContent = (prof && prof.name) || (USER.user_metadata && USER.user_metadata.full_name) || '—';
   $('#uEmail').textContent = USER.email;
   $('#uPhone').textContent = (prof && prof.phone) || '—';
-  $('#phEdit').onclick = phoneModal;
+  const pe = $('#phEdit'); if(pe) pe.onclick = phoneModal;
   const o = await (await fetch('/api/db?t=my_orders&uid=' + USER.id)).json();
   $('#myOrders').innerHTML = (Array.isArray(o) && o.length) ? o.map(x => `<div class="my-order"><div><b>#${x.id}</b> — ${x.product}<br><small>${new Date(x.created_at).toLocaleString('fa-IR')}</small></div><span class="status-pill status-${x.status}">${{'new':'جدید','paid':'پرداخت شده','sent':'ارسال شده'}[x.status] || x.status}</span></div>`).join('') : '<p>هنوز سفارشی نداری</p>';
   const f = await (await fetch('/api/db?t=my_favs&uid=' + USER.id)).json();
