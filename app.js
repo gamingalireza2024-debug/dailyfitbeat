@@ -6,16 +6,18 @@ const page = document.body.dataset.page;
 const SB_URL = "https://hvqchqqlfcjxsohxywbd.supabase.co";
 const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cWNocXFsZmNqeHNvaHh5d2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTI3ODYsImV4cCI6MjEwMjk4ODc4Nn0.yJursP15upa_-nE8P41l4uUssITBK319dzfaa2tbJ1k";
 let sb = null, USER = null, ADMIN_EMAILS = [];
+const rial = n => (Number(n) || 0).toLocaleString('fa-IR') + ' ریال';
 const FALL = { iranian:'img/iranian.jpg', salad:'img/salad.jpg', sandwich:'img/sandwich.jpg', breakfast:'img/breakfast.jpg', soup:'img/soup.jpg', sauce:'img/soup.jpg', main:'img/hero.jpg' };
 const diff = t => t <= 20 ? 'آسان' : t <= 60 ? 'متوسط' : 'مفصل';
 const ADJ = {'ایران':'ایرانی','گیلان':'گیلانی','ژاپن':'ژاپنی','تایلند':'تایلندی','اسپانیا':'اسپانیایی','مراکش':'مراکشی','فرانسه':'فرانسوی','ایتالیا':'ایتالیایی','چین':'چینی','هند':'هندی','ترکیه':'ترکی','مکزیک':'مکزیکی','انگلستان':'انگلیسی','یونان':'یونانی','کره':'کره‌ای','لبنان':'لبنانی'};
 const countryFa = reg => 'غذای ' + (ADJ[reg] || reg || 'ایرانی');
 const NAV = [['home','index.html','خانه','Home'],['recipes','recipes.html','رسپی‌ها','Recipes'],['planner','planner.html','برنامه غذایی','Meal Plan'],['market','market.html','فیت مارکت','Fit Market'],['pro','pro.html','PRO','PRO']];
+window.DFB = { get sb(){ return sb; }, get user(){ return USER; }, isAdmin: () => isAdmin() };
 
 async function loadAdminList(){
   try { const r = await fetch('/api/db?t=admin_check'); const d = await r.json(); ADMIN_EMAILS = Array.isArray(d) ? d.map(x => x.email) : []; } catch(e){}
 }
-function isAdmin(){ return USER && ADMIN_EMAILS.includes(USER.email); }
+function isAdmin(){ return !!USER && ADMIN_EMAILS.includes(USER.email); }
 function doLogin(){ if(sb) sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } }); }
 
 function injectHeader(){
@@ -40,11 +42,11 @@ function renderAuth(){
     document.getElementById('loginBtn').onclick = doLogin;
   } else {
     const name = (USER.user_metadata && USER.user_metadata.name ? USER.user_metadata.name.split(' ')[0] : 'پنل من');
-    let html = `<a href="user.html" class="auth-chip user-on">👤 ${name}</a>`;
-    if(isAdmin()) html += `<a href="admin.html" class="auth-chip admin-on">👑 ادمین</a>`;
+    let html = `<a href="user.html" class="auth-chip user-on" title="پنل کاربری">👤 ${name}</a>`;
+    if(isAdmin()) html += `<a href="admin.html" class="auth-chip admin-on" title="پنل ادمین">👑 ادمین</a>`;
     html += `<button id="logoutBtn" class="auth-chip">خروج</button>`;
     box.innerHTML = html;
-    document.getElementById('logoutBtn').onclick = async () => { await sb.signOut(); USER = null; location.reload(); };
+    document.getElementById('logoutBtn').onclick = async () => { await sb.signOut(); location.reload(); };
   }
 }
 async function ensureProfile(){
@@ -63,33 +65,19 @@ function phoneModal(){
     document.getElementById('phModal').remove();
   };
 }
-function injectBenefits(){
-  if(page !== 'home') return;
-  const inner = USER
-    ? `<div class="ben-cta"><a href="user.html" class="btn big">👤 پنل کاربری تو آماده‌ست</a></div>`
-    : `<div class="ben-cta"><button id="bigLogin" class="btn big">ورود با گوگل — ۳ ثانیه</button></div>`;
-  $('#ftr').insertAdjacentHTML('beforebegin', `<section class="benefits"><div class="container">
-  <div class="sec-head"><h2 data-fa="با حساب کاربری، بیشتر حال کن" data-en="More with an account">${lang==='fa'?'با حساب کاربری، بیشتر حال کن':'More with an account'}</h2><p data-fa="بدون رمز و ثبت‌نام طولانی — فقط یه کلیک با گوگل" data-en="One click with Google">${lang==='fa'?'بدون رمز و ثبت‌نام طولانی — فقط یه کلیک با گوگل':'One click with Google'}</p></div>
-  <div class="ben-grid">
-    <div class="ben"><span>❤️</span><b data-fa="علاقه‌مندی‌ها" data-en="Favorites">${lang==='fa'?'علاقه‌مندی‌ها':'Favorites'}</b><p data-fa="رسپی‌های موردعلاقه‌ت رو ذخیره کن" data-en="Save recipes you love">${lang==='fa'?'رسپی‌های موردعلاقه‌ت رو ذخیره کن':'Save recipes you love'}</p></div>
-    <div class="ben"><span>📦</span><b data-fa="پیگیری سفارش" data-en="Order tracking">${lang==='fa'?'پیگیری سفارش':'Order tracking'}</b><p data-fa="وضعیت خریدت رو لحظه‌ای ببین" data-en="Track your orders live">${lang==='fa'?'وضعیت خریدت رو لحظه‌ای ببین':'Track your orders live'}</p></div>
-    <div class="ben"><span>🍽️</span><b data-fa="برنامه شخصی" data-en="Personal plan">${lang==='fa'?'برنامه شخصی':'Personal plan'}</b><p data-fa="برنامه غذاییت برات ذخیره می‌شه" data-en="Your meal plan is saved">${lang==='fa'?'برنامه غذاییت برات ذخیره می‌شه':'Your meal plan is saved'}</p></div>
-  </div>${inner}</div></section>`);
-  const bl = document.getElementById('bigLogin');
-  if(bl) bl.onclick = doLogin;
-}
-(async () => {
+async function bootAuth(){
   try {
     const m = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
     sb = m.createClient(SB_URL, ANON);
-    await loadAdminList();
+    sb.auth.onAuthStateChange((ev, sess) => { USER = (sess && sess.user) || null; injectHeader(); if(USER) ensureProfile(); initAdmin(); initUser(); });
     const { data } = await sb.auth.getSession();
     USER = (data.session && data.session.user) || null;
+    await loadAdminList();
     if(USER) ensureProfile();
-    injectHeader(); injectBenefits();
+    injectHeader();
     initAdmin(); initUser();
   } catch(e) { console.log('auth off', e); }
-})();
+}
 function injectFooter(){
   $('#ftr').innerHTML = `<div class="container f-cols">
   <div><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><p>غذای سالم که واقعاً خوشمزه به نظر می‌رسه.</p></div>
@@ -104,7 +92,7 @@ function toggleLang(){
   document.documentElement.lang = lang;
   document.documentElement.dir = lang==='fa' ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-fa]').forEach(el => el.textContent = el.dataset[lang]);
-  injectHeader(); injectBenefits();
+  injectHeader();
 }
 function bindScroll(){ window.onscroll = () => $('#hdr').classList.toggle('scrolled', scrollY > 40); }
 
@@ -218,15 +206,94 @@ function initOrder(){
     f.reset();
   };
 }
+async function initMarket(){
+  const grid = $('#prodGrid'); if(!grid) return;
+  const data = await (await fetch('/api/db?t=products')).json();
+  if(!Array.isArray(data)) return;
+  grid.innerHTML = data.map(p => `<div class="pcard">
+    <div class="p-img"><img src="${p.image || 'img/hero-store.jpg'}" alt="${p.title_fa}"><span class="p-rate">★ ${Number(p.rating).toLocaleString('fa-IR')}</span>${p.badge ? `<span class="p-badge">${p.badge}</span>` : ''}</div>
+    <div class="p-body"><h4>${p.title_fa}</h4><p>${p.desc_fa || ''}</p>
+    <div class="p-price">${rial(p.price_rial)}${p.old_price_rial ? `<s>${rial(p.old_price_rial)}</s>` : ''}</div>
+    <button class="btn p-cart" data-t="${p.title_fa}">رژی خرید</button></div>
+  </div>`).join('');
+  const sel = $('#oProduct');
+  if(sel) sel.innerHTML = data.map(p => `<option>${p.title_fa}</option>`).join('');
+  document.querySelectorAll('.p-cart').forEach(b => b.onclick = () => {
+    const s = $('#oProduct'); if(s) s.value = b.dataset.t;
+    document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+  });
+}
+async function initPro(){
+  const box = $('#planCards'); if(!box) return;
+  const data = await (await fetch('/api/db?t=plans')).json();
+  if(!Array.isArray(data)) return;
+  box.innerHTML = data.map(pl => `<div class="price-card${pl.key === 'yearly' ? ' hot' : ''}" data-key="${pl.key}">
+    ${pl.key === 'yearly' ? '<span class="ribbon">پیشنهاد ویژه</span>' : ''}
+    <h3>${pl.title_fa}</h3>
+    <div class="p">${rial(pl.price_rial)}<small> / ${pl.period}</small></div>
+    ${pl.old_price_rial ? `<s class="oldp">${rial(pl.old_price_rial)}</s>` : ''}
+    <ul>${(pl.features || []).map(f => `<li>✔ ${f}</li>`).join('')}</ul>
+    <a class="btn" href="market.html#order">انتخاب پلان</a>
+  </div>`).join('');
+  document.querySelectorAll('.plan-tog button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.plan-tog button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    document.querySelectorAll('#planCards .price-card').forEach(c => c.classList.toggle('hot', c.dataset.key === b.dataset.key));
+  });
+}
 async function initAdmin(){
   if(page !== 'admin') return;
   if(!USER){ $('#adminStat').textContent = 'لطفاً اول وارد شو'; return; }
   if(!isAdmin()){ $('#adminStat').textContent = '❌ دسترسی ادمین ندارید'; return; }
   $('#adminStat').textContent = `خوش آمدی، ${USER.email}`;
   $('#adminBody').style.display = 'block';
-  await loadOrders();
+  await loadOrders(); await loadProdAdmin(); await loadPlansAdmin();
   $('#csvBtn').onclick = exportCSV;
   $('#filterSt').onchange = loadOrders;
+  $('#npAdd').onclick = async () => {
+    const t = $('#npTitle').value.trim(), d = $('#npDesc').value.trim(), pr = +$('#npPrice').value;
+    if(!t || !pr){ alert('نام و قیمت لازمه'); return; }
+    await sb.from('products').insert({ title_fa: t, desc_fa: d, price_rial: pr, rating: 4.8 });
+    $('#npTitle').value = $('#npDesc').value = $('#npPrice').value = '';
+    loadProdAdmin();
+  };
+}
+async function loadProdAdmin(){
+  const data = await (await fetch('/api/db?t=products')).json();
+  if(!Array.isArray(data)) return;
+  $('#prodBody').innerHTML = data.map(p => `<tr>
+    <td><b>${p.title_fa}</b></td>
+    <td><input class="prIn" data-id="${p.id}" data-f="price_rial" type="number" value="${p.price_rial}" style="width:130px;padding:8px;border-radius:10px;border:1px solid #ccc"></td>
+    <td><input class="prIn" data-id="${p.id}" data-f="old_price_rial" type="number" value="${p.old_price_rial || ''}" style="width:130px;padding:8px;border-radius:10px;border:1px solid #ccc"></td>
+    <td>${p.rating}</td>
+    <td><input type="checkbox" class="prAct" data-id="${p.id}" ${p.active ? 'checked' : ''}></td>
+    <td><button class="btn small prSave" data-id="${p.id}">ذخیره</button></td>
+  </tr>`).join('');
+  document.querySelectorAll('.prSave').forEach(b => b.onclick = async () => {
+    const id = b.dataset.id;
+    const upd = {};
+    document.querySelectorAll(`.prIn[data-id="${id}"]`).forEach(i => { upd[i.dataset.f] = i.value === '' ? null : +i.value; });
+    const act = document.querySelector(`.prAct[data-id="${id}"]`);
+    upd.active = act.checked;
+    await sb.from('products').update(upd).eq('id', id);
+    alert('ذخیره شد ✅');
+  });
+}
+async function loadPlansAdmin(){
+  const data = await (await fetch('/api/db?t=plans')).json();
+  if(!Array.isArray(data)) return;
+  $('#plansBody').innerHTML = data.map(p => `<tr>
+    <td><b>${p.title_fa}</b> (${p.period})</td>
+    <td><input class="plIn" data-id="${p.id}" data-f="price_rial" type="number" value="${p.price_rial}" style="width:130px;padding:8px;border-radius:10px;border:1px solid #ccc"></td>
+    <td><input class="plIn" data-id="${p.id}" data-f="old_price_rial" type="number" value="${p.old_price_rial || ''}" style="width:130px;padding:8px;border-radius:10px;border:1px solid #ccc"></td>
+    <td><button class="btn small plSave" data-id="${p.id}">ذخیره</button></td>
+  </tr>`).join('');
+  document.querySelectorAll('.plSave').forEach(b => b.onclick = async () => {
+    const id = b.dataset.id, upd = {};
+    document.querySelectorAll(`.plIn[data-id="${id}"]`).forEach(i => { upd[i.dataset.f] = i.value === '' ? null : +i.value; });
+    await sb.from('plans').update(upd).eq('id', id);
+    alert('ذخیره شد ✅');
+  });
 }
 async function loadOrders(){
   const r = await fetch('/api/db?t=all_orders');
@@ -293,9 +360,9 @@ async function initUser(){
 }
 async function loadAll(){ const r = await fetch('/api/db?t=all'); ALL = await r.json(); }
 
-injectHeader(); injectFooter(); bindScroll(); injectBenefits();
+injectHeader(); injectFooter(); bindScroll(); bootAuth();
 document.documentElement.lang = lang;
 document.documentElement.dir = lang==='fa' ? 'rtl' : 'ltr';
-initSearch(); initFinder(); initRecipes(); initDetail(); initOrder();
+initSearch(); initFinder(); initRecipes(); initDetail(); initOrder(); initMarket(); initPro();
 if(page === 'home'){ loadPopular(); loadAll(); }
 if(page === 'recipes'){ loadAll().then(renderRecipes); }
