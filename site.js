@@ -7,7 +7,7 @@
     url: location.protocol + "//" + location.hostname,
     locale: "fa_IR",
     social: { instagram: "https://instagram.com/dailyfitbeat" },
-    defaultImage: "/img/hero-home.jpg",
+    defaultImage: "/img/og-default.jpg",
     defaultDesc: "رسپی‌های سالم ایرانی و جهانی، برنامه غذایی هوشمند، فیت مارکت و دستیار AI تغذیه"
   };
   window.SITE = SITE;
@@ -67,7 +67,6 @@
     document.head.appendChild(s);
   }
 
-  // برای صفحه رسپی (صدا زده می‌شه از app.js)
   window.DFB_setRecipeMeta = function (r) {
     setMeta({ title: r.name_fa, desc: r.desc_fa || (r.name_fa + " — رسپی سالم با ارزش غذایی دقیق"), path: "/recipe.html?slug=" + r.slug, image: r.image || SITE.defaultImage, type: "article" });
   };
