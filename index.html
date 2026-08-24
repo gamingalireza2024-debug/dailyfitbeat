@@ -3,106 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="DailyFitBeat — غذای سالم که واقعاً خوشمزه است؛ رسپی هوشمند، برنامه غذایی و فیت مارکت">
-<title>DailyFitBeat | خوب بخور، بهتر زندگی کن</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>دیلی بیت | DailyFitBeat — خوب بخور، بهتر زندگی کن</title>
+<meta name="description" content="رسپی‌های سالم ایرانی و جهانی، برنامه غذایی هوشمند و فیت مارکت">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.hero{background:linear-gradient(rgba(10,15,10,.45),rgba(10,15,10,.55)),url('img/hero.jpg') center/cover;min-height:76vh;display:flex;align-items:center}
+.hero h1{color:#fff;font-size:clamp(30px,5vw,56px);font-weight:900}
+.hero h1 span{color:#8fd18f}
+.hero p{color:#eee;max-width:600px;line-height:2;margin:14px 0 24px}
+.search-sec{margin-top:-34px;position:relative;z-index:5}
+.search-box{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.10);padding:14px 18px;display:flex;gap:10px;align-items:center}
+.search-box input{border:0;outline:0;flex:1;font:inherit;font-size:14px;background:transparent}
+.search-res{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:14px}
+.finder-row{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.finder-row input{flex:1;min-width:200px;padding:12px;border-radius:12px;border:1px solid #ccc;font:inherit}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.no-res{color:#777}
+</style>
 </head>
 <body data-page="home">
 <header id="hdr"></header>
 
-<section class="hero">
-  <div class="hero-bg"><img src="img/hero-wide.jpg" alt=""></div>
-  <div class="hero-inner">
-    <h1 data-fa="خوب بخور، بهتر زندگی کن" data-en="Eat well, live better">خوب بخور، <span>بهتر زندگی کن</span></h1>
-    <p data-fa="رسپی‌های سالم و اشتهابرانگیز، برنامه غذایی هوشمند و دستیاری که می‌دونه توی یخچالت چی داری" data-en="Delicious healthy recipes, smart meal plans, and a fridge assistant">رسپی‌های سالم و اشتهابرانگیز، برنامه غذایی هوشمند و دستیاری که می‌دونه توی یخچالت چی داری</p>
-    <div class="hero-cta">
-      <a class="btn big" href="#finder" data-fa="غذای بعدی من رو پیدا کن" data-en="Find my next meal">غذای بعدی من رو پیدا کن</a>
-      <a class="btn ghost-light" href="recipes.html" data-fa="دیدن رسپی‌ها" data-en="Browse recipes">دیدن رسپی‌ها</a>
-    </div>
+<section class="hero"><div class="container">
+  <h1>خوب بخور، <span>بهتر زندگی کن</span></h1>
+  <p>رسپی‌های سالم و اشتهابرانگیز، برنامه غذایی هوشمند و دستیاری که می‌دونه توی یخچالت چی داری</p>
+  <div class="hero-btns">
+    <a class="btn big" href="#finder">غذای بعدی من رو پیدا کن</a>
+    <a class="btn ghost" href="recipes.html">دیدن رسپی‌ها</a>
   </div>
-</section>
+</div></section>
 
-<section id="search" class="search-sec">
-  <div class="container">
-    <div class="search-bar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="searchInput" placeholder="جستجو: اسم غذا، ماده اولیه، شهر، دسته... مثلاً: بادمجان، گیلان، پروتئین">
-    </div>
-    <div id="searchRes" class="cards"></div>
-  </div>
-</section>
+<section class="search-sec"><div class="container">
+  <div class="search-box"><span>🔍</span><input id="searchInput" placeholder="جستجو: اسم غذا، ماده اولیه، شهر، دسته... مثلاً: بادمجان، گیلان، پروتئین"></div>
+  <div id="searchRes" class="search-res"></div>
+</div></section>
 
-<section id="finder">
-  <div class="container">
-    <div class="sec-head"><h2 data-fa="توی یخچالت چی داری؟" data-en="What's in your fridge?">توی یخچالت چی داری؟</h2>
-    <p data-fa="موادت رو انتخاب کن؛ DailyFitBeat می‌گه با اینا چی می‌شه پخت" data-en="Pick ingredients, we'll tell you what to cook">موادت رو انتخاب کن؛ DailyFitBeat می‌گه با اینا چی می‌شه پخت</p></div>
-    <div class="finder-wrap">
-      <div class="finder-box rev">
-        <div class="ing-add"><input id="ingInput" placeholder="مثلاً: قارچ، جو، اسفناج..."><button id="ingAdd" class="btn small">افزودن</button></div>
-        <div id="chips" class="chips"></div>
-        <button id="goBtn" class="btn big" data-fa="با اینا چی بپزم؟" data-en="What can I cook?">با اینا چی بپزم؟</button>
-        <div id="results" class="cards"></div>
-      </div>
-      <div class="finder-art rev">
-        <img src="img/fridge.jpg" alt="">
-        <span class="fa-chip a">۵۳+ رسپی</span>
-        <span class="fa-chip b">پیشنهاد هوشمند</span>
-      </div>
-    </div>
+<section id="finder"><div class="container">
+  <div class="sec-head"><h2>توی یخچالت چی داری؟</h2><p>موادت رو انتخاب کن؛ DailyFitBeat می‌گه با اینا چی میشه پخت</p></div>
+  <div id="chips"></div>
+  <div class="finder-row">
+    <input id="ingInput" placeholder="ماده دیگه بنویس (مثلاً بادمجان)">
+    <button id="ingAdd" class="btn ghost">افزودن</button>
+    <button id="goBtn" class="btn">چی بپزم؟ 🍳</button>
   </div>
-</section>
+  <div id="results" class="cards"></div>
+</div></section>
 
-<section class="goals">
-  <div class="container">
-    <div class="sec-head"><h2 data-fa="بر اساس هدفت انتخاب کن" data-en="Choose by your goal">بر اساس هدفت انتخاب کن</h2></div>
-    <div class="goal-grid">
-      <a class="goal tall" href="recipes.html"><span class="g-t">کاهش وزن</span><span class="g-s">سبک و سیرکننده</span></a>
-      <a class="goal g2" href="recipes.html"><span class="g-t">پروتئین بالا</span><span class="g-s">عضله‌ساز</span></a>
-      <a class="goal g3" href="recipes.html"><span class="g-t">سریع و آسان</span><span class="g-s">زیر ۲۰ دقیقه</span></a>
-      <a class="goal g4" href="recipes.html"><span class="g-t">غذای ایرانی</span><span class="g-s">نسخه سالم محبوب‌ها</span></a>
-      <a class="goal g5" href="recipes.html"><span class="g-t">کم‌کالری</span><span class="g-s">انتخاب‌های سبک‌تر</span></a>
-    </div>
-  </div>
-</section>
-
-<section id="popular">
-  <div class="container">
-    <div class="sec-head row"><h2 data-fa="رسپی‌های محبوب" data-en="Popular recipes">رسپی‌های محبوب</h2><a class="link" href="recipes.html" data-fa="همه رسپی‌ها" data-en="All recipes">همه رسپی‌ها</a></div>
-    <div id="popularCards" class="ed-grid"></div>
-  </div>
-</section>
-
-<section class="reels">
-  <div class="container">
-    <div class="sec-head row"><h2 data-fa="از آشپزخانه DailyFitBeat" data-en="From our kitchen">از آشپزخانه DailyFitBeat</h2><a class="link" href="https://instagram.com/dailyfitbeat">فالو در اینستاگرام</a></div>
-    <div class="reel-grid">
-      <a class="reel r1" href="https://instagram.com/dailyfitbeat">
-        <span class="ig-badge"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></span>
-        <span class="ig-user">@dailyfitbeat</span>
-        <div style="position:relative;z-index:2;width:100%"><div class="ig-actions"><span>♥ ۲.۴K</span><span>💬 ۸۶</span><span>↗ ۳۱۰</span></div><span class="rt">سالمون با حمص — شام ۲۵ دقیقه‌ای</span></div>
-      </a>
-      <a class="reel r2" href="https://instagram.com/dailyfitbeat">
-        <span class="ig-badge"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></span>
-        <span class="ig-user">@dailyfitbeat</span>
-        <div style="position:relative;z-index:2;width:100%"><div class="ig-actions"><span>♥ ۱.۸K</span><span>💬 ۵۴</span><span>↗ ۲۰۵</span></div><span class="rt">۵ ساندویچ سالم با یه خرید</span></div>
-      </a>
-      <a class="reel r3" href="https://instagram.com/dailyfitbeat">
-        <span class="ig-badge"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></span>
-        <span class="ig-user">@dailyfitbeat</span>
-        <div style="position:relative;z-index:2;width:100%"><div class="ig-actions"><span>♥ ۳.۱K</span><span>💬 ۱۲۰</span><span>↗ ۴۰۰</span></div><span class="rt">زرشک‌پلو، نسخه رژیمی</span></div>
-      </a>
-    </div>
-  </div>
-</section>
-
-<section class="trust">
-  <div class="container">
-    <h2 data-fa="غذای سالم قرار نیست خسته‌کننده باشه" data-en="Healthy food shouldn't be boring">غذای سالم قرار نیست خسته‌کننده باشه</h2>
-    <div class="trust-3"><b>خوشمزه</b><b>ساده</b><b>قابل اجرا</b></div>
-  </div>
-</section>
+<section><div class="container">
+  <div class="sec-head"><h2>محبوب‌های این هفته</h2></div>
+  <div id="popularCards" class="cards"></div>
+</div></section>
 
 <footer id="ftr"></footer>
 <script src="app.js"></script>
