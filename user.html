@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل کاربری | DailyFitBeat</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="user">
+<header id="hdr"></header>
+
+<div class="page-head"><div class="container"><h1>👤 پنل کاربری</h1><p id="userStat">در حال بارگذاری...</p></div></div>
+
+<section id="userBody" style="display:none">
+  <div class="container">
+    <div class="user-card">
+      <h3>اطلاعات من</h3>
+      <p><b>نام:</b> <span id="uName"></span></p>
+      <p><b>ایمیل:</b> <span id="uEmail"></span></p>
+      <p><b>موبایل:</b> <span id="uPhone"></span> <button class="chip" id="phEdit">ویرایش</button></p>
+    </div>
+    <div class="user-section">
+      <h3>📦 سفارش‌های من</h3>
+      <div id="myOrders"></div>
+    </div>
+    <div class="user-section">
+      <h3>❤️ رسپی‌های موردعلاقه</h3>
+      <div id="myFavs" class="fav-grid"></div>
+    </div>
+  </div>
+</section>
+
+<footer id="ftr"></footer>
+<script src="app.js"></script>
+</body>
+</html>
