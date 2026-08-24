@@ -6,18 +6,42 @@
 <title>فیت مارکت | DailyFitBeat</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.mk-hero{position:relative;min-height:82vh;background:#f6f3ec url('img/hero-store.jpg') center/cover no-repeat;display:flex;align-items:center;overflow:hidden;padding:110px 0 60px}
+.mk-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(to left,rgba(246,243,236,.97) 0%,rgba(246,243,236,.92) 45%,rgba(246,243,236,.35) 78%,rgba(246,243,236,.08) 100%)}
+.mk-in{position:relative;z-index:2;width:100%}
+.mk-text{max-width:560px;margin-inline-end:auto}
+.mk-text h1{color:#1e2b1c;font-size:clamp(28px,4vw,48px);font-weight:900}
+.mk-text p{color:#4d584d;line-height:2.1;margin:14px 0 24px}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:26px 0}
+.cats div{background:#fff;border-radius:18px;padding:20px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.cats .ic{font-size:30px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.pcard{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06);display:flex;flex-direction:column}
+.p-img{position:relative}
+.p-img img{width:100%;height:170px;object-fit:cover}
+.p-rate{position:absolute;top:10px;inset-inline-start:10px;background:#fff;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;color:#b8860b}
+.p-badge{position:absolute;top:10px;inset-inline-end:10px;background:#2d6a35;color:#fff;border-radius:999px;padding:3px 10px;font-size:11px}
+.p-body{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.p-body h4{font-size:15px}
+.p-body p{color:#666;font-size:12px;flex:1}
+.p-price{font-weight:800;color:#2d6a35}
+.p-price s{color:#999;font-weight:400;font-size:11px;margin-inline-start:8px}
+.trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:34px 0}
+.trust div{background:#fff;border-radius:16px;padding:18px;text-align:center}
+.trust .ic{font-size:26px}
+.trust b{display:block;margin:8px 0 4px}
+.trust p{color:#777;font-size:12px}
+</style>
 </head>
 <body data-page="market">
 <header id="hdr"></header>
 
-<section><div class="container hero-split">
-  <div>
-    <h1>فروشگاه محصولات</h1>
-    <p>محصولات و برنامه‌های اختصاصی برای سبک زندگی سالم‌تر — یک‌بار خرید، یک عمر استفاده.</p>
-    <div class="hero-btns"><button class="btn" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">مشاهده‌ی محصولات</button></div>
-  </div>
-  <img src="img/hero-store.jpg" alt="فروشگاه محصولات">
-</div></section>
+<section class="mk-hero"><div class="container mk-in"><div class="mk-text">
+  <h1>فروشگاه محصولات</h1>
+  <p>محصولات و برنامه‌های اختصاصی برای سبک زندگی سالم‌تر — یک‌بار خرید، یک عمر استفاده.</p>
+  <div class="hero-btns"><button class="btn" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">مشاهده‌ی محصولات</button></div>
+</div></div></section>
 
 <section><div class="container">
   <div class="sec-head"><h2>دسته‌بندی محصولات</h2></div>
