@@ -25,3 +25,22 @@ body{padding-top:96px}
 .heart.on{color:#e33}
 .rd-img{position:relative}
 @media(max-width:800px){#hdr{flex-wrap:wrap;top:8px !important}body{padding-top:150px}}
+/* پنل‌ها */
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.admin-stats .st{background:rgba(255,255,255,.75);border-radius:18px;padding:18px;text-align:center;border:1px solid rgba(0,0,0,.05)}
+.admin-stats .st b{display:block;font-size:26px;color:#2d6a35}
+.admin-stats .st span{font-size:13px;color:#555}
+.admin-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.admin-tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+.admin-tbl th{background:#2d6a35;color:#fff;padding:12px;font-size:13px;text-align:right}
+.admin-tbl td{padding:10px 12px;border-bottom:1px solid #eee;font-size:13px;word-break:break-word}
+.admin-tbl select{padding:6px 10px;border-radius:10px;border:1px solid #ccc}
+.user-card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 4px 16px rgba(0,0,0,.05);margin-bottom:20px}
+.user-card p{margin:10px 0}
+.user-section{background:#fff;border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+.fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.my-order{background:#f7f9f5;padding:12px;border-radius:12px;margin-bottom:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.status-pill{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.status-new{background:#fff3cd;color:#856404}
+.status-paid{background:#cce5ff;color:#004085}
+.status-sent{background:#d4edda;color:#155724}
