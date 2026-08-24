@@ -1,10 +1,16 @@
+document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="glass.css">');
 const $ = s => document.querySelector(s);
 let lang = localStorage.getItem('dfb-lang') || 'fa';
 let have = [], ING = [], ALL = [];
 const page = document.body.dataset.page;
+const SB_URL = "https://hvqchqqlfcjxsohxywbd.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cWNocXFsZmNqeHNvaHh5d2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTI3ODYsImV4cCI6MjEwMjk4ODc4Nn0.yJursP15upa_-nE8P41l4uUssITBK319dzfaa2tbJ1k";
+let sb = null, USER = null;
 const FALL = { iranian:'img/iranian.jpg', salad:'img/salad.jpg', sandwich:'img/sandwich.jpg', breakfast:'img/breakfast.jpg', soup:'img/soup.jpg', sauce:'img/soup.jpg', main:'img/hero.jpg' };
 const diff = t => t <= 20 ? 'آسان' : t <= 60 ? 'متوسط' : 'مفصل';
 const tagFa = t => ({'iranian':'ایرانی','high-protein':'پروتئین بالا','quick':'سریع','weight-loss':'کاهش وزن','vegetarian':'گیاهی','low-calorie':'کم‌کالری'})[t] || 'سالم';
+const ADJ = {'ایران':'ایرانی','گیلان':'گیلانی','اصفهان':'ایرانی','شیراز':'ایرانی','تهران':'ایرانی','ژاپن':'ژاپنی','تایلند':'تایلندی','اسپانیا':'اسپانیایی','مراکش':'مراکشی','فرانسه':'فرانسوی','ایتالیا':'ایتالیایی','چین':'چینی','هند':'هندی','ترکیه':'ترکی','مکزیک':'مکزیکی','انگلستان':'انگلیسی','یونان':'یونانی','کره':'کره‌ای','لبنان':'لبنانی'};
+const countryFa = reg => 'غذای ' + (ADJ[reg] || reg || 'ایرانی');
 const NAV = [['home','index.html','خانه','Home'],['recipes','recipes.html','رسپی‌ها','Recipes'],['planner','planner.html','برنامه غذایی','Meal Plan'],['market','market.html','فیت مارکت','Fit Market'],['pro','pro.html','PRO','PRO']];
 
 function injectHeader(){
@@ -12,6 +18,7 @@ function injectHeader(){
   $('#hdr').innerHTML = `<a class="logo" href="index.html"><img src="img/logo.png" alt="DailyFitBeat"></a>
   <nav>${links}</nav>
   <div class="hactions">
+    <span id="authBox"></span>
     <button id="langBtn" class="lang">${lang==='fa'?'EN':'فا'}</button>
     <a class="btn small" href="pro.html" data-fa="شروع رایگان" data-en="Start Free">${lang==='fa'?'شروع رایگان':'Start Free'}</a>
     <button id="burger" class="burger" aria-label="menu"><span></span><span></span><span></span></button>
@@ -19,7 +26,42 @@ function injectHeader(){
   <div id="mnav" class="mnav">${links}</div>`;
   $('#burger').onclick = () => $('#mnav').classList.toggle('open');
   $('#langBtn').onclick = toggleLang;
+  renderAuth();
 }
+function renderAuth(){
+  const box = document.getElementById('authBox'); if(!box) return;
+  box.innerHTML = USER ? `<button id="logoutBtn" class="auth-chip">👤 ${(USER.user_metadata && USER.user_metadata.name ? USER.user_metadata.name.split(' ')[0] : 'کاربر')} | خروج</button>` : `<button id="loginBtn" class="auth-chip">ورود با گوگل</button>`;
+  const lb = document.getElementById('loginBtn');
+  if(lb) lb.onclick = () => sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } });
+  const lo = document.getElementById('logoutBtn');
+  if(lo) lo.onclick = async () => { await sb.signOut(); USER = null; renderAuth(); };
+}
+async function ensureProfile(){
+  if(!sb || !USER) return;
+  const { data } = await sb.from('profiles').select('phone,name').eq('id', USER.id).maybeSingle();
+  if(!data){ await sb.from('profiles').insert({ id: USER.id, name: (USER.user_metadata && USER.user_metadata.full_name) || '' }); phoneModal(); }
+  else if(!data.phone){ phoneModal(); }
+}
+function phoneModal(){
+  if(document.getElementById('phModal')) return;
+  document.body.insertAdjacentHTML('beforeend', `<div id="phModal" class="modal"><div class="modal-box"><h3>تکمیل پروفایل</h3><p>برای پیگیری سفارش‌ها، شماره موبایلت رو وارد کن</p><input id="phInput" type="tel" maxlength="11" placeholder="09xxxxxxxxx"><button id="phSave" class="btn">ذخیره</button></div></div>`);
+  document.getElementById('phSave').onclick = async () => {
+    const v = document.getElementById('phInput').value.trim();
+    if(!/^09[0-9]{9}$/.test(v)) { alert('شماره معتبر نیست'); return; }
+    await sb.from('profiles').update({ phone: v }).eq('id', USER.id);
+    document.getElementById('phModal').remove();
+  };
+}
+(async () => {
+  try {
+    const m = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    sb = m.createClient(SB_URL, ANON);
+    const { data } = await sb.auth.getSession();
+    USER = (data.session && data.session.user) || null;
+    if(USER) ensureProfile();
+    renderAuth();
+  } catch(e) { console.log('auth off'); }
+})();
 function injectFooter(){
   $('#ftr').innerHTML = `<div class="container f-cols">
   <div><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><p>غذای سالم که واقعاً خوشمزه به نظر می‌رسه.</p></div>
@@ -55,8 +97,8 @@ function card(r, big){
   return `<a class="card${big?' big':''}" href="recipe.html?slug=${r.slug}">
   <div class="c-img"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" loading="lazy"></div>
   <div class="c-body"><h3>${r.name_fa}</h3>
-  <div class="c-meta"><span>${r.time_min} دقیقه</span><span>${r.kcal} کالری</span><span>پروتئین ${r.protein}g</span></div>
-  <div class="c-tags"><i>${diff(r.time_min)}</i><i>${tagFa(r.tags && r.tags[0])}</i></div>
+  <div class="c-meta"><span>پخت: ${r.time_min} دقیقه</span><span>${r.kcal} کالری</span><span>پروتئین ${r.protein}g</span></div>
+  <div class="c-tags"><i>${diff(r.time_min)}</i><i>${countryFa(r.region)}</i></div>
   </div></a>`;
 }
 async function loadChips(){
@@ -106,32 +148,46 @@ function initRecipes(){
   });
   window.onLang = renderRecipes;
 }
-function initDetail(){
+async function initDetail(){
   if(page !== 'recipe') return;
   const slug = new URLSearchParams(location.search).get('slug');
-  loadAll().then(() => {
-    const r = ALL.find(x => x.slug === slug);
-    const el = $('#rd');
-    if(!r){ el.innerHTML = '<p class="no-res">پیدا نشد</p>'; return; }
-    document.title = r.name_fa + ' | DailyFitBeat';
-    const ings = Array.isArray(r.ingredients) ? r.ingredients : [];
-    el.innerHTML = `<div class="container rd-wrap">
-    <div class="rd-img"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" alt="${r.name_fa}"></div>
-    <div class="rd-info">
-      <span class="rd-region">${r.region || 'ایران'}</span>
-      <h1>${r.name_fa}</h1><p class="rd-en">${r.name_en}</p>
-      <p class="rd-desc">${r.desc_fa || ''}</p>
-      <div class="rd-stats"><div><b>${r.time_min}</b><span>دقیقه</span></div><div><b>${r.kcal}</b><span>کالری</span></div><div><b>${r.protein}</b><span>پروتئین</span></div></div>
-      <ul class="ing-list">${ings.map(i => `<li>${i.fa}<span>${i.q}</span></li>`).join('')}</ul>
-      <div class="f-cta"><a class="btn" href="planner.html">افزودن به برنامه</a><a class="btn ghost" href="recipes.html">همه رسپی‌ها</a></div>
-    </div></div>`;
-  });
+  await loadAll();
+  const r = ALL.find(x => x.slug === slug);
+  const el = $('#rd');
+  if(!r){ el.innerHTML = '<p class="no-res">پیدا نشد</p>'; return; }
+  document.title = r.name_fa + ' | DailyFitBeat';
+  const ings = Array.isArray(r.ingredients) ? r.ingredients : [];
+  let favOn = false;
+  if(sb && USER){ const { data } = await sb.from('favorites').select('id').eq('recipe_slug', r.slug).maybeSingle(); favOn = !!data; }
+  el.innerHTML = `<div class="container rd-wrap">
+  <div class="rd-img"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" alt="${r.name_fa}"><button id="favBtn" class="heart${favOn?' on':''}" title="علاقه‌مندی">♥</button></div>
+  <div class="rd-info">
+    <span class="rd-region">${countryFa(r.region)}</span>
+    <h1>${r.name_fa}</h1><p class="rd-en">${r.name_en}</p>
+    <p class="rd-desc">${r.desc_fa || ''}</p>
+    <div class="rd-stats">
+      <div><b>${r.time_min}</b><span>زمان پخت (دقیقه)</span></div>
+      <div><b>${r.kcal}</b><span>کالری</span></div>
+      <div><b>${r.protein}</b><span>پروتئین (g)</span></div>
+      ${r.carbs != null ? `<div><b>${r.carbs}</b><span>کربوهیدرات (g)</span></div>` : ''}
+      ${r.fat != null ? `<div><b>${r.fat}</b><span>چربی (g)</span></div>` : ''}
+      ${r.fiber != null ? `<div><b>${r.fiber}</b><span>فیبر (g)</span></div>` : ''}
+    </div>
+    <ul class="ing-list">${ings.map(i => `<li>${i.fa}<span>${i.q}</span></li>`).join('')}</ul>
+    <div class="f-cta"><a class="btn" href="planner.html">افزودن به برنامه</a><a class="btn ghost" href="recipes.html">همه رسپی‌ها</a></div>
+  </div></div>`;
+  document.getElementById('favBtn').onclick = async () => {
+    if(!USER){ alert('اول با گوگل وارد شو'); return; }
+    if(favOn){ await sb.from('favorites').delete().eq('user_id', USER.id).eq('recipe_slug', r.slug); favOn = false; }
+    else { await sb.from('favorites').insert({ user_id: USER.id, recipe_slug: r.slug }); favOn = true; }
+    document.getElementById('favBtn').classList.toggle('on', favOn);
+  };
 }
 function initOrder(){
   const f = $('#orderForm'); if(!f) return;
   f.onsubmit = async e => {
     e.preventDefault();
-    const o = { name: $('#oName').value, phone: $('#oPhone').value, email: $('#oEmail').value, product: $('#oProduct').value, note: $('#oNote').value, ref: $('#oRef').value };
+    const o = { name: $('#oName').value, phone: $('#oPhone').value, email: $('#oEmail').value, product: $('#oProduct').value, note: $('#oNote').value, ref: $('#oRef').value, user_id: USER ? USER.id : null };
     const r = await fetch('/api/db?t=order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(o) });
     const res = await r.json();
     const ok = $('#orderOk');
