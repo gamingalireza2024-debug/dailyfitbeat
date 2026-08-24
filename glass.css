@@ -103,30 +103,3 @@ body{padding-top:96px}
 .status-paid{background:#cce5ff;color:#004085}
 .status-sent{background:#d4edda;color:#155724}
 @media(max-width:800px){#hdr{flex-wrap:wrap;top:8px !important}body{padding-top:150px}}
-/* هیرو تمام‌عرض و بزرگ */
-.hero-light,.pl-hero{position:relative;overflow:hidden;min-height:86vh;display:flex;align-items:center;padding:90px 0 70px}
-.hero-light .hl-img,.pl-hero .ph-img{position:absolute;inset:0;z-index:0}
-.hero-light .hl-img img,.pl-hero .ph-img img{width:100%;height:100%;object-fit:cover;border-radius:0;box-shadow:none}
-.hero-light::before,.pl-hero::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(to left,rgba(246,243,236,.97) 0%,rgba(246,243,236,.88) 38%,rgba(246,243,236,.30) 75%,rgba(246,243,236,.06) 100%)}
-.hero-light .container,.pl-hero .container{position:relative;z-index:2}
-.hl-in{grid-template-columns:1fr !important;max-width:640px;margin-inline-end:auto}
-.ph-in{grid-template-columns:1fr 1fr !important}
-.hero-split{position:relative;min-height:82vh;grid-template-columns:1fr !important;padding:90px 0}
-.hero-split>img{position:absolute;left:50%;top:0;transform:translateX(-50%);width:100vw;height:100%;object-fit:cover;z-index:0;border-radius:0;box-shadow:none}
-.hero-split::before{content:"";position:absolute;left:50%;top:0;transform:translateX(-50%);width:100vw;height:100%;z-index:1;background:linear-gradient(to left,rgba(246,243,236,.97) 0%,rgba(246,243,236,.88) 40%,rgba(246,243,236,.25) 78%,rgba(246,243,236,.06) 100%)}
-.hero-split>*{position:relative;z-index:2}
-.hero-split>img{z-index:0}
-.hero-split>div:first-child{max-width:640px;margin-inline-end:auto}
-/* چیپس‌های شناورِ چرخان دور بشقاب */
-.float-chip{position:absolute !important;left:50% !important;top:50% !important;right:auto;bottom:auto;inset-inline-start:auto;inset-inline-end:auto;animation:orbit 26s linear infinite;will-change:transform}
-.fc1{--a:0deg;--r:250px}
-.fc2{--a:90deg;--r:280px;animation-duration:32s}
-.fc3{--a:180deg;--r:240px;animation-duration:36s}
-.fc4{--a:270deg;--r:290px;animation-duration:40s}
-@keyframes orbit{
-  from{transform:rotate(var(--a)) translateX(var(--r)) rotate(calc(var(--a) * -1))}
-  to{transform:rotate(calc(var(--a) + 360deg)) translateX(var(--r)) rotate(calc((var(--a) + 360deg) * -1))}
-}
-@media(max-width:900px){
-  .fc1{--r:130px}.fc2{--r:150px}.fc3{--r:120px}.fc4{--r:160px}
-}
