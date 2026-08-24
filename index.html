@@ -8,10 +8,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.hero{background:linear-gradient(rgba(10,15,10,.45),rgba(10,15,10,.55)),url('img/hero.jpg') center/cover;min-height:76vh;display:flex;align-items:center}
-.hero h1{color:#fff;font-size:clamp(30px,5vw,56px);font-weight:900}
-.hero h1 span{color:#8fd18f}
-.hero p{color:#eee;max-width:600px;line-height:2;margin:14px 0 24px}
+.hero-light{background:#f6f3ec;padding:70px 0 60px}
+.hl-in{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.hl-text h1{color:#1e2b1c;font-size:clamp(30px,4.6vw,54px);font-weight:900;line-height:1.5}
+.hl-text h1 span{color:#2d6a35}
+.hl-text p{color:#5a655a;max-width:520px;line-height:2.1;margin:16px 0 26px}
+.hl-img{position:relative}
+.hl-img img{width:100%;border-radius:30px;box-shadow:0 20px 60px rgba(30,43,28,.14)}
+.stat-card{position:absolute;top:26px;inset-inline-start:-14px;background:#fff;border-radius:18px;padding:14px 20px;display:flex;gap:22px;box-shadow:0 10px 30px rgba(30,43,28,.12)}
+.stat-card div{text-align:center}
+.stat-card b{display:block;font-size:17px;color:#1e2b1c}
+.stat-card span{font-size:11px;color:#77807a}
+.float-chip{position:absolute;background:#fff;border-radius:999px;padding:10px 16px;font-size:12px;font-weight:700;color:#3c4a3c;box-shadow:0 8px 24px rgba(30,43,28,.12)}
+.fc1{top:-16px;inset-inline-end:40px}
+.fc2{top:38%;inset-inline-end:-18px}
+.fc3{bottom:16%;inset-inline-start:-16px}
+.fc4{bottom:-16px;inset-inline-end:30%}
+@media(max-width:900px){.hl-in{grid-template-columns:1fr}.stat-card{inset-inline-start:10px}}
 .search-sec{margin-top:-34px;position:relative;z-index:5}
 .search-box{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.10);padding:14px 18px;display:flex;gap:10px;align-items:center}
 .search-box input{border:0;outline:0;flex:1;font:inherit;font-size:14px;background:transparent}
@@ -25,12 +38,26 @@
 <body data-page="home">
 <header id="hdr"></header>
 
-<section class="hero"><div class="container">
-  <h1>خوب بخور، <span>بهتر زندگی کن</span></h1>
-  <p>رسپی‌های سالم و اشتهابرانگیز، برنامه غذایی هوشمند و دستیاری که می‌دونه توی یخچالت چی داری</p>
-  <div class="hero-btns">
-    <a class="btn big" href="#finder">غذای بعدی من رو پیدا کن</a>
-    <a class="btn ghost" href="recipes.html">دیدن رسپی‌ها</a>
+<section class="hero-light"><div class="container hl-in">
+  <div class="hl-text">
+    <h1>خوب بخور،<br><span>بهتر زندگی کن</span></h1>
+    <p>رسپی‌های سالم و اشتهابرانگیز، برنامه غذایی هوشمند و دستیار AI که هر روز همراهتوست.</p>
+    <div class="hero-btns">
+      <a class="btn big" href="#finder">غذای بعدی من رو پیدا کن</a>
+      <a class="btn ghost" href="recipes.html">دیدن رسپی‌ها</a>
+    </div>
+  </div>
+  <div class="hl-img">
+    <img src="img/hero-home.jpg" alt="غذای سالم">
+    <div class="stat-card">
+      <div><b>۳۰ min</b><span>زمان پخت</span></div>
+      <div><b>۵۲۰</b><span>کیلو کالری</span></div>
+      <div><b>۴۲ g</b><span>پروتئین</span></div>
+    </div>
+    <span class="float-chip fc1">🌿 پروتئین بالا</span>
+    <span class="float-chip fc2">🍃 کم کالری</span>
+    <span class="float-chip fc3">🌱 غذای واقعی</span>
+    <span class="float-chip fc4">⏱ سریع و آسان</span>
   </div>
 </div></section>
 
