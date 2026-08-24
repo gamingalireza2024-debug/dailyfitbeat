@@ -22,7 +22,7 @@ async function sendMail(o, id) {
 
 export default async function handler(req, res) {
   const t = req.query.t || "";
-  if (t === "ping") { res.status(200).json({ v: 12 }); return; }
+  if (t === "ping") { res.status(200).json({ v: 13 }); return; }
   let out = [];
   try {
     if (t === "ingredients") {
@@ -47,7 +47,9 @@ export default async function handler(req, res) {
       const mail = await sendMail(b, id);
       out = { id, tg, mail };
     } else if (t === "admin_check") {
-      out = await (await fetch(SB_URL + "/rest/v1/admins?select=email", { headers: h })).json();
+      const auth = req.headers.authorization;
+      const hh = auth ? { apikey: KEY, Authorization: auth } : h;
+      out = await (await fetch(SB_URL + "/rest/v1/admins?select=email", { headers: hh })).json();
     } else if (t === "all_orders") {
       out = await (await fetch(SB_URL + "/rest/v1/orders?select=*&order=created_at.desc", { headers: h })).json();
     } else if (t === "set_status") {
