@@ -225,7 +225,7 @@ async function initMarket(){
   const data = await (await fetch('/api/db?t=products')).json();
   if(!Array.isArray(data)) return;
   grid.innerHTML = data.map(p => `<div class="pcard">
-    <div class="p-img"><img src="${p.image || 'img/hero-store.jpg'}" alt="${p.title_fa}"><span class="p-rate">★ ${Number(p.rating).toLocaleString('fa-IR')}</span>${p.badge ? `<span class="p-badge">${p.badge}</span>` : ''}</div>
+       <div class="p-img"><img src="${p.image || 'img/hero-store.jpg'}" alt="${p.title_fa}"><span class="p-rate">★ ${Number(p.rating).toLocaleString('fa-IR')}</span>${p.off_percent ? `<span class="p-badge" style="background:#d33">🔥 ${Number(p.off_percent).toLocaleString('fa-IR')}٪ تخفیف</span>` : (p.badge ? `<span class="p-badge">${p.badge}</span>` : '')}</div>
     <div class="p-body"><h4>${p.title_fa}</h4><p>${p.desc_fa || ''}</p>
     <div class="p-price">${rial(p.price_rial)}${p.old_price_rial ? `<s>${rial(p.old_price_rial)}</s>` : ''}</div>
     <button class="btn p-cart" data-t="${p.title_fa}">🛒 خرید</button></div>
