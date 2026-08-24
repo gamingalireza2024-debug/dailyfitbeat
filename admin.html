@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل ادمین | DailyFitBeat</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="admin">
+<header id="hdr"></header>
+
+<div class="page-head"><div class="container"><h1>👑 پنل مدیریت</h1><p id="adminStat">در حال بررسی دسترسی...</p></div></div>
+
+<section id="adminBody" style="display:none">
+  <div class="container">
+    <div class="admin-stats" id="statsBox"></div>
+    <div class="admin-bar">
+      <button class="btn" id="csvBtn">📥 خروجی اکسل (همه شماره‌ها)</button>
+      <select id="filterSt" class="chip">
+        <option value="all">همه سفارش‌ها</option>
+        <option value="new">جدید</option>
+        <option value="paid">پرداخت شده</option>
+        <option value="sent">ارسال شده</option>
+      </select>
+    </div>
+    <table class="admin-tbl">
+      <thead><tr><th>کد</th><th>تاریخ</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>محصول</th><th>کد واریز</th><th>وضعیت</th><th></th></tr></thead>
+      <tbody id="ordersBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<footer id="ftr"></footer>
+<script src="app.js"></script>
+</body>
+</html>
