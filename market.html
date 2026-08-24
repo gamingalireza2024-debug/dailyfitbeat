@@ -3,50 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="فیت مارکت DailyFitBeat — برنامه‌های غذایی آماده، پک‌های رسپی و ثبت سفارش آسان">
 <title>فیت مارکت | DailyFitBeat</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="market">
 <header id="hdr"></header>
 
-<div class="page-head"><div class="container"><h1 data-fa="فیت مارکت" data-en="Fit Market">فیت مارکت</h1><p data-fa="محصولات دیجیتال DailyFitBeat — یک‌بار خرید، یک عمر استفاده" data-en="Digital products, one-time purchase">محصولات دیجیتال DailyFitBeat — یک‌بار خرید، یک عمر استفاده</p></div></div>
-
-<section>
-  <div class="container">
-    <div class="prod-grid">
-      <div class="prod"><b data-fa="برنامه ۷ روزه" data-en="7-Day Plan">برنامه ۷ روزه</b><p data-fa="شروع سبک با برنامه کامل صبحانه، ناهار، شام + لیست خرید" data-en="Light start with full breakfast, lunch, dinner + shopping list">شروع سبک با برنامه کامل صبحانه، ناهار، شام + لیست خرید</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
-      <div class="prod"><b data-fa="پک پروتئین بالا" data-en="High Protein Pack">پک پروتئین بالا</b><p data-fa="۲۰ رسپی پروتئینی برای عضله‌سازی و سیری طولانی" data-en="20 protein recipes for muscle building">۲۰ رسپی پروتئینی برای عضله‌سازی و سیری طولانی</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
-      <div class="prod"><b data-fa="۳۰ شام سالم" data-en="30 Healthy Dinners">۳۰ شام سالم</b><p data-fa="۳۰ شام کم‌کالری و سریع برای شب‌های شلوغ" data-en="30 low-calorie quick dinners">۳۰ شام کم‌کالری و سریع برای شب‌های شلوغ</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
-      <div class="prod"><b data-fa="۳۰ غذای ایرانی سالم" data-en="30 Healthy Iranian Dishes">۳۰ غذای ایرانی سالم</b><p data-fa="نسخه سالم محبوب‌ترین‌های سفره ایرانی، از قورمه تا فسنجان" data-en="Healthy versions of Iranian classics">نسخه سالم محبوب‌ترین‌های سفره ایرانی، از قورمه تا فسنجان</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
-      <div class="prod"><b data-fa="پخت هفتگی ۷ روزه" data-en="7-Day Meal Prep">پخت هفتگی ۷ روزه</b><p data-fa="هفته‌ات رو یک‌بار بپز: برنامه پخت، مقدارها و لیست خرید" data-en="Cook once a week: plan, portions, shopping list">هفته‌ات رو یک‌بار بپز: برنامه پخت، مقدارها و لیست خرید</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
-      <div class="prod"><b data-fa="برنامه ۲۱ روزه" data-en="21-Day Plan">برنامه ۲۱ روزه</b><p data-fa="سه هفته برنامه کامل برای تغییر واقعی عادت‌های غذایی" data-en="Three full weeks to change eating habits">سه هفته برنامه کامل برای تغییر واقعی عادت‌های غذایی</p><span class="price">قیمت: به‌زودی</span><a class="btn" href="#order">ثبت سفارش</a></div>
-    </div>
+<section><div class="container hero-split">
+  <div>
+    <h1>فروشگاه محصولات</h1>
+    <p>محصولات و برنامه‌های اختصاصی برای سبک زندگی سالم‌تر — یک‌بار خرید، یک عمر استفاده.</p>
+    <div class="hero-btns"><button class="btn" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">مشاهده‌ی محصولات</button></div>
   </div>
-</section>
+  <img src="img/hero-store.jpg" alt="فروشگاه محصولات">
+</div></section>
+
+<section><div class="container">
+  <div class="sec-head"><h2>دسته‌بندی محصولات</h2></div>
+  <div class="cats">
+    <div><div class="ic">🎁</div><b>پکیج‌های ویژه</b></div>
+    <div><div class="ic">📚</div><b>کتاب‌های الکترونیکی</b></div>
+    <div><div class="ic">👜</div><b>کیف کارت</b></div>
+    <div><div class="ic">👨🍳</div><b>دستورهای اختصاصی</b></div>
+    <div><div class="ic">📅</div><b>برنامه‌های ویژه</b></div>
+  </div>
+</div></section>
+
+<section id="products"><div class="container">
+  <div class="sec-head"><h2>محصولات پرفروش</h2></div>
+  <div class="pgrid" id="prodGrid"></div>
+</div></section>
+
+<section><div class="container">
+  <div class="trust">
+    <div><div class="ic">🎧</div><b>پشتیبانی 24/7</b><p>پاسخگویی شبانه‌روزی</p></div>
+    <div><div class="ic">🚚</div><b>ارسال سریع</b><p>به سراسر کشور</p></div>
+    <div><div class="ic">🛡️</div><b>پرداخت امن</b><p>درگاه پرداخت معتبر</p></div>
+    <div><div class="ic">✅</div><b>ضمانت کیفیت</b><p>کیفیت را تضمین می‌کنیم</p></div>
+  </div>
+</div></section>
 
 <section id="order" class="order-sec">
   <div class="container">
-    <div class="sec-head"><h2 data-fa="ثبت سفارش" data-en="Place your order">ثبت سفارش</h2><p data-fa="کارت‌به‌کارت سریع، بدون دردسر" data-en="Simple card-to-card payment">کارت‌به‌کارت سریع، بدون دردسر</p></div>
+    <div class="sec-head"><h2>ثبت سفارش</h2><p>کارت‌به‌کارت سریع، بدون دردسر</p></div>
     <div class="order-wrap">
       <div class="pay-card">
-        <h3 data-fa="روش پرداخت" data-en="Payment">روش پرداخت</h3>
+        <h3>روش پرداخت</h3>
         <p>۱. محصولت رو انتخاب کن<br>۲. مبلغ رو به کارت زیر واریز کن<br>۳. کد پیگیری رو توی فرم بنویس<br>۴. محصول به ایمیلت ارسال می‌شه</p>
         <div class="pay-num">6037-9911-0000-0000</div>
-        <p data-fa="به نام: (نام صاحب کارت — به‌زودی)" data-en="Account holder: coming soon">به نام: (نام صاحب کارت — به‌زودی)</p>
+        <p>به نام: (نام صاحب کارت — به‌زودی)</p>
       </div>
       <form id="orderForm" class="order-form">
         <input id="oName" required placeholder="نام و نام خانوادگی">
         <input id="oPhone" type="tel" inputmode="numeric" required pattern="09[0-9]{9}" maxlength="11" title="شماره موبایل ایرانی معتبر وارد کن (مثال: 09123456789)" placeholder="09xxxxxxxxx (اجباری)">
         <input id="oEmail" type="email" required placeholder="ایمیل (اجباری — محصول و تأییدیه به همین ایمیل می‌رسه)">
-        <select id="oProduct">
-          <option>برنامه ۷ روزه</option><option>پک پروتئین بالا</option><option>۳۰ شام سالم</option><option>۳۰ غذای ایرانی سالم</option><option>پخت هفتگی ۷ روزه</option><option>برنامه ۲۱ روزه</option>
-        </select>
+        <select id="oProduct"></select>
         <input id="oRef" required placeholder="کد پیگیری واریز (اجباری)">
         <textarea id="oNote" rows="3" placeholder="یادداشت (اختیاری)"></textarea>
-        <button class="btn big" type="submit" data-fa="ثبت سفارش" data-en="Submit order">ثبت سفارش</button>
+        <button class="btn big" type="submit">ثبت سفارش</button>
         <div id="orderOk" class="order-ok"></div>
       </form>
     </div>
