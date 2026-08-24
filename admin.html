@@ -4,10 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>پنل ادمین | DailyFitBeat</title>
-<meta name="description" content="پنل مدیریت DailyFitBeat">
 <meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.atabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.atab{border:0;background:#fff;border-radius:14px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.atab.on{background:#2d6a35;color:#fff}
+.apane{display:none}
+.admin-tbl input,.admin-tbl textarea{width:120px;padding:8px;border-radius:10px;border:1px solid #ccc;font:inherit;font-size:12px}
+.admin-tbl textarea{width:220px;height:60px}
+.admin-tbl .imgin{width:180px;direction:ltr}
+.del-btn{background:#d33;color:#fff;border:0;border-radius:10px;padding:8px 12px;cursor:pointer;font:inherit}
+.add-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.add-form input,.add-form textarea{padding:10px;border-radius:10px;border:1px solid #ccc;font:inherit;font-size:13px}
+</style>
 </head>
 <body data-page="admin">
 <header id="hdr"></header>
@@ -16,48 +27,71 @@
 
 <section id="adminBody" style="display:none">
   <div class="container">
-    <div class="admin-stats" id="statsBox"></div>
-    <div class="admin-bar">
-      <button class="btn" id="csvBtn">📥 خروجی اکسل (همه شماره‌ها)</button>
-      <select id="filterSt" class="chip">
-        <option value="all">همه سفارش‌ها</option>
-        <option value="new">جدید</option>
-        <option value="paid">پرداخت شده</option>
-        <option value="sent">ارسال شده</option>
-      </select>
+    <div class="atabs">
+      <button class="atab on" data-t="orders">📦 سفارش‌ها</button>
+      <button class="atab" data-t="prods">🛍️ محصولات</button>
+      <button class="atab" data-t="plans">💎 پلان‌های PRO</button>
     </div>
-    <table class="admin-tbl">
-      <thead><tr><th>کد</th><th>تاریخ</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>محصول</th><th>کد واریز</th><th>وضعیت</th><th></th></tr></thead>
-      <tbody id="ordersBody"></tbody>
-    </table>
 
-    <div class="user-section" style="margin-top:26px">
-      <h3>🛍️ مدیریت محصولات فروشگاه</h3>
+    <div class="apane" id="pane-orders" style="display:block">
+      <div class="admin-stats" id="statsBox"></div>
+      <div class="admin-bar">
+        <button class="btn" id="csvBtn">📥 خروجی اکسل (همه شماره‌ها)</button>
+        <select id="filterSt" class="chip">
+          <option value="all">همه سفارش‌ها</option>
+          <option value="new">جدید</option>
+          <option value="paid">پرداخت شده</option>
+          <option value="sent">ارسال شده</option>
+        </select>
+      </div>
       <table class="admin-tbl">
-        <thead><tr><th>محصول</th><th>قیمت (ریال)</th><th>قیمت قدیم</th><th>امتیاز</th><th>فعال</th><th></th></tr></thead>
-        <tbody id="prodBody"></tbody>
+        <thead><tr><th>کد</th><th>تاریخ</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>محصول</th><th>کد واریز</th><th>وضعیت</th><th></th></tr></thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+    </div>
+
+    <div class="apane" id="pane-prods">
+      <table class="admin-tbl">
+        <thead><tr><th>محصول</th><th>قیمت (ریال)</th><th>قیمت قدیم</th><th>تخفیف ٪</th><th>امتیاز</th><th>تصویر</th><th>فعال</th><th></th><th></th></tr></thead>
+        <tbody id="prodBody2"></tbody>
       </table>
       <h4 style="margin:16px 0 8px">➕ محصول جدید</h4>
-      <div class="admin-bar">
-        <input id="npTitle" placeholder="نام محصول" style="padding:10px;border-radius:10px;border:1px solid #ccc">
-        <input id="npDesc" placeholder="توضیح" style="padding:10px;border-radius:10px;border:1px solid #ccc">
-        <input id="npPrice" type="number" placeholder="قیمت (ریال)" style="padding:10px;border-radius:10px;border:1px solid #ccc">
-        <button class="btn" id="npAdd">افزودن</button>
+      <div class="add-form">
+        <input id="aTitle" placeholder="نام محصول">
+        <input id="aDesc" placeholder="توضیح">
+        <input id="aPrice" type="number" placeholder="قیمت (ریال)">
+        <input id="aOld" type="number" placeholder="قیمت قدیم (اختیاری)">
+        <input id="aOff" type="number" placeholder="تخفیف ٪">
+        <input id="aRate" type="number" step="0.1" value="4.8" placeholder="امتیاز">
+        <input id="aImg" class="imgin" placeholder="آدرس تصویر (مثلاً img/hero-store.jpg)">
+        <button class="btn" id="aAdd">افزودن</button>
       </div>
     </div>
 
-    <div class="user-section">
-      <h3>💎 پلان‌های PRO</h3>
+    <div class="apane" id="pane-plans">
       <table class="admin-tbl">
-        <thead><tr><th>پلان</th><th>قیمت (ریال)</th><th>قیمت قدیم</th><th></th></tr></thead>
-        <tbody id="plansBody"></tbody>
+        <thead><tr><th>پلان</th><th>دوره</th><th>قیمت (ریال)</th><th>قیمت قدیم</th><th>امکانات (هر خط یکی)</th><th></th><th></th></tr></thead>
+        <tbody id="plansBody2"></tbody>
       </table>
+      <h4 style="margin:16px 0 8px">➕ پلان جدید</h4>
+      <div class="add-form">
+        <input id="pTitle" placeholder="نام پلان">
+        <input id="pPeriod" placeholder="دوره (مثلاً ماهانه)">
+        <input id="pPrice" type="number" placeholder="قیمت (ریال)">
+        <input id="pOld" type="number" placeholder="قیمت قدیم">
+        <button class="btn" id="pAdd">افزودن</button>
+      </div>
     </div>
+
+    <!-- مخفی: برای سازگاری با نسخه قبلی app.js -->
+    <div id="prodBody" hidden></div>
+    <div id="plansBody" hidden></div>
   </div>
 </section>
 
 <footer id="ftr"></footer>
 <script src="site.js"></script>
 <script src="app.js"></script>
+<script src="admin.js"></script>
 </body>
 </html>
