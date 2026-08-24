@@ -3,16 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="جزئیات کامل دستور پخت با اطلاعات تغذیه‌ای، مواد لازم و منطقه">
 <title>رسپی | DailyFitBeat</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<meta name="description" content="رسپی سالم با ارزش غذایی دقیق">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.rd-wrap{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:start;padding:40px 0}
+.rd-img img{width:100%;border-radius:26px;box-shadow:0 16px 50px rgba(30,43,28,.15)}
+.rd-en{color:#8a938a;margin:4px 0 10px}
+.rd-desc{color:#4d584d;line-height:2;margin:10px 0 16px}
+.ing-list{list-style:none;margin:16px 0;background:#fff;border-radius:18px;padding:18px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+.ing-list li{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed #e3e3e3;font-size:14px}
+.ing-list li span{color:#2d6a35;font-weight:700}
+.f-cta{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+@media(max-width:900px){.rd-wrap{grid-template-columns:1fr}}
+</style>
 </head>
 <body data-page="recipe">
 <header id="hdr"></header>
-<section class="rd"><div id="rd"></div></section>
+<div id="rd"></div>
 <footer id="ftr"></footer>
+<script src="site.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
