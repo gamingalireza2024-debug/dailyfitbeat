@@ -269,7 +269,7 @@ async function initAdmin(){
     const t = $('#npTitle').value.trim(), d = $('#npDesc').value.trim(), pr = +$('#npPrice').value;
     if(!t || !pr){ alert('نام و قیمت لازمه'); return; }
     await sb.from('products').insert({ title_fa: t, desc_fa: d, price_rial: pr, rating: 4.8 });
-    $('#npTitle').value = $('#npDesc').value = '#npPrice').value = '';
+     $('#npTitle').value = $('#npDesc').value = $('#npPrice').value = '';
     loadProdAdmin();
   };
 }
