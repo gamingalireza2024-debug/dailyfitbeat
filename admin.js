@@ -38,12 +38,13 @@
     </tr>`).join('');
     document.querySelectorAll('.svP').forEach(b => b.onclick = async () => {
       const id = b.dataset.id, upd = {};
-      document.querySelectorAll(`[data-id="${id}"][data-f]`).forEach(i => {
+      document.querySelectorAll(`#prodBody2 [data-id="${id}"][data-f]`).forEach(i => {
         if (i.dataset.f === 'active') upd.active = i.checked;
         else if (i.dataset.f === 'image') upd.image = i.value || null;
         else upd[i.dataset.f] = i.value === '' ? null : +i.value;
       });
-      await sb.from('products').update(upd).eq('id', id);
+      const { error } = await sb.from('products').update(upd).eq('id', id);
+      if (error) { alert('خطا: ' + error.message); return; }
       alert('ذخیره شد ✅'); loadProds();
     });
     document.querySelectorAll('.dlP').forEach(b => b.onclick = async () => {
@@ -86,12 +87,13 @@
     </tr>`).join('');
     document.querySelectorAll('.svL').forEach(b => b.onclick = async () => {
       const id = b.dataset.id, upd = {};
-      document.querySelectorAll(`[data-id="${id}"][data-f]`).forEach(i => {
+      document.querySelectorAll(`#plansBody2 [data-id="${id}"][data-f]`).forEach(i => {
         if (i.dataset.f === 'features') upd.features = i.value.split('\n').map(s => s.trim()).filter(Boolean);
         else if (i.dataset.f === 'title_fa' || i.dataset.f === 'period') upd[i.dataset.f] = i.value;
         else upd[i.dataset.f] = i.value === '' ? null : +i.value;
       });
-      await sb.from('plans').update(upd).eq('id', id);
+      const { error } = await sb.from('plans').update(upd).eq('id', id);
+      if (error) { alert('خطا: ' + error.message); return; }
       alert('ذخیره شد ✅'); loadPlans();
     });
     document.querySelectorAll('.dlL').forEach(b => b.onclick = async () => {
