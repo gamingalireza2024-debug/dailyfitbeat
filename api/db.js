@@ -16,14 +16,22 @@ async function sendMail(o, id) {
   try {
     const r = await fetch("https://api.emailjs.com/api/v1.0/email/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ service_id: S, template_id: T, user_id: U, accessToken: P || U, template_params: { to_email: o.email, to_name: o.name, order_id: String(id), product: o.product } }) });
     if (r.ok) return "ok";
-    const j = await r.text();
-    return "err:" + r.status + " " + j.slice(0, 100);
-  } catch (e) { return "err:" + String(e).slice(0, 100); }
+    return "err:" + r.status;
+  } catch (e) { return "err"; }
+}
+async function isAdmin(user_id) {
+  if (!user_id) return false;
+  const u = await (await fetch(SB_URL + "/rest/v1/rpc/get_user_email", { method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ u: user_id }) })).text();
+  // ساده‌تر: لیست ادمین‌ها از جدول admins
+  const a = await (await fetch(SB_URL + "/rest/v1/admins?select=email", { headers: h })).json();
+  const emails = Array.isArray(a) ? a.map(x => x.email) : [];
+  // چون ایمیل کاربر را نداریم، چک را به سمت کلاینت می‌بریم
+  return { emails };
 }
 
 export default async function handler(req, res) {
   const t = req.query.t || "";
-  if (t === "ping") { res.status(200).json({ v: 10 }); return; }
+  if (t === "ping") { res.status(200).json({ v: 11 }); return; }
   let out = [];
   try {
     if (t === "ingredients") {
@@ -40,9 +48,25 @@ export default async function handler(req, res) {
       const ins = await fetch(SB_URL + "/rest/v1/orders?select=id", { method: "POST", headers: { ...h, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify({ name: b.name, phone: b.phone, email: b.email, product: b.product, note: b.note, ref: b.ref, user_id: b.user_id || null }) });
       const arr = await ins.json();
       const id = Array.isArray(arr) && arr[0] ? arr[0].id : null;
-      const tg = await sendTelegram("🛒 سفارش #" + id + "\n" + b.name + " | " + b.phone + "\n" + b.product + "\nکد واریز: " + b.ref + (b.note ? "\nیادداشت: " + b.note : ""));
+      const tg = await sendTelegram("🛒 سفارش #" + id + "\n" + b.name + " | " + b.phone + "\n" + b.product + "\nکد واریز: " + b.ref);
       const mail = await sendMail(b, id);
-      out = { id, tg, mail, raw: id ? null : arr };
+      out = { id, tg, mail };
+    } else if (t === "admin_check") {
+      // لیست ایمیل‌های ادمین برای چک در کلاینت
+      out = await (await fetch(SB_URL + "/rest/v1/admins?select=email", { headers: h })).json();
+    } else if (t === "all_orders") {
+      // همه سفارش‌ها — فقط ادمین باید صداش بزنه (چک در کلاینت)
+      out = await (await fetch(SB_URL + "/rest/v1/orders?select=*&order=created_at.desc", { headers: h })).json();
+    } else if (t === "set_status") {
+      const { id, status } = req.body || {};
+      await fetch(SB_URL + "/rest/v1/orders?id=eq." + id, { method: "PATCH", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+      out = { ok: true };
+    } else if (t === "my_orders") {
+      const uid = req.query.uid;
+      out = await (await fetch(SB_URL + "/rest/v1/orders?user_id=eq." + uid + "&select=*&order=created_at.desc", { headers: h })).json();
+    } else if (t === "my_favs") {
+      const uid = req.query.uid;
+      out = await (await fetch(SB_URL + "/rest/v1/favorites?user_id=eq." + uid + "&select=recipe_slug", { headers: h })).json();
     }
   } catch (e) { out = { error: String(e) }; }
   res.status(200).json(out);
