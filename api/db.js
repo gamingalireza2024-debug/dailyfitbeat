@@ -19,19 +19,10 @@ async function sendMail(o, id) {
     return "err:" + r.status;
   } catch (e) { return "err"; }
 }
-async function isAdmin(user_id) {
-  if (!user_id) return false;
-  const u = await (await fetch(SB_URL + "/rest/v1/rpc/get_user_email", { method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ u: user_id }) })).text();
-  // ساده‌تر: لیست ادمین‌ها از جدول admins
-  const a = await (await fetch(SB_URL + "/rest/v1/admins?select=email", { headers: h })).json();
-  const emails = Array.isArray(a) ? a.map(x => x.email) : [];
-  // چون ایمیل کاربر را نداریم، چک را به سمت کلاینت می‌بریم
-  return { emails };
-}
 
 export default async function handler(req, res) {
   const t = req.query.t || "";
-  if (t === "ping") { res.status(200).json({ v: 11 }); return; }
+  if (t === "ping") { res.status(200).json({ v: 12 }); return; }
   let out = [];
   try {
     if (t === "ingredients") {
@@ -43,6 +34,10 @@ export default async function handler(req, res) {
     } else if (t === "match") {
       const have = String(req.query.a || "").split(",").filter(Boolean);
       out = await (await fetch(SB_URL + "/rest/v1/rpc/match_recipes", { method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ have }) })).json();
+    } else if (t === "products") {
+      out = await (await fetch(SB_URL + "/rest/v1/products?select=*&active=eq.true&order=id.asc", { headers: h })).json();
+    } else if (t === "plans") {
+      out = await (await fetch(SB_URL + "/rest/v1/plans?select=*&order=id.asc", { headers: h })).json();
     } else if (t === "order") {
       const b = req.body || {};
       const ins = await fetch(SB_URL + "/rest/v1/orders?select=id", { method: "POST", headers: { ...h, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify({ name: b.name, phone: b.phone, email: b.email, product: b.product, note: b.note, ref: b.ref, user_id: b.user_id || null }) });
@@ -52,21 +47,17 @@ export default async function handler(req, res) {
       const mail = await sendMail(b, id);
       out = { id, tg, mail };
     } else if (t === "admin_check") {
-      // لیست ایمیل‌های ادمین برای چک در کلاینت
       out = await (await fetch(SB_URL + "/rest/v1/admins?select=email", { headers: h })).json();
     } else if (t === "all_orders") {
-      // همه سفارش‌ها — فقط ادمین باید صداش بزنه (چک در کلاینت)
       out = await (await fetch(SB_URL + "/rest/v1/orders?select=*&order=created_at.desc", { headers: h })).json();
     } else if (t === "set_status") {
       const { id, status } = req.body || {};
       await fetch(SB_URL + "/rest/v1/orders?id=eq." + id, { method: "PATCH", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
       out = { ok: true };
     } else if (t === "my_orders") {
-      const uid = req.query.uid;
-      out = await (await fetch(SB_URL + "/rest/v1/orders?user_id=eq." + uid + "&select=*&order=created_at.desc", { headers: h })).json();
+      out = await (await fetch(SB_URL + "/rest/v1/orders?user_id=eq." + req.query.uid + "&select=*&order=created_at.desc", { headers: h })).json();
     } else if (t === "my_favs") {
-      const uid = req.query.uid;
-      out = await (await fetch(SB_URL + "/rest/v1/favorites?user_id=eq." + uid + "&select=recipe_slug", { headers: h })).json();
+      out = await (await fetch(SB_URL + "/rest/v1/favorites?user_id=eq." + req.query.uid + "&select=recipe_slug", { headers: h })).json();
     }
   } catch (e) { out = { error: String(e) }; }
   res.status(200).json(out);
