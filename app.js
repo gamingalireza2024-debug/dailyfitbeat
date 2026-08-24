@@ -16,6 +16,7 @@ async function loadAdminList(){
   try { const r = await fetch('/api/db?t=admin_check'); const d = await r.json(); ADMIN_EMAILS = Array.isArray(d) ? d.map(x => x.email) : []; } catch(e){}
 }
 function isAdmin(){ return USER && ADMIN_EMAILS.includes(USER.email); }
+function doLogin(){ if(sb) sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } }); }
 
 function injectHeader(){
   const links = NAV.map(([k,h,f,e]) => `<a href="${h}" class="${page===k?'on':''}" data-fa="${f}" data-en="${e}">${lang==='fa'?f:e}</a>`).join('');
@@ -36,11 +37,11 @@ function renderAuth(){
   const box = document.getElementById('authBox'); if(!box) return;
   if(!USER){
     box.innerHTML = `<button id="loginBtn" class="auth-chip">ورود با گوگل</button>`;
-    document.getElementById('loginBtn').onclick = () => sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } });
+    document.getElementById('loginBtn').onclick = doLogin;
   } else {
-    const name = (USER.user_metadata && USER.user_metadata.name ? USER.user_metadata.name.split(' ')[0] : 'کاربر');
-    let html = `<a href="user.html" class="auth-chip">👤 ${name}</a>`;
-    if(isAdmin()) html += `<a href="admin.html" class="auth-chip" style="background:#2d6a35;color:#fff">👑 ادمین</a>`;
+    const name = (USER.user_metadata && USER.user_metadata.name ? USER.user_metadata.name.split(' ')[0] : 'پنل من');
+    let html = `<a href="user.html" class="auth-chip user-on">👤 ${name}</a>`;
+    if(isAdmin()) html += `<a href="admin.html" class="auth-chip admin-on">👑 ادمین</a>`;
     html += `<button id="logoutBtn" class="auth-chip">خروج</button>`;
     box.innerHTML = html;
     document.getElementById('logoutBtn').onclick = async () => { await sb.signOut(); USER = null; location.reload(); };
@@ -62,6 +63,21 @@ function phoneModal(){
     document.getElementById('phModal').remove();
   };
 }
+function injectBenefits(){
+  if(page !== 'home') return;
+  const inner = USER
+    ? `<div class="ben-cta"><a href="user.html" class="btn big">👤 پنل کاربری تو آماده‌ست</a></div>`
+    : `<div class="ben-cta"><button id="bigLogin" class="btn big">ورود با گوگل — ۳ ثانیه</button></div>`;
+  $('#ftr').insertAdjacentHTML('beforebegin', `<section class="benefits"><div class="container">
+  <div class="sec-head"><h2 data-fa="با حساب کاربری، بیشتر حال کن" data-en="More with an account">${lang==='fa'?'با حساب کاربری، بیشتر حال کن':'More with an account'}</h2><p data-fa="بدون رمز و ثبت‌نام طولانی — فقط یه کلیک با گوگل" data-en="One click with Google">${lang==='fa'?'بدون رمز و ثبت‌نام طولانی — فقط یه کلیک با گوگل':'One click with Google'}</p></div>
+  <div class="ben-grid">
+    <div class="ben"><span>❤️</span><b data-fa="علاقه‌مندی‌ها" data-en="Favorites">${lang==='fa'?'علاقه‌مندی‌ها':'Favorites'}</b><p data-fa="رسپی‌های موردعلاقه‌ت رو ذخیره کن" data-en="Save recipes you love">${lang==='fa'?'رسپی‌های موردعلاقه‌ت رو ذخیره کن':'Save recipes you love'}</p></div>
+    <div class="ben"><span>📦</span><b data-fa="پیگیری سفارش" data-en="Order tracking">${lang==='fa'?'پیگیری سفارش':'Order tracking'}</b><p data-fa="وضعیت خریدت رو لحظه‌ای ببین" data-en="Track your orders live">${lang==='fa'?'وضعیت خریدت رو لحظه‌ای ببین':'Track your orders live'}</p></div>
+    <div class="ben"><span>🍽️</span><b data-fa="برنامه شخصی" data-en="Personal plan">${lang==='fa'?'برنامه شخصی':'Personal plan'}</b><p data-fa="برنامه غذاییت برات ذخیره می‌شه" data-en="Your meal plan is saved">${lang==='fa'?'برنامه غذاییت برات ذخیره می‌شه':'Your meal plan is saved'}</p></div>
+  </div>${inner}</div></section>`);
+  const bl = document.getElementById('bigLogin');
+  if(bl) bl.onclick = doLogin;
+}
 (async () => {
   try {
     const m = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
@@ -70,7 +86,7 @@ function phoneModal(){
     const { data } = await sb.auth.getSession();
     USER = (data.session && data.session.user) || null;
     if(USER) ensureProfile();
-    injectHeader();
+    injectHeader(); injectBenefits();
     initAdmin(); initUser();
   } catch(e) { console.log('auth off', e); }
 })();
@@ -88,7 +104,7 @@ function toggleLang(){
   document.documentElement.lang = lang;
   document.documentElement.dir = lang==='fa' ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-fa]').forEach(el => el.textContent = el.dataset[lang]);
-  injectHeader();
+  injectHeader(); injectBenefits();
 }
 function bindScroll(){ window.onscroll = () => $('#hdr').classList.toggle('scrolled', scrollY > 40); }
 
@@ -183,7 +199,7 @@ async function initDetail(){
     <div class="f-cta"><a class="btn" href="planner.html">افزودن به برنامه</a><a class="btn ghost" href="recipes.html">همه رسپی‌ها</a></div>
   </div></div>`;
   document.getElementById('favBtn').onclick = async () => {
-    if(!USER){ alert('اول با گوگل وارد شو'); return; }
+    if(!USER){ alert('برای ذخیره علاقه‌مندی، اول با گوگل وارد شو ❤️'); doLogin(); return; }
     if(favOn){ await sb.from('favorites').delete().eq('user_id', USER.id).eq('recipe_slug', r.slug); favOn = false; }
     else { await sb.from('favorites').insert({ user_id: USER.id, recipe_slug: r.slug }); favOn = true; }
     document.getElementById('favBtn').classList.toggle('on', favOn);
@@ -198,12 +214,10 @@ function initOrder(){
     const res = await r.json();
     const ok = $('#orderOk');
     ok.style.display = 'block';
-    ok.innerHTML = `سفارش تو با کد <b>${res.id ?? '—'}</b> ثبت شد ✅<br>تلگرام: ${res.tg ? '✅' : '❌'} — ایمیل: ${res.mail === 'ok' ? '✅' : '❌'}`;
+    ok.innerHTML = `سفارش تو با کد <b>${res.id ?? '—'}</b> ثبت شد ✅<br>تلگرام: ${res.tg ? '✅' : '❌'} — ایمیل: ${res.mail === 'ok' ? '✅' : '❌'}${USER ? '<br>در پنل کاربری قابل پیگیریه 👤' : ''}`;
     f.reset();
   };
 }
-
-// ---------- پنل ادمین ----------
 async function initAdmin(){
   if(page !== 'admin') return;
   if(!USER){ $('#adminStat').textContent = 'لطفاً اول وارد شو'; return; }
@@ -221,7 +235,7 @@ async function loadOrders(){
   const list = Array.isArray(data) ? (filter === 'all' ? data : data.filter(x => x.status === filter)) : [];
   const stats = { new: 0, paid: 0, sent: 0 };
   (Array.isArray(data)?data:[]).forEach(o => { if(stats[o.status] !== undefined) stats[o.status]++; });
-  $('#statsBox').innerHTML = `<div class="st"><b>${list.length}</b><span>فیلتر شده</span></div>
+  $('#statsBox').innerHTML = `<div class="st"><b>${(Array.isArray(data)?data:[]).length}</b><span>کل سفارش‌ها</span></div>
   <div class="st"><b>${stats.new}</b><span>جدید</span></div>
   <div class="st"><b>${stats.paid}</b><span>پرداخت شده</span></div>
   <div class="st"><b>${stats.sent}</b><span>ارسال شده</span></div>`;
@@ -249,17 +263,14 @@ function exportCSV(){
   fetch('/api/db?t=all_orders').then(r=>r.json()).then(data => {
     const rows = [['کد','تاریخ','نام','موبایل','ایمیل','محصول','کد واریز','وضعیت','یادداشت']];
     (Array.isArray(data)?data:[]).forEach(o => rows.push([o.id, new Date(o.created_at).toLocaleString('fa-IR'), o.name, o.phone, o.email, o.product, o.ref, o.status, o.note || '']));
-    const BOM = '\uFEFF';
-    const csv = BOM + rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const csv = '\uFEFF' + rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'dailyfitbeat-orders-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.download = 'dailyfitbeat-orders.csv';
     a.click();
   });
 }
-
-// ---------- پنل کاربری ----------
 async function initUser(){
   if(page !== 'user') return;
   if(!USER){ $('#userStat').textContent = 'لطفاً اول وارد شو'; return; }
@@ -280,10 +291,9 @@ async function initUser(){
     $('#myFavs').innerHTML = '<p>هنوز رسپی موردعلاقه‌ای ثبت نکردی</p>';
   }
 }
-
 async function loadAll(){ const r = await fetch('/api/db?t=all'); ALL = await r.json(); }
 
-injectHeader(); injectFooter(); bindScroll();
+injectHeader(); injectFooter(); bindScroll(); injectBenefits();
 document.documentElement.lang = lang;
 document.documentElement.dir = lang==='fa' ? 'rtl' : 'ltr';
 initSearch(); initFinder(); initRecipes(); initDetail(); initOrder();
