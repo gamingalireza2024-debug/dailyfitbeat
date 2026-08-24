@@ -7,22 +7,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.plan-form{background:#fff;border-radius:22px;padding:26px;box-shadow:0 4px 16px rgba(0,0,0,.06);display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;max-width:900px;margin:26px auto}
-.plan-form input,.plan-form select{padding:12px;border-radius:12px;border:1px solid #ccc;font:inherit}
+.plan-form{background:#fff;border-radius:22px;padding:26px;box-shadow:0 4px 16px rgba(0,0,0,.06);display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;max-width:950px;margin:26px auto}
+.plan-form input,.plan-form select{padding:12px;border-radius:12px;border:1px solid #ccc;font:inherit;background:#fafafa}
 .plan-form .btn{grid-column:1/-1}
 .day-card{background:#fff;border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
-.day-card h4{color:#2d6a35;margin-bottom:12px}
+.day-card h4{color:#2d6a35;margin-bottom:12px;border-bottom:2px solid #e8f4e9;padding-bottom:8px}
 .meal-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #e3e3e3;font-size:14px;flex-wrap:wrap}
 .meal-row b{color:#2d6a35}
-.plan-target{background:#e8f4e9;border-radius:16px;padding:16px;text-align:center;font-weight:700;color:#2d6a35;margin-bottom:20px}
+.plan-target{background:#e8f4e9;border-radius:16px;padding:16px;text-align:center;font-weight:800;color:#2d6a35;margin-bottom:20px;font-size:16px}
 .shop-list{background:#fff;border-radius:20px;padding:22px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
-.shop-list li{padding:6px 0;border-bottom:1px dashed #eee}
+.shop-list ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.shop-list li{background:#e8f4e9;color:#2d6a35;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700}
 </style>
 </head>
 <body data-page="planner">
 <header id="hdr"></header>
 
-<div class="page-head"><div class="container"><h1>برنامه غذایی</h1><p>هفته‌ات رو هوشمند بچین</p></div></div>
+<section><div class="container hero-split">
+  <div>
+    <h1>برنامه غذایی<br>هفتگی شما</h1>
+    <p>یک برنامه غذایی شخصی فوق‌العاده برای ساختن بهترین نسخه از خودت — بر اساس قد، وزن، هدف و سبک زندگی تو.</p>
+    <div class="hero-btns">
+      <button class="btn" onclick="document.getElementById('planForm').scrollIntoView({behavior:'smooth'})">＋ ساخت برنامه جدید</button>
+      <button class="btn ghost" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">راهنمای استفاده</button>
+    </div>
+  </div>
+  <img src="img/hero-planner.jpg" alt="برنامه غذایی هفتگی">
+</div></section>
 
 <section><div class="container">
   <form class="plan-form" id="planForm">
@@ -32,9 +43,40 @@
     <input id="pW" type="number" placeholder="وزن (کیلوگرم)" value="75" min="35" max="180">
     <select id="pAct"><option value="1.2">کم‌تحرک</option><option value="1.375">فعالیت سبک</option><option value="1.55" selected>فعالیت متوسط</option><option value="1.725">فعالیت زیاد</option></select>
     <select id="pGoal"><option value="loss">کاهش وزن</option><option value="keep" selected>ثابت</option><option value="gain">افزایش وزن</option></select>
-    <button class="btn big" type="submit">برنامه غذایی من رو بساز 🍽️</button>
+    <button class="btn big" type="submit">🍽️ برنامه غذایی من رو بساز</button>
   </form>
   <div id="planOut"></div>
+</div></section>
+
+<section id="features"><div class="container">
+  <div class="sec-head"><h2>امکانات برنامه غذایی</h2></div>
+  <div class="fgrid">
+    <div class="fcard"><div class="ic">📋</div><b>برنامه شخصی شما</b><p>برنامه غذایی بر اساس هدف و شرایط بدنی شما</p></div>
+    <div class="fcard"><div class="ic">⚖️</div><b>تنوع و تعادل غذایی</b><p>ترکیب متنوع غذاها و تعادل در طول هفته</p></div>
+    <div class="fcard"><div class="ic">🛒</div><b>لیست خرید هوشمند</b><p>لیست خرید دقیق و خودکار بر اساس برنامه شما</p></div>
+    <div class="fcard"><div class="ic">❤️</div><b>پیگیری پیشرفت</b><p>گزارش پیشرفت و تحلیل روند تغییرات</p></div>
+  </div>
+</div></section>
+
+<section><div class="container hero-split">
+  <div>
+    <h2>همگام با سبک زندگی شما</h2>
+    <p>برنامه غذایی متناسب با سبک زندگی، علایق و اهداف سلامتی شما طراحی شده است.</p>
+    <ul class="checks">
+      <li>صرفه‌جویی در زمان</li>
+      <li>دسترسی آسان در هر زمان</li>
+      <li>قابلیت تغییر و انعطاف‌پذیری</li>
+      <li>گزارش‌های دقیق و نمودارها</li>
+    </ul>
+    <div class="hero-btns"><a class="btn" href="recipes.html">شروع برنامه</a></div>
+  </div>
+  <div class="phone"><div class="scr">
+    <b>امروز</b>
+    <div class="donut"></div>
+    <div class="mrow"><span>کربوهیدرات</span><b>45%</b></div>
+    <div class="mrow"><span>پروتئین</span><b>30%</b></div>
+    <div class="mrow"><span>چربی</span><b>25%</b></div>
+  </div></div>
 </div></section>
 
 <footer id="ftr"></footer>
