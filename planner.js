@@ -21,21 +21,22 @@
     const D = ALL.filter(x => ['salad','soup','sandwich'].includes(x.category));
     if(!B.length || !L.length || !D.length){ document.getElementById('planOut').innerHTML = '<p>رسپی کافی نیست</p>'; return; }
     const days = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
-    let html = `<div class="plan-target">🎯 هدف روزانه تو: ${target} کالری و ${protein} گرم پروتئین</div>`;
+    let html = `<div class="plan-target">🎯 هدف روزانه: ${target.toLocaleString('fa-IR')} کالری و ${protein.toLocaleString('fa-IR')} گرم پروتئین</div>`;
     const picked = [];
     days.forEach((d, i) => {
-      const b = B[i % B.length], l = L[i % L.length], dn = D[(i*2) % D.length];
+      const b = B[i % B.length], l = L[(i*3) % L.length], dn = D[(i*2) % D.length];
       picked.push(b, l, dn);
       const tot = (b.kcal||0) + (l.kcal||0) + (dn.kcal||0);
-      html += `<div class="day-card"><h4>${d} — مجموع تقریبی ${tot} کالری</h4>
-      <div class="meal-row"><span>🌅 صبحانه: <b>${b.name_fa}</b></span><span>${b.kcal} کالری</span></div>
-      <div class="meal-row"><span>☀️ ناهار: <b>${l.name_fa}</b></span><span>${l.kcal} کالری</span></div>
-      <div class="meal-row"><span>🌙 شام: <b>${dn.name_fa}</b></span><span>${dn.kcal} کالری</span></div></div>`;
+      html += `<div class="day-card"><h4>📅 ${d} — مجموع تقریبی ${tot.toLocaleString('fa-IR')} کالری</h4>
+      <div class="meal-row"><span>🌅 صبحانه: <b>${b.name_fa}</b></span><span>${(b.kcal||0).toLocaleString('fa-IR')} کالری</span></div>
+      <div class="meal-row"><span>☀️ ناهار: <b>${l.name_fa}</b></span><span>${(l.kcal||0).toLocaleString('fa-IR')} کالری</span></div>
+      <div class="meal-row"><span>🌙 شام: <b>${dn.name_fa}</b></span><span>${(dn.kcal||0).toLocaleString('fa-IR')} کالری</span></div></div>`;
     });
     const shop = {};
-    picked.forEach(rc => (Array.isArray(rc.ingredients) ? rc.ingredients : []).forEach(g => { shop[g.fa] = (shop[g.fa] || []); shop[g.fa].push(g.q); }));
+    picked.forEach(rc => (Array.isArray(rc.ingredients) ? rc.ingredients : []).forEach(g => { shop[g.fa] = 1; }));
     html += `<div class="shop-list"><h3>🛒 لیست خرید هفته</h3><ul>` + Object.keys(shop).map(k => `<li>${k}</li>`).join('') + `</ul></div>`;
     document.getElementById('planOut').innerHTML = html;
     try { localStorage.setItem('dfb-plan', JSON.stringify({ target, protein, at: Date.now() })); } catch(e){}
+    document.getElementById('planOut').scrollIntoView({ behavior: 'smooth' });
   };
 })();
