@@ -28,6 +28,29 @@
       <thead><tr><th>کد</th><th>تاریخ</th><th>نام</th><th>موبایل</th><th>ایمیل</th><th>محصول</th><th>کد واریز</th><th>وضعیت</th><th></th></tr></thead>
       <tbody id="ordersBody"></tbody>
     </table>
+
+    <div class="user-section" style="margin-top:26px">
+      <h3>🛍️ مدیریت محصولات فروشگاه</h3>
+      <table class="admin-tbl">
+        <thead><tr><th>محصول</th><th>قیمت (ریال)</th><th>قیمت قدیم</th><th>امتیاز</th><th>فعال</th><th></th></tr></thead>
+        <tbody id="prodBody"></tbody>
+      </table>
+      <h4 style="margin:16px 0 8px">➕ محصول جدید</h4>
+      <div class="admin-bar">
+        <input id="npTitle" placeholder="نام محصول" style="padding:10px;border-radius:10px;border:1px solid #ccc">
+        <input id="npDesc" placeholder="توضیح" style="padding:10px;border-radius:10px;border:1px solid #ccc">
+        <input id="npPrice" type="number" placeholder="قیمت (ریال)" style="padding:10px;border-radius:10px;border:1px solid #ccc">
+        <button class="btn" id="npAdd">افزودن</button>
+      </div>
+    </div>
+
+    <div class="user-section">
+      <h3>💎 پلان‌های PRO</h3>
+      <table class="admin-tbl">
+        <thead><tr><th>پلان</th><th>قیمت (ریال)</th><th>قیمت قدیم</th><th></th></tr></thead>
+        <tbody id="plansBody"></tbody>
+      </table>
+    </div>
   </div>
 </section>
 
