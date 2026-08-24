@@ -23,7 +23,7 @@ async function sendMail(o, id) {
 
 export default async function handler(req, res) {
   const t = req.query.t || "";
-  if (t === "ping") { res.status(200).json({ v: 9 }); return; }
+  if (t === "ping") { res.status(200).json({ v: 10 }); return; }
   let out = [];
   try {
     if (t === "ingredients") {
@@ -31,13 +31,13 @@ export default async function handler(req, res) {
     } else if (t === "popular") {
       out = await (await fetch(SB_URL + "/rest/v1/recipes?select=*&limit=4", { headers: h })).json();
     } else if (t === "all") {
-      out = await (await fetch(SB_URL + "/rest/v1/recipes?select=*&limit=200", { headers: h })).json();
+      out = await (await fetch(SB_URL + "/rest/v1/recipes?select=*&limit=300", { headers: h })).json();
     } else if (t === "match") {
       const have = String(req.query.a || "").split(",").filter(Boolean);
       out = await (await fetch(SB_URL + "/rest/v1/rpc/match_recipes", { method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ have }) })).json();
     } else if (t === "order") {
       const b = req.body || {};
-      const ins = await fetch(SB_URL + "/rest/v1/orders?select=id", { method: "POST", headers: { ...h, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify({ name: b.name, phone: b.phone, email: b.email, product: b.product, note: b.note, ref: b.ref }) });
+      const ins = await fetch(SB_URL + "/rest/v1/orders?select=id", { method: "POST", headers: { ...h, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify({ name: b.name, phone: b.phone, email: b.email, product: b.product, note: b.note, ref: b.ref, user_id: b.user_id || null }) });
       const arr = await ins.json();
       const id = Array.isArray(arr) && arr[0] ? arr[0].id : null;
       const tg = await sendTelegram("🛒 سفارش #" + id + "\n" + b.name + " | " + b.phone + "\n" + b.product + "\nکد واریز: " + b.ref + (b.note ? "\nیادداشت: " + b.note : ""));
