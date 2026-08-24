@@ -5,13 +5,17 @@ let have = [], ING = [], ALL = [];
 const page = document.body.dataset.page;
 const SB_URL = "https://hvqchqqlfcjxsohxywbd.supabase.co";
 const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cWNocXFsZmNqeHNvaHh5d2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTI3ODYsImV4cCI6MjEwMjk4ODc4Nn0.yJursP15upa_-nE8P41l4uUssITBK319dzfaa2tbJ1k";
-let sb = null, USER = null;
+let sb = null, USER = null, ADMIN_EMAILS = [];
 const FALL = { iranian:'img/iranian.jpg', salad:'img/salad.jpg', sandwich:'img/sandwich.jpg', breakfast:'img/breakfast.jpg', soup:'img/soup.jpg', sauce:'img/soup.jpg', main:'img/hero.jpg' };
 const diff = t => t <= 20 ? 'آسان' : t <= 60 ? 'متوسط' : 'مفصل';
-const tagFa = t => ({'iranian':'ایرانی','high-protein':'پروتئین بالا','quick':'سریع','weight-loss':'کاهش وزن','vegetarian':'گیاهی','low-calorie':'کم‌کالری'})[t] || 'سالم';
-const ADJ = {'ایران':'ایرانی','گیلان':'گیلانی','اصفهان':'ایرانی','شیراز':'ایرانی','تهران':'ایرانی','ژاپن':'ژاپنی','تایلند':'تایلندی','اسپانیا':'اسپانیایی','مراکش':'مراکشی','فرانسه':'فرانسوی','ایتالیا':'ایتالیایی','چین':'چینی','هند':'هندی','ترکیه':'ترکی','مکزیک':'مکزیکی','انگلستان':'انگلیسی','یونان':'یونانی','کره':'کره‌ای','لبنان':'لبنانی'};
+const ADJ = {'ایران':'ایرانی','گیلان':'گیلانی','ژاپن':'ژاپنی','تایلند':'تایلندی','اسپانیا':'اسپانیایی','مراکش':'مراکشی','فرانسه':'فرانسوی','ایتالیا':'ایتالیایی','چین':'چینی','هند':'هندی','ترکیه':'ترکی','مکزیک':'مکزیکی','انگلستان':'انگلیسی','یونان':'یونانی','کره':'کره‌ای','لبنان':'لبنانی'};
 const countryFa = reg => 'غذای ' + (ADJ[reg] || reg || 'ایرانی');
 const NAV = [['home','index.html','خانه','Home'],['recipes','recipes.html','رسپی‌ها','Recipes'],['planner','planner.html','برنامه غذایی','Meal Plan'],['market','market.html','فیت مارکت','Fit Market'],['pro','pro.html','PRO','PRO']];
+
+async function loadAdminList(){
+  try { const r = await fetch('/api/db?t=admin_check'); const d = await r.json(); ADMIN_EMAILS = Array.isArray(d) ? d.map(x => x.email) : []; } catch(e){}
+}
+function isAdmin(){ return USER && ADMIN_EMAILS.includes(USER.email); }
 
 function injectHeader(){
   const links = NAV.map(([k,h,f,e]) => `<a href="${h}" class="${page===k?'on':''}" data-fa="${f}" data-en="${e}">${lang==='fa'?f:e}</a>`).join('');
@@ -30,11 +34,17 @@ function injectHeader(){
 }
 function renderAuth(){
   const box = document.getElementById('authBox'); if(!box) return;
-  box.innerHTML = USER ? `<button id="logoutBtn" class="auth-chip">👤 ${(USER.user_metadata && USER.user_metadata.name ? USER.user_metadata.name.split(' ')[0] : 'کاربر')} | خروج</button>` : `<button id="loginBtn" class="auth-chip">ورود با گوگل</button>`;
-  const lb = document.getElementById('loginBtn');
-  if(lb) lb.onclick = () => sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } });
-  const lo = document.getElementById('logoutBtn');
-  if(lo) lo.onclick = async () => { await sb.signOut(); USER = null; renderAuth(); };
+  if(!USER){
+    box.innerHTML = `<button id="loginBtn" class="auth-chip">ورود با گوگل</button>`;
+    document.getElementById('loginBtn').onclick = () => sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } });
+  } else {
+    const name = (USER.user_metadata && USER.user_metadata.name ? USER.user_metadata.name.split(' ')[0] : 'کاربر');
+    let html = `<a href="user.html" class="auth-chip">👤 ${name}</a>`;
+    if(isAdmin()) html += `<a href="admin.html" class="auth-chip" style="background:#2d6a35;color:#fff">👑 ادمین</a>`;
+    html += `<button id="logoutBtn" class="auth-chip">خروج</button>`;
+    box.innerHTML = html;
+    document.getElementById('logoutBtn').onclick = async () => { await sb.signOut(); USER = null; location.reload(); };
+  }
 }
 async function ensureProfile(){
   if(!sb || !USER) return;
@@ -56,11 +66,13 @@ function phoneModal(){
   try {
     const m = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
     sb = m.createClient(SB_URL, ANON);
+    await loadAdminList();
     const { data } = await sb.auth.getSession();
     USER = (data.session && data.session.user) || null;
     if(USER) ensureProfile();
-    renderAuth();
-  } catch(e) { console.log('auth off'); }
+    injectHeader();
+    initAdmin(); initUser();
+  } catch(e) { console.log('auth off', e); }
 })();
 function injectFooter(){
   $('#ftr').innerHTML = `<div class="container f-cols">
@@ -76,13 +88,12 @@ function toggleLang(){
   document.documentElement.lang = lang;
   document.documentElement.dir = lang==='fa' ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-fa]').forEach(el => el.textContent = el.dataset[lang]);
-  injectHeader(); bindScroll();
-  if(window.onLang) window.onLang();
+  injectHeader();
 }
 function bindScroll(){ window.onscroll = () => $('#hdr').classList.toggle('scrolled', scrollY > 40); }
 
 const norm = s => (s||'').toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/‌/g,' ').trim();
-function hay(r){ return [r.name_fa,r.name_en,r.region,r.desc_fa,r.category,(r.tags||[]).map(tagFa).join(' '),(r.keys||[]).map(k=>{const i=ING.find(x=>x.key===k);return i?i.fa+' '+i.en:''}).join(' ')].map(norm).join(' | '); }
+function hay(r){ return [r.name_fa,r.name_en,r.region,r.desc_fa,r.category,(r.tags||[]).join(' ')].map(norm).join(' | '); }
 function initSearch(){
   const inp = $('#searchInput'), box = $('#searchRes');
   if(!inp) return;
@@ -90,7 +101,7 @@ function initSearch(){
     const q = norm(inp.value);
     if(q.length < 2){ box.innerHTML=''; return; }
     const res = ALL.filter(r => q.split(' ').every(w => hay(r).includes(w))).slice(0,12);
-    box.innerHTML = res.length ? res.map(r => card(r)).join('') : `<p class="no-res">چیزی پیدا نشد؛ مثلاً «بادمجان» یا «گیلان» رو امتحان کن</p>`;
+    box.innerHTML = res.length ? res.map(r => card(r)).join('') : `<p class="no-res">چیزی پیدا نشد</p>`;
   };
 }
 function card(r, big){
@@ -101,9 +112,7 @@ function card(r, big){
   <div class="c-tags"><i>${diff(r.time_min)}</i><i>${countryFa(r.region)}</i></div>
   </div></a>`;
 }
-async function loadChips(){
-  const r = await fetch('/api/db?t=ingredients'); ING = await r.json(); renderChips();
-}
+async function loadChips(){ const r = await fetch('/api/db?t=ingredients'); ING = await r.json(); renderChips(); }
 function renderChips(){
   const c = $('#chips'); if(!c) return;
   c.innerHTML = ING.map(i => `<button class="chip${have.includes(i.key)?' on':''}" data-key="${i.key}">${lang==='fa'?i.fa:i.en}</button>`).join('');
@@ -116,10 +125,9 @@ function initFinder(){
     const v = $('#ingInput').value.trim(); if(!v) return;
     const m = ING.find(i => i.fa.includes(v) || i.en.toLowerCase().includes(v.toLowerCase()));
     if(m && !have.includes(m.key)){ have.push(m.key); renderChips(); $('#ingInput').value=''; }
-    else alert(lang==='fa' ? 'این ماده رو هنوز نداریم؛ به‌زودی اضافه می‌شه' : 'Not in our pantry yet');
   };
   $('#goBtn').onclick = async () => {
-    if(!have.length) return alert(lang==='fa' ? 'اول چند تا ماده رو انتخاب کن' : 'Pick some ingredients first');
+    if(!have.length) return alert('اول چند تا ماده رو انتخاب کن');
     const r = await fetch('/api/db?t=match&a=' + have.join(','));
     const data = await r.json();
     $('#results').innerHTML = Array.isArray(data) ? data.map(x => card(x)).join('') : '';
@@ -127,8 +135,7 @@ function initFinder(){
 }
 async function loadPopular(){
   const el = $('#popularCards'); if(!el) return;
-  const r = await fetch('/api/db?t=popular');
-  const data = await r.json();
+  const r = await fetch('/api/db?t=popular'); const data = await r.json();
   el.innerHTML = card(data[0], true) + data.slice(1).map(x => card(x)).join('');
 }
 let curCat = 'all', curGoal = 'all';
@@ -146,7 +153,6 @@ function initRecipes(){
     if(ch.dataset.goal !== undefined) curGoal = ch.dataset.goal;
     renderRecipes();
   });
-  window.onLang = renderRecipes;
 }
 async function initDetail(){
   if(page !== 'recipe') return;
@@ -160,7 +166,7 @@ async function initDetail(){
   let favOn = false;
   if(sb && USER){ const { data } = await sb.from('favorites').select('id').eq('recipe_slug', r.slug).maybeSingle(); favOn = !!data; }
   el.innerHTML = `<div class="container rd-wrap">
-  <div class="rd-img"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" alt="${r.name_fa}"><button id="favBtn" class="heart${favOn?' on':''}" title="علاقه‌مندی">♥</button></div>
+  <div class="rd-img"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" alt="${r.name_fa}"><button id="favBtn" class="heart${favOn?' on':''}">♥</button></div>
   <div class="rd-info">
     <span class="rd-region">${countryFa(r.region)}</span>
     <h1>${r.name_fa}</h1><p class="rd-en">${r.name_en}</p>
@@ -192,18 +198,94 @@ function initOrder(){
     const res = await r.json();
     const ok = $('#orderOk');
     ok.style.display = 'block';
-    ok.innerHTML = `سفارش تو با کد <b>${res.id ?? '—'}</b> ثبت شد ✅<br>اطلاع به فروشنده (تلگرام): ${res.tg ? '✅' : '❌'}<br>ایمیل تأیید: ${res.mail === 'ok' ? 'ارسال شد ✅' : '❌ ' + (res.mail || '')}${res.id ? '' : '<br>خطای ثبت کد: ' + JSON.stringify(res.raw || '').slice(0, 220)}`;
+    ok.innerHTML = `سفارش تو با کد <b>${res.id ?? '—'}</b> ثبت شد ✅<br>تلگرام: ${res.tg ? '✅' : '❌'} — ایمیل: ${res.mail === 'ok' ? '✅' : '❌'}`;
     f.reset();
   };
 }
+
+// ---------- پنل ادمین ----------
+async function initAdmin(){
+  if(page !== 'admin') return;
+  if(!USER){ $('#adminStat').textContent = 'لطفاً اول وارد شو'; return; }
+  if(!isAdmin()){ $('#adminStat').textContent = '❌ دسترسی ادمین ندارید'; return; }
+  $('#adminStat').textContent = `خوش آمدی، ${USER.email}`;
+  $('#adminBody').style.display = 'block';
+  await loadOrders();
+  $('#csvBtn').onclick = exportCSV;
+  $('#filterSt').onchange = loadOrders;
+}
+async function loadOrders(){
+  const r = await fetch('/api/db?t=all_orders');
+  const data = await r.json();
+  const filter = $('#filterSt').value;
+  const list = Array.isArray(data) ? (filter === 'all' ? data : data.filter(x => x.status === filter)) : [];
+  const stats = { new: 0, paid: 0, sent: 0 };
+  (Array.isArray(data)?data:[]).forEach(o => { if(stats[o.status] !== undefined) stats[o.status]++; });
+  $('#statsBox').innerHTML = `<div class="st"><b>${list.length}</b><span>فیلتر شده</span></div>
+  <div class="st"><b>${stats.new}</b><span>جدید</span></div>
+  <div class="st"><b>${stats.paid}</b><span>پرداخت شده</span></div>
+  <div class="st"><b>${stats.sent}</b><span>ارسال شده</span></div>`;
+  $('#ordersBody').innerHTML = list.map(o => `<tr>
+    <td>#${o.id}</td>
+    <td>${new Date(o.created_at).toLocaleDateString('fa-IR')}</td>
+    <td>${o.name || '-'}</td>
+    <td><b dir="ltr">${o.phone || '-'}</b></td>
+    <td>${o.email || '-'}</td>
+    <td>${o.product || '-'}</td>
+    <td dir="ltr">${o.ref || '-'}</td>
+    <td><span class="status-pill status-${o.status}">${{'new':'جدید','paid':'پرداخت شده','sent':'ارسال شده'}[o.status] || o.status}</span></td>
+    <td><select data-id="${o.id}" class="stSel">
+      <option value="new"${o.status==='new'?' selected':''}>جدید</option>
+      <option value="paid"${o.status==='paid'?' selected':''}>پرداخت شده</option>
+      <option value="sent"${o.status==='sent'?' selected':''}>ارسال شده</option>
+    </select></td>
+  </tr>`).join('');
+  document.querySelectorAll('.stSel').forEach(sel => sel.onchange = async () => {
+    await fetch('/api/db?t=set_status', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: sel.dataset.id, status: sel.value }) });
+    loadOrders();
+  });
+}
+function exportCSV(){
+  fetch('/api/db?t=all_orders').then(r=>r.json()).then(data => {
+    const rows = [['کد','تاریخ','نام','موبایل','ایمیل','محصول','کد واریز','وضعیت','یادداشت']];
+    (Array.isArray(data)?data:[]).forEach(o => rows.push([o.id, new Date(o.created_at).toLocaleString('fa-IR'), o.name, o.phone, o.email, o.product, o.ref, o.status, o.note || '']));
+    const BOM = '\uFEFF';
+    const csv = BOM + rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'dailyfitbeat-orders-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+  });
+}
+
+// ---------- پنل کاربری ----------
+async function initUser(){
+  if(page !== 'user') return;
+  if(!USER){ $('#userStat').textContent = 'لطفاً اول وارد شو'; return; }
+  $('#userStat').textContent = USER.email;
+  $('#userBody').style.display = 'block';
+  const { data: prof } = await sb.from('profiles').select('*').eq('id', USER.id).maybeSingle();
+  $('#uName').textContent = (prof && prof.name) || (USER.user_metadata && USER.user_metadata.full_name) || '—';
+  $('#uEmail').textContent = USER.email;
+  $('#uPhone').textContent = (prof && prof.phone) || '—';
+  $('#phEdit').onclick = phoneModal;
+  const o = await (await fetch('/api/db?t=my_orders&uid=' + USER.id)).json();
+  $('#myOrders').innerHTML = (Array.isArray(o) && o.length) ? o.map(x => `<div class="my-order"><div><b>#${x.id}</b> — ${x.product}<br><small>${new Date(x.created_at).toLocaleString('fa-IR')}</small></div><span class="status-pill status-${x.status}">${{'new':'جدید','paid':'پرداخت شده','sent':'ارسال شده'}[x.status] || x.status}</span></div>`).join('') : '<p>هنوز سفارشی نداری</p>';
+  const f = await (await fetch('/api/db?t=my_favs&uid=' + USER.id)).json();
+  if(Array.isArray(f) && f.length){
+    await loadAll();
+    $('#myFavs').innerHTML = f.map(x => { const r = ALL.find(a => a.slug === x.recipe_slug); return r ? card(r) : ''; }).join('');
+  } else {
+    $('#myFavs').innerHTML = '<p>هنوز رسپی موردعلاقه‌ای ثبت نکردی</p>';
+  }
+}
+
 async function loadAll(){ const r = await fetch('/api/db?t=all'); ALL = await r.json(); }
-const ob = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); }), { threshold:.15 });
-function watchRev(){ document.querySelectorAll('.rev').forEach(el => ob.observe(el)); }
 
 injectHeader(); injectFooter(); bindScroll();
 document.documentElement.lang = lang;
 document.documentElement.dir = lang==='fa' ? 'rtl' : 'ltr';
-initSearch(); initFinder(); initRecipes(); initDetail(); initOrder(); watchRev();
+initSearch(); initFinder(); initRecipes(); initDetail(); initOrder();
 if(page === 'home'){ loadPopular(); loadAll(); }
 if(page === 'recipes'){ loadAll().then(renderRecipes); }
-if(!ING.length) fetch('/api/db?t=ingredients').then(r=>r.json()).then(d=>ING=d);
