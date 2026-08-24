@@ -7,19 +7,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.pl-hero{background:#f6f3ec;padding:50px 0}
-.ph-in{display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:26px;align-items:center}
+.pl-hero{position:relative;min-height:86vh;background:#f6f3ec url('img/hero-planner.jpg') center/cover no-repeat;display:flex;align-items:center;overflow:hidden;padding:110px 0 60px}
+.pl-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(to left,rgba(246,243,236,.97) 0%,rgba(246,243,236,.92) 45%,rgba(246,243,236,.35) 78%,rgba(246,243,236,.08) 100%)}
+.ph-in{position:relative;z-index:2;display:grid;grid-template-columns:1fr .95fr;gap:30px;align-items:center;width:100%}
 .ph-text h1{font-size:clamp(26px,3.6vw,44px);font-weight:900;color:#1e2b1c;line-height:1.5}
 .ph-text h1 span{color:#2d6a35}
-.ph-text p{color:#5a655a;line-height:2;margin:12px 0 18px}
+.ph-text p{color:#4d584d;line-height:2;margin:12px 0 18px}
 .ph-feats{display:flex;gap:22px;flex-wrap:wrap}
 .ph-feats div{text-align:center;font-size:12px;color:#3c4a3c}
 .ph-feats span{display:block;font-size:24px;margin-bottom:6px}
-.ph-img img{width:100%;border-radius:26px;box-shadow:0 16px 50px rgba(30,43,28,.15)}
-.ph-card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 10px 34px rgba(30,43,28,.10)}
+.ph-card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 10px 34px rgba(30,43,28,.12)}
 .ph-card>b{display:block;margin-bottom:16px}
 .steps{display:flex;justify-content:space-between;margin-bottom:18px}
-.step{text-align:center;font-size:11px;color:#8a938a;position:relative;flex:1}
+.step{text-align:center;font-size:11px;color:#8a938a;flex:1}
 .step i{display:flex;width:40px;height:40px;margin:0 auto 6px;border-radius:50%;background:#f0efe9;align-items:center;justify-content:center;font-style:normal}
 .step.on{color:#1e2b1c;font-weight:700}
 .step.on i{background:#2d6a35}
@@ -36,7 +36,7 @@
 .stc b{display:block;font-size:30px;font-weight:900;margin:8px 0}
 .stc small{font-size:12px}
 .stc .row{display:flex;gap:8px;justify-content:center;margin-top:12px}
-.stc select{border:0;border-radius:10px;padding:7px 10px;font:inherit;font-size:12px;background:rgba(255,255,255,.9)}
+.stc select{border:0;border-radius:10px;padding:7px 10px;font:inherit;font-size:12px;background:rgba(255,255,255,.9);color:#1e2b1c}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:900px){.two-col{grid-template-columns:1fr}}
 .panel{background:#f7f6f1;border-radius:18px;padding:22px}
@@ -82,7 +82,6 @@
       <div><span>🎯</span>دقیق و شخصی‌سازی‌شده</div>
     </div>
   </div>
-  <div class="ph-img"><img src="img/hero-planner.jpg" alt="برنامه غذایی"></div>
   <div class="ph-card">
     <b>مراحل تکمیل برنامه</b>
     <div class="steps">
@@ -101,7 +100,6 @@
 <section><div class="container">
   <div class="calc-card">
     <div class="calc-head"><h2>🌿 محاسبه‌گر هوشمند نیاز روزانه</h2><p>با استفاده از فرمول‌های علمی، نیاز کالری و ریزمغذی‌های شما محاسبه می‌شود.</p></div>
-
     <div class="stat3">
       <div class="stc g"><small>متابولیسم پایه شما (BMR)</small><b id="bmrV">—</b><small>کیلوکالری در روز</small></div>
       <div class="stc"><small>کل کالری مورد نیاز شما (TDEE)</small><b id="tdeeV">—</b><small>کیلوکالری در روز</small></div>
@@ -112,7 +110,6 @@
         </div>
       </div>
     </div>
-
     <div class="two-col">
       <div class="panel">
         <h4>ریزمغذی‌ها و نیازهای روزانه</h4>
@@ -137,7 +134,6 @@
         </div>
       </div>
     </div>
-
     <h3 style="text-align:center;margin-top:26px">اطلاعات شما</h3>
     <div class="form-grid">
       <div class="fg"><label>سن</label><input id="iAge" type="number" value="29"></div>
