@@ -3,50 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="DailyFitBeat PRO — برنامه غذایی شخصی، دستیار AI، لیست خرید هوشمند و داشبورد هفتگی">
 <title>PRO | DailyFitBeat</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.pro-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:30px 0}
+.pro-item{background:#fff;border-radius:20px;padding:26px;box-shadow:0 4px 16px rgba(0,0,0,.05);text-align:center}
+.pro-item span{font-size:34px}
+.pro-item b{display:block;margin:12px 0 6px}
+.pro-item p{color:#666;font-size:13px}
+.price-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;max-width:820px;margin:30px auto}
+.price-card{background:#fff;border-radius:24px;padding:30px;box-shadow:0 4px 16px rgba(0,0,0,.06);text-align:center}
+.price-card.hot{background:#2d6a35;color:#fff;transform:scale(1.03)}
+.price-card h3{font-size:20px}
+.price-card .p{font-size:26px;font-weight:900;margin:12px 0}
+.price-card ul{list-style:none;text-align:right;margin:16px 0}
+.price-card li{padding:7px 0;border-bottom:1px dashed rgba(128,128,128,.25);font-size:14px}
+</style>
 </head>
 <body data-page="pro">
 <header id="hdr"></header>
 
-<div class="page-head"><div class="container"><h1>DailyFitBeat PRO</h1><p data-fa="غذا رو انتخاب نکن؛ بذار ما برات انتخاب کنیم" data-en="Let us choose for you">غذا رو انتخاب نکن؛ بذار ما برات انتخاب کنیم</p></div></div>
+<div class="page-head"><div class="container"><h1>DailyFitBeat PRO</h1><p>غذا رو انتخاب نکن؛ بذار ما برات انتخاب کنیم</p></div></div>
 
-<section class="pro" style="padding-top:60px">
-  <div class="container pro-wrap">
-    <div class="pro-info">
-      <span class="badge">PRO</span>
-      <h2 data-fa="کل هفته‌ات، چیده‌شده و هوشمند" data-en="Your whole week, planned smartly">کل هفته‌ات، چیده‌شده و هوشمند</h2>
-      <ul>
-        <li data-fa="برنامه شخصی با قد، وزن و هدف تو" data-en="Plan based on your body & goal">برنامه شخصی با قد، وزن و هدف تو</li>
-        <li data-fa="دستیار AI: «مرغ و قارچ دارم، ۲۵ دقیقه وقت دارم»" data-en="AI assistant with time & ingredients">دستیار AI: «مرغ و قارچ دارم، ۲۵ دقیقه وقت دارم»</li>
-        <li data-fa="لیست خرید هوشمند با مقدار دقیق" data-en="Smart shopping list with quantities">لیست خرید هوشمند با مقدار دقیق</li>
-        <li data-fa="داشبورد هفتگی وعده‌ها" data-en="Weekly meal dashboard">داشبورد هفتگی وعده‌ها</li>
-        <li data-fa="ذخیره نامحدود + جایگزین هوشمند مواد" data-en="Unlimited saves + smart substitution">ذخیره نامحدود + جایگزین هوشمند مواد</li>
-      </ul>
-      <a class="btn big" href="market.html" data-fa="شروع رایگان" data-en="Start free">شروع رایگان</a>
-    </div>
-    <div class="pro-phone rev">
-      <div class="phone">
-        <div class="ph-head" data-fa="برنامه این هفته" data-en="This week">برنامه این هفته</div>
-        <div class="ph-row"><i class="d g"></i><span>شنبه — فاخیتا مرغ · ۴۸۰ کالری</span></div>
-        <div class="ph-row"><i class="d o"></i><span>یکشنبه — مرغ و بروکلی · ۳۲۰ کالری</span></div>
-        <div class="ph-row"><i class="d g"></i><span>دوشنبه — قلیه ماهی · ۳۸ کالری</span></div>
-        <div class="ph-row"><i class="d o"></i><span>سه‌شنبه — سالاد نخود · ۲۸۰ کالری</span></div>
-        <div class="ph-sum" data-fa="میانگین پروتئین روزانه: ۱۲۰g" data-en="Avg daily protein: 120g">میانگین پروتئین روزانه: ۱۲g</div>
-      </div>
-    </div>
+<section><div class="container">
+  <div class="pro-grid">
+    <div class="pro-item"><span>🧠</span><b>برنامه شخصی</b><p>برنامه شخصی با قد، وزن و هدف تو</p></div>
+    <div class="pro-item"><span>🤖</span><b>دستیار AI</b><p>«مرغ و قارچ دارم، ۲۵ دقیقه وقت دارم»</p></div>
+    <div class="pro-item"><span>🛒</span><b>لیست خرید هوشمند</b><p>لیست خرید هوشمند با مقدار دقیق</p></div>
+    <div class="pro-item"><span>📊</span><b>داشبورد هفتگی</b><p>داشبورد هفتگی وعده‌ها و پیشرفت</p></div>
+    <div class="pro-item"><span>☁️</span><b>ذخیره نامحدود</b><p>ذخیره نامحدود + جایگزین هوشمند مواد</p></div>
   </div>
-</section>
-
-<section class="trust">
-  <div class="container">
-    <h2 data-fa="پول رو بابت زمان و شخصی‌سازی بده، نه رسپی" data-en="Pay for time & personalization">پول رو بابت زمان و شخصی‌سازی بده، نه رسپی</h2>
-    <div class="trust-3"><b>رایگان: رسپی و جستجو</b><b>PRO: برنامه و AI</b><b>فیت مارکت: پک‌ها</b></div>
+  <div class="price-cards">
+    <div class="price-card"><h3>رایگان</h3><div class="p">۰ تومان</div><ul><li>همه رسپی‌ها و جستجو</li><li>برنامه غذایی پایه</li><li>«امروز چی داری؟»</li></ul><a class="btn ghost" href="recipes.html">شروع کن</a></div>
+    <div class="price-card hot"><h3>PRO</h3><div class="p">به‌زودی</div><ul><li>همه امکانات رایگان</li><li>دستیار AI و داشبورد</li><li>ذخیره نامحدود برنامه‌ها</li><li>اولویت پشتیبانی</li></ul><a class="btn" href="planner.html">امتحان برنامه غذایی</a></div>
   </div>
-</section>
+</div></section>
 
 <footer id="ftr"></footer>
 <script src="app.js"></script>
