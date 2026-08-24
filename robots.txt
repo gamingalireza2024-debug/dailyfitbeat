@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /user
+Disallow: /api/
+Disallow: /checkout
+
+Sitemap: https://dailyfitbeat.vercel.app/sitemap.xml
