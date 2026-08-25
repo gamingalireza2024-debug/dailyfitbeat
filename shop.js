@@ -1,23 +1,19 @@
-// DailyFitBeat — جریان خرید (Manual فعلاً، آماده برای Gateway)
+// DailyFitBeat — جریان خرید (Manual فعال + معماری آماده برای Gateway)
 const CARD_NUMBER = "6037-9975-0000-0000"; // ⚠️ شماره کارت واقعی خودت رو اینجا بذار
 (function () {
   function modal() {
     let m = document.getElementById('shopModal');
     if (m) return m;
-    document.body.insertAdjacentHTML('beforeend', `<div id="shopModal" class="modal"><div class="modal-box" style="max-width:480px">
+    document.body.insertAdjacentHTML('beforeend', `<div id="shopModal" class="modal" style="display:none"><div class="modal-box" style="max-width:480px">
       <h3 id="smTitle">ثبت سفارش</h3>
       <div id="smBody"></div>
     </div></div>`);
     return document.getElementById('shopModal');
   }
-  async function token() {
-    const s = (await DFB.sb.auth.getSession()).data.session;
-    return s ? s.access_token : null;
-  }
   async function api(t, opts) {
-    const tk = await token();
+    const s = (await DFB.sb.auth.getSession()).data.session;
     const hd = { 'Content-Type': 'application/json' };
-    if (tk) hd.Authorization = 'Bearer ' + tk;
+    if (s) hd.Authorization = 'Bearer ' + s.access_token;
     return fetch('/api/db?t=' + t, Object.assign({ headers: hd }, opts || {}));
   }
   window.DFB_buy = async function (payload, title) {
@@ -25,7 +21,7 @@ const CARD_NUMBER = "6037-9975-0000-0000"; // ⚠️ شماره کارت واق�
     const m = modal();
     m.style.display = 'flex';
     document.getElementById('smTitle').textContent = 'خرید: ' + title;
-    document.getElementById('smBody').innerHTML = `<p style="font-size:13px;color:#667">کد تخفیف داری؟</p>
+    document.getElementById('smBody').innerHTML = `<p style="font-size:13px;color:#667">کد تخفیف داری؟ (اختیاری)</p>
       <input id="smCoupon" placeholder="کد تخفیف" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;font:inherit">
       <button id="smGo" class="btn" style="margin-top:10px;width:100%">ادامه</button>
       <button id="smX" class="btn ghost" style="margin-top:6px;width:100%">انصراف</button>`;
@@ -48,12 +44,11 @@ const CARD_NUMBER = "6037-9975-0000-0000"; // ⚠️ شماره کارت واق�
       };
     };
   };
-  // اتصال به دکمه‌های خرید
-  function bind() {
-    document.querySelectorAll('.p-cart').forEach(b => b.onclick = () => DFB_buy({ product_id: +b.dataset.id }, b.dataset.t));
-    document.querySelectorAll('#planCards .price-card .btn').forEach(b => {
-      b.onclick = (e) => { e.preventDefault(); const key = b.closest('.price-card').dataset.key; const id = b.closest('.price-card').dataset.id; DFB_buy({ plan_id: +id }, b.closest('.price-card').querySelector('h3').textContent); };
-    });
-  }
-  const t = setInterval(() => { if (window.DFB && DFB.sb) { clearInterval(t); bind(); } }, 500);
+  // delegation — بدون وابستگی به زمان رندر
+  document.addEventListener('click', (e) => {
+    const cart = e.target.closest('.p-cart');
+    if (cart) { e.preventDefault(); DFB_buy({ product_id: +cart.dataset.id }, cart.dataset.t); return; }
+    const planBtn = e.target.closest('#planCards .price-card .btn');
+    if (planBtn) { e.preventDefault(); const c = planBtn.closest('.price-card'); DFB_buy({ plan_id: +planBtn.dataset.id }, c.querySelector('h3').textContent); }
+  });
 })();
