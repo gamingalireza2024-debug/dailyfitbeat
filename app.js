@@ -156,11 +156,35 @@ async function loadPopular(){
   if(!data.length) return;
   el.innerHTML = card(data[0], true) + data.slice(1).map(x => card(x)).join('');
 }
-let curCat = 'all', curGoal = 'all', curQ = '';
+let curCat = 'all', curGoal = 'all', curQ = '', curRegion = 'all';
 function renderRecipes(){
   const el = $('#recipeGrid'); if(!el) return;
-  const list = ALL.filter(r => (curCat==='all' || r.category===curCat) && (curGoal==='all' || (r.tags||[]).includes(curGoal)) && (!curQ || curQ.split(' ').every(w => hay(r).includes(w))));
+  const list = ALL.filter(r => (curCat==='all' || r.category===curCat) && (curRegion==='all' || (r.region||'')===curRegion) && (curGoal==='all' || (r.tags||[]).includes(curGoal)) && (!curQ || curQ.split(' ').every(w => hay(r).includes(w))));
   el.innerHTML = list.map(r => card(r)).join('') || `<p class="no-res">چیزی در این دسته نیست</p>`;
+}
+function renderTiles(){
+  const el = $('#tiles'); if(!el || !ALL.length) return;
+  const cats = [['iranian','خورشتی و ایرانی','img/iranian.jpg'],['salad','سالادها','img/salad.jpg'],['sandwich','ساندویچ‌ها','img/sandwich.jpg'],['breakfast','صبحانه‌ها','img/breakfast.jpg'],['soup','سوپ‌ها','img/soup.jpg']];
+  const regions = {};
+  ALL.forEach(r => { const g = r.region || 'ایران'; regions[g] = (regions[g]||0)+1; });
+  const regList = Object.entries(regions).filter(([k,v]) => k !== 'ایران' && v > 0).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  let html = `<button class="tile${curCat==='all'&&curRegion==='all'?' on':''}" data-cat="all" data-region="all"><img src="img/hero-home.jpg" alt=""><b>همه</b><span>${ALL.length.toLocaleString('fa-IR')}</span></button>`;
+  cats.forEach(([k,f,img]) => {
+    const n = ALL.filter(r => r.category===k).length;
+    if(!n) return;
+    html += `<button class="tile${curCat===k?' on':''}" data-cat="${k}" data-region="all"><img src="${img}" alt=""><b>${f}</b><span>${n.toLocaleString('fa-IR')}</span></button>`;
+  });
+  regList.forEach(([k,n]) => {
+    const first = ALL.find(r => (r.region||'')===k && r.image);
+    html += `<button class="tile${curRegion===k?' on':''}" data-cat="all" data-region="${k}"><img src="${first?first.image:'img/hero-home.jpg'}" alt=""><b>${ADJ[k] ? 'غذای '+ADJ[k] : k}</b><span>${n.toLocaleString('fa-IR')}</span></button>`;
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.tile').forEach(t => t.onclick = () => {
+    curCat = t.dataset.cat; curRegion = t.dataset.region;
+    el.querySelectorAll('.tile').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    renderRecipes();
+  });
 }
 function initRecipes(){
   if(page !== 'recipes') return;
@@ -171,7 +195,7 @@ function initRecipes(){
     ch.classList.add('on');
     if(ch.dataset.cat !== undefined) curCat = ch.dataset.cat;
     if(ch.dataset.goal !== undefined) curGoal = ch.dataset.goal;
-    renderRecipes();
+    renderTiles(); renderRecipes();
   });
 }
 async function initDetail(){
@@ -423,4 +447,4 @@ document.documentElement.lang = lang;
 document.documentElement.dir = lang==='fa' ? 'rtl' : 'ltr';
 initSearch(); initFinder(); initRecipes(); initDetail(); initOrder(); initMarket(); initPro();
 if(page === 'home'){ loadPopular(); }
-if(page === 'recipes'){ loadAll().then(renderRecipes); }
+if(page === 'recipes'){ loadAll().then(() => { renderTiles(); renderRecipes(); }); }
