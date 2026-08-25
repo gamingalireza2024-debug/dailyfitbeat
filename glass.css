@@ -138,3 +138,30 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   html{scroll-behavior:auto}
 }
+/* ===== فاز ۴: هدر و فوتر پریمیوم ===== */
+
+/* هدر: شیشه‌تر + واکنش به اسکرول */
+#hdr{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(255,255,255,.85)}
+#hdr.scrolled{background:rgba(255,255,255,.96);box-shadow:0 10px 30px rgba(30,43,28,.14)}
+
+/* ناوبری: هاور نرم */
+#hdr nav a{border-radius:12px;transition:background .2s, color .2s}
+#hdr nav a:hover{background:#e8f4e9;color:#2d6a35}
+
+/* لوگو: چرخش بازیگوش */
+#hdr .logo img{transition:transform .3s ease}
+#hdr .logo:hover img{transform:rotate(-6deg) scale(1.06)}
+
+/* چیپس‌های حساب */
+.auth-chip{transition:background .2s, transform .15s}
+.auth-chip:hover{transform:translateY(-1px)}
+
+/* فوتر پریمیوم */
+#ftr{background:#14201a;color:#cfd8cf;margin-top:70px}
+#ftr .f-cols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:26px;padding:50px 0 30px}
+#ftr b{color:#fff;display:block;margin-bottom:12px}
+#ftr a{display:block;color:#9fb3a1;text-decoration:none;padding:5px 0;font-size:13px;transition:color .2s, transform .2s}
+#ftr a:hover{color:#8fd18f;transform:translateX(-4px)}
+#ftr .f-logo{width:56px;border-radius:14px;margin-bottom:12px}
+#ftr .f-bottom{border-top:1px solid rgba(255,255,255,.08);padding:16px 0;text-align:center;color:#7d8f80;font-size:12px}
+@media(max-width:900px){#ftr .f-cols{grid-template-columns:1fr 1fr}}
