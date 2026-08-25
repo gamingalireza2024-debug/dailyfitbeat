@@ -25,12 +25,12 @@
 .rel-more{margin-top:16px;color:#667066;font-size:14px}
 .rel-more a{color:#2d6a35;font-weight:700}
 @media(max-width:900px){.rd-wrap{grid-template-columns:1fr}}
-  .nutrition-grid{display:grid;gap:12px;margin:20px 0}
-.nut-bar{background:#fff;border-radius:14px;padding:14px 18px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
-.nut-bar b{font-size:20px;color:#2d6a35;display:block}
-.nut-bar span{font-size:12px;color:#777}
-.nut-bar .bar{height:6px;background:#e8f4e9;border-radius:99px;margin-top:8px;overflow:hidden}
-.nut-bar .bar div{height:100%;background:linear-gradient(90deg,#2d6a35,#4a9d5f);border-radius:99px}
+.nut-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;margin:14px 0}
+.nut{background:#fff;border-radius:12px;padding:10px 6px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.nut b{font-size:15px;color:#1e2b1c;display:block}
+.nut span{font-size:10px;color:#777}
+.nut .nb{display:block;height:4px;border-radius:99px;background:#ececec;margin-top:7px;position:relative;overflow:hidden}
+.nut .nb:after{content:"";position:absolute;top:0;bottom:0;inset-inline-start:0;width:var(--w);background:var(--c);border-radius:99px}
 .steps-section,.tips-section,.subs-section,.video-section{margin:26px 0}
 .steps-section h3,.tips-section h3,.subs-section h3,.video-section h3{font-size:18px;margin-bottom:14px}
 .steps-list{list-style:none;counter-reset:step}
