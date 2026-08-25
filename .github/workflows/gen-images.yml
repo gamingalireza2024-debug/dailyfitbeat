@@ -1,13 +1,12 @@
 name: gen-food-images
+
 on:
   workflow_dispatch:
     inputs:
       force:
-        description: regenerate all (true/false)
-        required: false
-        default: "false"
-permissions:
-  contents: write
+        description: "1 = بازسازی عکس‌های موجود"
+        default: "0"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,19 +16,23 @@ jobs:
         with:
           node-version: 20
       - run: npm i sharp
+
       - name: Add recipes
-        run: node scripts/add-recipes.mjs || true
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/add-recipes.mjs
+
       - name: Heroes
         run: node scripts/heroes.mjs || true
+
       - name: Generate
         env:
           FORCE: ${{ github.event.inputs.force }}
         run: node scripts/gen-images.mjs
+
       - name: Commit
         run: |
           git config user.name "dfb-bot"
-          git config user.email "bot@dailyfitbeat.app"
+          git config user.email "bot@dailyfitbeat.ir"
           git add img
-          git diff --staged --quiet || git commit -m "food images"
-          git pull --rebase origin main || true
-          git push
+          (git diff --staged --quiet || git commit -m 'food images') && (git pull --rebase origin main || true) && git push
