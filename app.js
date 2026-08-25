@@ -185,14 +185,17 @@ async function initDetail(){
   const ings = Array.isArray(r.ingredients) ? r.ingredients : [];
   let favOn = false;
   if(sb && USER){ const { data } = await sb.from('favorites').select('id').eq('recipe_slug', r.slug).maybeSingle(); favOn = !!data; }
-  const nutritionBars = `
-    <div class="nutrition-grid">
-      <div class="nut-bar"><b>${r.kcal || 0}</b><span>کالری</span><div class="bar"><div style="width:${Math.min(100, (r.kcal/2000)*100)}%"></div></div></div>
-      <div class="nut-bar"><b>${r.protein || 0}g</b><span>پروتئین</span><div class="bar"><div style="width:${Math.min(100, (r.protein/50)*100)}%"></div></div></div>
-      ${r.carbs != null ? `<div class="nut-bar"><b>${r.carbs}g</b><span>کربوهیدرات</span><div class="bar"><div style="width:${Math.min(100, (r.carbs/100)*100)}%"></div></div></div>` : ''}
-      ${r.fat != null ? `<div class="nut-bar"><b>${r.fat}g</b><span>چربی</span><div class="bar"><div style="width:${Math.min(100, (r.fat/70)*100)}%"></div></div></div>` : ''}
-      ${r.fiber != null ? `<div class="nut-bar"><b>${r.fiber}g</b><span>فیبر</span><div class="bar"><div style="width:${Math.min(100, (r.fiber/30)*100)}%"></div></div></div>` : ''}
-    </div>`;
+  const fatC = (r.fat != null && r.fat > 20) ? '#d33' : '#2d6a35';
+  const sugC = (r.sugar != null && r.sugar > 10) ? '#e9b949' : '#2d6a35';
+  const nut = (val, label, w, color) => `<div class="nut"><b>${val}</b><span>${label}</span><i class="nb" style="--w:${Math.min(100, w)}%;--c:${color}"></i></div>`;
+  const nutritionBars = `<div class="nut-row">
+    ${nut(r.kcal || 0, 'انرژی (کالری)', (r.kcal/2000)*100, '#2d6a35')}
+    ${nut((r.protein||0) + 'g', 'پروتئین', (r.protein/50)*100, '#2d6a35')}
+    ${r.carbs != null ? nut(r.carbs + 'g', 'کربوهیدرات', (r.carbs/100)*100, '#2d6a35') : ''}
+    ${r.fat != null ? nut(r.fat + 'g', 'چربی', (r.fat/70)*100, fatC) : ''}
+    ${r.sugar != null ? nut(r.sugar + 'g', 'قند', (r.sugar/50)*100, sugC) : ''}
+    ${r.fiber != null ? nut(r.fiber + 'g', 'فیبر', (r.fiber/30)*100, '#2d6a35') : ''}
+  </div>`;
   const stepsHtml = Array.isArray(r.steps) && r.steps.length ? `
     <div class="steps-section"><h3>مراحل پخت</h3><ol class="steps-list">
       ${r.steps.map(s => `<li><span class="step-num">${''}</span><p>${s}</p></li>`).join('')}
