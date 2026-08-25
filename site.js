@@ -4,7 +4,7 @@
     name: "DailyFitBeat",
     nameFa: "دیلی بیت",
     tagline: "خوب بخور، بهتر زندگی کن",
-    url: location.protocol + "//" + location.hostname,
+    url: "https://dailyfitbeat.ir",
     locale: "fa_IR",
     social: { instagram: "https://instagram.com/dailyfitbeat" },
     defaultImage: "/img/og-default.jpg",
@@ -42,7 +42,7 @@
     var title = m.title ? (m.title + " | " + SITE.name) : (SITE.name + " — " + SITE.tagline);
     document.title = title;
     var desc = m.desc || SITE.defaultDesc;
-    var url = m.path ? (SITE.url + m.path) : (location.href.split('#')[0]);
+    var url = m.path ? (SITE.url + m.path) : (SITE.url + location.pathname);
     var img = SITE.url + (m.image || SITE.defaultImage);
     upsertName('description', desc);
     upsertProp('og:title', title);
@@ -68,7 +68,7 @@
   }
 
   window.DFB_setRecipeMeta = function (r) {
-    setMeta({ title: r.name_fa, desc: r.desc_fa || (r.name_fa + " — رسپی سالم با ارزش غذایی دقیق"), path: "/recipe.html?slug=" + r.slug, image: r.image || SITE.defaultImage, type: "article" });
+    setMeta({ title: r.name_fa, desc: r.desc_fa || (r.name_fa + " — رسپی سالم با ارزش غذایی دقیق"), path: "/recipes/" + r.slug, image: r.image || SITE.defaultImage, type: "article" });
   };
 
   var page = document.body.getAttribute('data-page') || 'home';
