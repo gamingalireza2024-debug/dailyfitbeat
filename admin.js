@@ -3,12 +3,7 @@
   let sb = null, started = false;
   const wait = setInterval(() => {
     if (started || !window.DFB || !DFB.sb) return;
-    if (DFB.isAdmin()) {
-      started = true;
-      clearInterval(wait);
-      sb = DFB.sb;
-      init();
-    }
+    if (DFB.isAdmin()) { started = true; clearInterval(wait); sb = DFB.sb; init(); }
   }, 400);
 
   async function init() {
@@ -17,8 +12,8 @@
       b.classList.add('on');
       document.querySelectorAll('.apane').forEach(p => p.style.display = (p.id === 'pane-' + b.dataset.t) ? 'block' : 'none');
     });
-    await loadProds(); await loadPlans();
-    bindProdAdd(); bindPlanAdd();
+    await loadProds(); await loadPlans(); await loadRecipes();
+    bindProdAdd(); bindPlanAdd(); bindRecipeForm();
   }
 
   // ---------- محصولات ----------
@@ -117,6 +112,92 @@
       });
       ['pTitle','pPeriod','pPrice','pOld'].forEach(id => document.getElementById(id).value = '');
       loadPlans();
+    };
+  }
+
+  // ---------- رسپی‌ها ----------
+  let REC_CACHE = [];
+  async function loadRecipes() {
+    const data = await (await fetch('/api/db?t=all')).json();
+    REC_CACHE = Array.isArray(data) ? data : [];
+    document.getElementById('recBody').innerHTML = REC_CACHE.map(r => `<tr>
+      <td><b>${r.name_fa}</b><br><small dir="ltr">${r.slug}</small></td>
+      <td>${r.category}</td>
+      <td>${r.region || '-'}</td>
+      <td>${r.kcal}</td>
+      <td><img src="${r.image || ''}" style="width:44px;height:44px;border-radius:10px;object-fit:cover"></td>
+      <td><button class="btn small edR" data-s="${r.slug}">ویرایش</button></td>
+      <td><button class="del-btn dlR" data-s="${r.slug}">حذف</button></td>
+    </tr>`).join('');
+    document.querySelectorAll('.edR').forEach(b => b.onclick = () => fillForm(REC_CACHE.find(x => x.slug === b.dataset.s)));
+    document.querySelectorAll('.dlR').forEach(b => b.onclick = async () => {
+      if (!confirm('این رسپی حذف بشه؟')) return;
+      await sb.from('recipes').delete().eq('slug', b.dataset.s);
+      loadRecipes();
+    });
+  }
+  function fillForm(r) {
+    const g = id => document.getElementById(id);
+    g('rSlug').value = r ? r.slug : ''; g('rSlug').disabled = !!r;
+    g('rNameFa').value = r ? r.name_fa : '';
+    g('rNameEn').value = r ? (r.name_en || '') : '';
+    g('rCat').value = r ? r.category : 'main';
+    g('rRegion').value = r ? (r.region || '') : 'ایران';
+    g('rTime').value = r ? r.time_min : '';
+    g('rKcal').value = r ? r.kcal : '';
+    g('rProtein').value = r ? r.protein : '';
+    g('rCarbs').value = r && r.carbs != null ? r.carbs : '';
+    g('rFat').value = r && r.fat != null ? r.fat : '';
+    g('rFiber').value = r && r.fiber != null ? r.fiber : '';
+    g('rSugar').value = r && r.sugar != null ? r.sugar : '';
+    g('rImage').value = r ? (r.image || '') : '';
+    g('rVideo').value = r ? (r.video_url || '') : '';
+    g('rTags').value = r ? (r.tags || []).join(',') : '';
+    g('rKeys').value = r ? (r.keys || []).join(',') : '';
+    g('rDesc').value = r ? (r.desc_fa || '') : '';
+    g('rIngs').value = r ? (r.ingredients || []).map(i => i.fa + ':' + i.q).join('\n') : '';
+    g('rSteps').value = r ? (r.steps || []).join('\n') : '';
+    g('rTips').value = r ? (r.tips || []).join('\n') : '';
+    const f = document.getElementById('recForm');
+    f.style.display = 'grid';
+    f.scrollIntoView({ behavior: 'smooth' });
+  }
+  function bindRecipeForm() {
+    document.getElementById('rNew').onclick = () => fillForm(null);
+    document.getElementById('rSave').onclick = async () => {
+      const g = id => document.getElementById(id).value;
+      const slug = g('rSlug').trim();
+      if (!slug || !g('rNameFa').trim()) { alert('slug و نام فارسی لازمه'); return; }
+      const obj = {
+        slug,
+        name_fa: g('rNameFa').trim(),
+        name_en: g('rNameEn').trim() || g('rNameFa').trim(),
+        category: g('rCat'),
+        region: g('rRegion').trim() || 'ایران',
+        time_min: +g('rTime') || 30,
+        kcal: +g('rKcal') || 0,
+        protein: +g('rProtein') || 0,
+        carbs: g('rCarbs') === '' ? null : +g('rCarbs'),
+        fat: g('rFat') === '' ? null : +g('rFat'),
+        fiber: g('rFiber') === '' ? null : +g('rFiber'),
+        sugar: g('rSugar') === '' ? null : +g('rSugar'),
+        image: g('rImage').trim() || null,
+        video_url: g('rVideo').trim() || null,
+        desc_fa: g('rDesc').trim(),
+        tags: g('rTags').split(',').map(s => s.trim()).filter(Boolean),
+        keys: g('rKeys').split(',').map(s => s.trim()).filter(Boolean),
+        ingredients: g('rIngs').split('\n').map(l => { const [fa, q] = l.split(':'); return { fa: (fa || '').trim(), q: (q || '').trim() || 'به‌اندازه' }; }).filter(i => i.fa),
+        steps: g('rSteps').split('\n').map(s => s.trim()).filter(Boolean),
+        tips: g('rTips').split('\n').map(s => s.trim()).filter(Boolean)
+      };
+      const exists = REC_CACHE.find(x => x.slug === slug);
+            const res = exists
+        ? await sb.from('recipes').update(obj).eq('slug', slug)
+        : await sb.from('recipes').insert(obj);
+      if (res.error) { alert('خطا: ' + res.error.message); return; }
+      alert('ذخیره شد ✅');
+      document.getElementById('recForm').style.display = 'none';
+      loadRecipes();
     };
   }
 })();
