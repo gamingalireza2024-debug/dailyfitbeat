@@ -38,6 +38,17 @@
 .finder-row input{flex:1;min-width:200px;padding:12px;border-radius:12px;border:1px solid #ccc;font:inherit}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
 .no-res{color:#777}
+.insta-sec{background:#171310;padding:60px 0}
+.insta-sec .sec-head h2{color:#fff}
+.insta-sec .sec-head p{color:#bdb5ad}
+.reels{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:26px 0}
+.reel{position:relative;border-radius:20px;overflow:hidden;display:block;border:3px solid transparent;background:linear-gradient(#171310,#171310) padding-box,linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888) border-box;aspect-ratio:9/14}
+.reel img{width:100%;height:100%;object-fit:cover;opacity:.9;transition:.3s}
+.reel:hover img{transform:scale(1.05);opacity:1}
+.reel .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;background:rgba(255,255,255,.92);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#dc2743}
+.reel b{position:absolute;bottom:0;inset-inline:0;background:linear-gradient(transparent,rgba(0,0,0,.85));color:#fff;padding:26px 12px 12px;font-size:13px}
+.insta-cta{text-align:center}
+.insta-btn{background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);color:#fff;border:0}
 </style>
 </head>
 <body data-page="home">
@@ -84,6 +95,17 @@
 <section><div class="container">
   <div class="sec-head"><h2>محبوب‌های این هفته</h2></div>
   <div id="popularCards" class="cards"></div>
+</div></section>
+
+<section class="insta-sec"><div class="container">
+  <div class="sec-head"><h2>از اینستاگرام تا بشقاب</h2><p>ویدیوهای کوتاه پخت، پشت‌صحنه و رسپی‌های روزانه — هر ریلز یه رسپی اینجاست</p></div>
+  <div class="reels">
+    <a class="reel" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener"><img src="img/hero-home.jpg" alt="ریلز"><span class="play">▶</span><b>مرغ تریاکی در ۲۵ دقیقه</b></a>
+    <a class="reel" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener"><img src="img/hero-planner.jpg" alt="ریلز"><span class="play">▶</span><b>برنامه هفته رو بچین</b></a>
+    <a class="reel" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener"><img src="img/hero-store.jpg" alt="ریلز"><span class="play">▶</span><b>لیست خرید هوشمند</b></a>
+    <a class="reel" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener"><img src="img/hero-pro.jpg" alt="ریلز"><span class="play">▶</span><b>عضو PRO شو</b></a>
+  </div>
+  <div class="insta-cta"><a class="btn insta-btn" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener">📸 دنبال کن @dailyfitbeat</a></div>
 </div></section>
 
 <footer id="ftr"></footer>
