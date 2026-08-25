@@ -12,7 +12,7 @@ const diff = t => t <= 20 ? 'آسان' : t <= 60 ? 'متوسط' : 'مفصل';
 const ADJ = {'ایران':'ایرانی','گیلان':'گیلانی','ژاپن':'ژاپنی','تایلند':'تایلندی','اسپانیا':'اسپانیایی','مراکش':'مراکشی','فرانسه':'فرانسوی','ایتالیا':'ایتالیایی','چین':'چینی','هند':'هندی','ترکیه':'ترکی','مکزیک':'مکزیکی','انگلستان':'انگلیسی','یونان':'یونانی','کره':'کره‌ای','لبنان':'لبنانی'};
 const countryFa = reg => 'غذای ' + (ADJ[reg] || reg || 'ایرانی');
 const NAV = [['home','index.html','خانه','Home'],['recipes','recipes.html','رسپی‌ها','Recipes'],['planner','planner.html','برنامه غذایی','Meal Plan'],['market','market.html','فیت مارکت','Fit Market'],['pro','pro.html','PRO','PRO']];
-window.DFB = { get sb(){ return sb; }, get user(){ return USER; }, isAdmin: () => isAdmin() };
+window.DFB = { get sb(){ return sb; }, get user(){ return USER; }, get all(){ return ALL; }, isAdmin: () => isAdmin() };
 
 async function loadAdminList(token){
   try {
@@ -120,7 +120,7 @@ function initSearch(){
 }
 function card(r, big){
   return `<a class="card${big?' big':''}" href="recipe.html?slug=${r.slug}">
-  <div class="c-img"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" loading="lazy"></div>
+  <div class="c-img"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" loading="lazy" decoding="async"></div>
   <div class="c-body"><h3>${r.name_fa}</h3>
   <div class="c-meta"><span>پخت: ${r.time_min} دقیقه</span><span>${r.kcal} کالری</span><span>پروتئین ${r.protein}g</span></div>
   <div class="c-tags"><i>${diff(r.time_min)}</i><i>${countryFa(r.region)}</i></div>
@@ -151,8 +151,9 @@ function initFinder(){
 }
 async function loadPopular(){
   const el = $('#popularCards'); if(!el) return;
-  const r = await fetch('/api/db?t=popular'); const data = await r.json();
-  if(!Array.isArray(data)) return;
+  if(!ALL.length) await loadAll();
+  const data = ALL.slice(0, 4);
+  if(!data.length) return;
   el.innerHTML = card(data[0], true) + data.slice(1).map(x => card(x)).join('');
 }
 let curCat = 'all', curGoal = 'all', curQ = '';
@@ -185,6 +186,7 @@ async function initDetail(){
   const ings = Array.isArray(r.ingredients) ? r.ingredients : [];
   let favOn = false;
   if(sb && USER){ const { data } = await sb.from('favorites').select('id').eq('recipe_slug', r.slug).maybeSingle(); favOn = !!data; }
+
   const fatC = (r.fat != null && r.fat > 20) ? '#d33' : '#2d6a35';
   const sugC = (r.sugar != null && r.sugar > 10) ? '#e9b949' : '#2d6a35';
   const nut = (val, label, w, color) => `<div class="nut"><b>${val}</b><span>${label}</span><i class="nb" style="--w:${Math.min(100, w)}%;--c:${color}"></i></div>`;
@@ -196,9 +198,10 @@ async function initDetail(){
     ${r.sugar != null ? nut(r.sugar + 'g', 'قند', (r.sugar/50)*100, sugC) : ''}
     ${r.fiber != null ? nut(r.fiber + 'g', 'فیبر', (r.fiber/30)*100, '#2d6a35') : ''}
   </div>`;
+
   const stepsHtml = Array.isArray(r.steps) && r.steps.length ? `
     <div class="steps-section"><h3>مراحل پخت</h3><ol class="steps-list">
-      ${r.steps.map(s => `<li><span class="step-num">${''}</span><p>${s}</p></li>`).join('')}
+      ${r.steps.map((s, i) => `<li><span class="step-num">${i+1}</span><p>${s}</p></li>`).join('')}
     </ol></div>` : '';
   const tipsHtml = Array.isArray(r.tips) && r.tips.length ? `
     <div class="tips-section"><h3>💡 نکات پخت</h3><ul class="tips-list">
@@ -214,8 +217,9 @@ async function initDetail(){
       <div class="video-thumb"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" alt="${r.name_fa}"><span class="play-btn">▶</span></div>
       <p>تماشای ویدیو در اینستاگرام</p>
     </a></div>` : '';
+
   el.innerHTML = `<div class="container rd-wrap">
-  <div class="rd-img"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" alt="${r.name_fa}"><button id="favBtn" class="heart${favOn?' on':''}">♥</button></div>
+  <div class="rd-img"><img src="${r.image || FALL[r.category] || 'img/hero.jpg'}" alt="${r.name_fa}" fetchpriority="high" decoding="async"><button id="favBtn" class="heart${favOn?' on':''}">♥</button></div>
   <div class="rd-info">
     <span class="rd-region">${countryFa(r.region)}</span>
     <h1>${r.name_fa}</h1><p class="rd-en">${r.name_en}</p>
@@ -236,6 +240,7 @@ async function initDetail(){
       <a class="btn ghost" href="recipes.html">همه رسپی‌ها</a>
     </div>
   </div></div>`;
+
   document.getElementById('favBtn').onclick = async () => {
     if(!USER){ alert('برای ذخیره علاقه‌مندی، اول با گوگل وارد شو ❤️'); doLogin(); return; }
     if(favOn){ await sb.from('favorites').delete().eq('user_id', USER.id).eq('recipe_slug', r.slug); favOn = false; }
@@ -310,9 +315,9 @@ async function initAdmin(){
   };
 }
 async function loadProdAdmin(){
+  const el = $('#prodBody'); if(!el) return;
   const data = await (await fetch('/api/db?t=products')).json();
   if(!Array.isArray(data)) return;
-  const el = $('#prodBody'); if(!el) return;
   el.innerHTML = data.map(p => `<tr>
     <td><b>${p.title_fa}</b></td>
     <td><input class="prIn" data-id="${p.id}" data-f="price_rial" type="number" value="${p.price_rial}" style="width:130px;padding:8px;border-radius:10px;border:1px solid #ccc"></td>
@@ -332,9 +337,9 @@ async function loadProdAdmin(){
   });
 }
 async function loadPlansAdmin(){
+  const el = $('#plansBody'); if(!el) return;
   const data = await (await fetch('/api/db?t=plans')).json();
   if(!Array.isArray(data)) return;
-  const el = $('#plansBody'); if(!el) return;
   el.innerHTML = data.map(p => `<tr>
     <td><b>${p.title_fa}</b> (${p.period})</td>
     <td><input class="plIn" data-id="${p.id}" data-f="price_rial" type="number" value="${p.price_rial}" style="width:130px;padding:8px;border-radius:10px;border:1px solid #ccc"></td>
@@ -417,5 +422,5 @@ injectHeader(); injectFooter(); bindScroll(); bootAuth();
 document.documentElement.lang = lang;
 document.documentElement.dir = lang==='fa' ? 'rtl' : 'ltr';
 initSearch(); initFinder(); initRecipes(); initDetail(); initOrder(); initMarket(); initPro();
-if(page === 'home'){ loadPopular(); loadAll(); }
+if(page === 'home'){ loadPopular(); }
 if(page === 'recipes'){ loadAll().then(renderRecipes); }
