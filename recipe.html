@@ -8,7 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.rd-wrap{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:start;padding:40px 0}
+.crumbs{padding:14px 0 0;font-size:13px;color:#77807a}
+.crumbs a{color:#2d6a35;text-decoration:none}
+.crumbs span{color:#555}
+.rd-wrap{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:start;padding:24px 0 40px}
 .rd-img img{width:100%;border-radius:26px;box-shadow:0 16px 50px rgba(30,43,28,.15)}
 .rd-en{color:#8a938a;margin:4px 0 10px}
 .rd-desc{color:#4d584d;line-height:2;margin:10px 0 16px}
@@ -16,12 +19,12 @@
 .ing-list li{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed #e3e3e3;font-size:14px}
 .ing-list li span{color:#2d6a35;font-weight:700}
 .f-cta{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
-@media(max-width:900px){.rd-wrap{grid-template-columns:1fr}}
-  .rel-sec{padding:10px 0 50px}
+.rel-sec{padding:10px 0 50px}
 .rel-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px}
 .rel-head h2{font-size:22px}
 .rel-more{margin-top:16px;color:#667066;font-size:14px}
 .rel-more a{color:#2d6a35;font-weight:700}
+@media(max-width:900px){.rd-wrap{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-page="recipe">
@@ -30,5 +33,6 @@
 <footer id="ftr"></footer>
 <script src="site.js"></script>
 <script src="app.js"></script>
+<script src="recipe-seo.js"></script>
 </body>
 </html>
