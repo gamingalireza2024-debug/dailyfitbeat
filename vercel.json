@@ -1,0 +1,13 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "dailyfitbeat.vercel.app" }],
+      "destination": "https://dailyfitbeat.ir/:path",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    { "source": "/recipes/:slug", "destination": "/recipe.html?slug=:slug" }
+  ]
+}
