@@ -165,3 +165,32 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 #ftr .f-logo{width:56px;border-radius:14px;margin-bottom:12px}
 #ftr .f-bottom{border-top:1px solid rgba(255,255,255,.08);padding:16px 0;text-align:center;color:#7d8f80;font-size:12px}
 @media(max-width:900px){#ftr .f-cols{grid-template-columns:1fr 1fr}}
+/* ===== فاز ۴: اکسنت‌های سه‌بعدی ظریف ===== */
+
+/* کلمه PRO شناور و سه‌بعدی */
+.pr-text h1 span{display:inline-block;animation:float3d 5s ease-in-out infinite;text-shadow:0 10px 30px rgba(45,106,53,.35)}
+@keyframes float3d{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-8px) rotate(-2deg)}
+}
+
+/* کارت‌های پلان: بلندشدن پریمیوم */
+.price-card{transition:transform .3s ease, box-shadow .3s ease}
+.price-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 20px 50px rgba(30,43,28,.18)}
+.price-card.hot{box-shadow:0 20px 60px rgba(45,106,53,.35)}
+
+/* روبان پیشنهاد ویژه: تکان بازیگوش */
+.ribbon{animation:wiggle 3s ease-in-out infinite}
+@keyframes wiggle{
+  0%,100%{transform:rotate(6deg)}
+  50%{transform:rotate(10deg) translateY(-2px)}
+}
+
+/* کارت‌های محصول مارکت */
+.pcard{transition:transform .25s ease, box-shadow .25s ease}
+.pcard:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(30,43,28,.15)}
+
+/* دکمه‌های بزرگ: درخشش هنگام هاور */
+.btn.big{position:relative;overflow:hidden}
+.btn.big:after{content:"";position:absolute;top:0;bottom:0;width:40%;inset-inline-start:-60%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.35),transparent);transition:inset-inline-start .5s ease}
+.btn.big:hover:after{inset-inline-start:120%}
