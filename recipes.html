@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="style.css">
 <style>
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0}
+.rec-search{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:14px 18px;display:flex;gap:10px;align-items:center;margin-top:-30px;position:relative;z-index:5}
+.rec-search input{border:0;outline:0;flex:1;font:inherit;font-size:14px;background:transparent}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
 .no-res{color:#777}
 </style>
@@ -19,6 +21,7 @@
 <div class="page-head"><div class="container"><h1>رسپی‌ها</h1><p>هر چی هوس کردی، سالم‌ترش اینجاست</p></div></div>
 
 <section><div class="container">
+  <div class="rec-search"><span>🔍</span><input id="recipeSearch" placeholder="جستجو در رسپی‌ها: اسم غذا، ماده، کشور... مثلاً: ژاپنی، بادمجان"></div>
   <div class="filters">
     <button class="chip on" data-cat="all">همه</button>
     <button class="chip" data-cat="iranian">ایرانی</button>
