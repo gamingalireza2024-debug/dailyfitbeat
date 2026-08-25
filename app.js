@@ -107,7 +107,7 @@ function toggleLang(){
 function bindScroll(){ window.onscroll = () => $('#hdr').classList.toggle('scrolled', scrollY > 40); }
 
 const norm = s => (s||'').toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/‌/g,' ').trim();
-function hay(r){ return [r.name_fa,r.name_en,r.region,r.desc_fa,r.category,(r.tags||[]).join(' ')].map(norm).join(' | '); }
+function hay(r){ return [r.name_fa,r.name_en,r.region,countryFa(r.region),r.desc_fa,r.category,(r.tags||[]).join(' ')].map(norm).join(' | '); }
 function initSearch(){
   const inp = $('#searchInput'), box = $('#searchRes');
   if(!inp) return;
@@ -158,11 +158,14 @@ async function loadPopular(){
 let curCat = 'all', curGoal = 'all';
 function renderRecipes(){
   const el = $('#recipeGrid'); if(!el) return;
-  const list = ALL.filter(r => (curCat==='all' || r.category===curCat) && (curGoal==='all' || (r.tags||[]).includes(curGoal)));
+    const list = ALL.filter(r => (curCat==='all' || r.category===curCat) && (curGoal==='all' || (r.tags||[]).includes(curGoal)) && (!curQ || curQ.split(' ').every(w => hay(r).includes(w))));
   el.innerHTML = list.map(r => card(r)).join('') || `<p class="no-res">چیزی در این دسته نیست</p>`;
 }
+let curQ = '';
 function initRecipes(){
   if(page !== 'recipes') return;
+  const sr = $('#recipeSearch');
+  if(sr) sr.oninput = () => { curQ = norm(sr.value); renderRecipes(); };
   document.querySelectorAll('.filters .chip').forEach(ch => ch.onclick = () => {
     document.querySelectorAll('.filters .chip').forEach(x => x.classList.remove('on'));
     ch.classList.add('on');
