@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>دیلی بیت | DailyFitBeat — خوب بخور، بهتر زندگی کن</title>
 <meta name="description" content="رسپی‌های سالم ایرانی و جهانی، برنامه غذایی هوشمند و دستیار AI تغذیه">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
- <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="image" href="img/hero-home.jpg" fetchpriority="high">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <style>
 .hero2{position:relative;min-height:88vh;background:#f6f3ec url('img/hero-home.jpg') center/cover no-repeat;display:flex;align-items:center;overflow:hidden;padding:100px 0 60px}
 .hero2::before{content:"";position:absolute;inset:0;background:linear-gradient(to left,rgba(246,243,236,.97) 0%,rgba(246,243,236,.9) 42%,rgba(246,243,236,.3) 75%,rgba(246,243,236,.05) 100%)}
@@ -20,14 +20,8 @@
 .h2-text p{color:#4d584d;line-height:2.1;margin:16px 0 26px}
 .orbit{position:absolute;inset:0;z-index:2;pointer-events:none}
 .float-chip{position:absolute;left:50%;top:50%;background:#fff;border-radius:999px;padding:10px 16px;font-size:12px;font-weight:700;color:#3c4a3c;box-shadow:0 8px 24px rgba(30,43,28,.14);animation:orbit 26s linear infinite}
-.fc1{--a:20deg;--r:240px}
-.fc2{--a:110deg;--r:280px;animation-duration:32s}
-.fc3{--a:200deg;--r:230px;animation-duration:36s}
-.fc4{--a:290deg;--r:290px;animation-duration:40s}
-@keyframes orbit{
- from{transform:rotate(var(--a)) translateX(var(--r)) rotate(calc(var(--a) * -1))}
- to{transform:rotate(calc(var(--a) + 360deg)) translateX(var(--r)) rotate(calc((var(--a) + 360deg) * -1))}
-}
+.fc1{--a:20deg;--r:240px}.fc2{--a:110deg;--r:280px;animation-duration:32s}.fc3{--a:200deg;--r:230px;animation-duration:36s}.fc4{--a:290deg;--r:290px;animation-duration:40s}
+@keyframes orbit{from{transform:rotate(var(--a)) translateX(var(--r)) rotate(calc(var(--a) * -1))}to{transform:rotate(calc(var(--a) + 360deg)) translateX(var(--r)) rotate(calc((var(--a) + 360deg) * -1))}}
 .stat-card{position:absolute;z-index:2;left:58%;top:12%;background:#fff;border-radius:18px;padding:14px 22px;display:flex;gap:22px;box-shadow:0 10px 30px rgba(30,43,28,.12)}
 .stat-card div{text-align:center}
 .stat-card b{display:block;font-size:17px;color:#1e2b1c}
@@ -41,6 +35,32 @@
 .finder-row input{flex:1;min-width:200px;padding:12px;border-radius:12px;border:1px solid #ccc;font:inherit}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
 .no-res{color:#777}
+.feat-sec{padding:30px 0}
+.feat-wrap{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;background:#fff;border-radius:26px;padding:34px;box-shadow:0 10px 34px rgba(30,43,28,.08)}
+.feat-badge{background:#e8f4e9;color:#2d6a35;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:800}
+.feat-txt h2{font-size:30px;font-weight:900;margin:12px 0 8px}
+.feat-txt p{color:#4d584d;line-height:2}
+.feat-stats{display:flex;gap:22px;margin:16px 0 20px}
+.feat-stats b{display:block;font-size:20px;color:#2d6a35}
+.feat-stats span{font-size:11px;color:#777}
+.feat-img img{width:100%;border-radius:22px;box-shadow:0 16px 44px rgba(30,43,28,.16)}
+@media(max-width:900px){.feat-wrap{grid-template-columns:1fr}}
+.teaser-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.teaser{border-radius:22px;padding:26px;text-decoration:none;display:block;transition:transform .25s, box-shadow .25s}
+.teaser:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(30,43,28,.18)}
+.teaser b{font-size:19px;display:block;margin-bottom:8px}
+.teaser p{font-size:13px;line-height:1.9;margin-bottom:12px}
+.teaser span{font-weight:800;font-size:13px}
+.t-pro{background:#2d6a35;color:#fff}
+.t-market{background:#fff;color:#1e2b1c;box-shadow:0 6px 20px rgba(30,43,28,.08)}
+.t-market span{color:#2d6a35}
+@media(max-width:900px){.teaser-grid{grid-template-columns:1fr}}
+.trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin:24px 0}
+.trust-grid>div{background:#fff;border-radius:18px;padding:22px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.trust-grid span{font-size:28px}
+.trust-grid b{display:block;margin:10px 0 6px}
+.trust-grid p{color:#667066;font-size:12px;line-height:1.9}
+.disclaimer{text-align:center;color:#8a938a;font-size:12px;margin-top:18px}
 </style>
 </head>
 <body data-page="home">
@@ -87,6 +107,37 @@
 <section><div class="container">
   <div class="sec-head"><h2>محبوب‌های این هفته</h2></div>
   <div id="popularCards" class="cards"></div>
+</div></section>
+
+<section class="feat-sec"><div class="container feat-wrap">
+  <div class="feat-txt">
+    <span class="feat-badge">⭐ رسپی ویژه هفته</span>
+    <h2>مرغ و بروکلی</h2>
+    <p>یه شام پروتئینی سریع که هم عضله‌سازه هم سبک — با فقط چند قلم ماده ساده.</p>
+    <div class="feat-stats">
+      <div><b>۲۵</b><span>دقیقه</span></div>
+      <div><b>۳۲</b><span>کالری</span></div>
+      <div><b>۳۵g</b><span>پروتئین</span></div>
+    </div>
+    <a class="btn" href="recipe.html?slug=morgh-brokli">دیدن رسپی</a>
+  </div>
+  <div class="feat-img"><img src="img/morgh-brokli.jpg" onerror="this.src='img/hero-home.jpg'" alt="مرغ و بروکلی"></div>
+</div></section>
+
+<section><div class="container teaser-grid">
+  <a class="teaser t-pro" href="pro.html"><b>💎 DailyFitBeat PRO</b><p>«هر روز نمی‌دونم چی بخورم» رو بسپار به ما — برنامه هفته‌ات آماده است.</p><span>عضویت →</span></a>
+  <a class="teaser t-market" href="market.html"><b>🛍️ فیت مارکت</b><p>پک‌های رسپی و برنامه‌های اختصاصی — یک‌بار خرید، یک عمر استفاده.</p><span>دیدن محصولات →</span></a>
+</div></section>
+
+<section><div class="container">
+  <div class="sec-head"><h2>چرا دیلی‌بیت؟</h2></div>
+  <div class="trust-grid">
+    <div><span>🥗</span><b>رسپی‌های واقعی</b><p>هر رسپی تست می‌شه؛ ارزش‌های غذایی برآورد علمی‌ان، نه ادعا.</p></div>
+    <div><span>🧮</span><b>محاسبه هوشمند</b><p>کالری و ریزمغذی‌ها با فرمول‌های معتبر، متناسب با هدف تو.</p></div>
+    <div><span>🤖</span><b>دستیار AI</b><p>با مواد توی یخچالت، پیشنهاد پخت بگیر.</p></div>
+    <div><span>📸</span><b>از اینستاگرام</b><p>هر ریلز، یه رسپی کامل توی سایت داره.</p></div>
+  </div>
+  <p class="disclaimer">ارقام تغذیه‌ای تخمینی هستن و جایگزین توصیه پزشک یا متخصص تغذیه نمی‌شن.</p>
 </div></section>
 
 <footer id="ftr"></footer>
