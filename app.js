@@ -378,7 +378,8 @@ async function loadPlansAdmin(){
   });
 }
 async function loadOrders(){
-  const r = await fetch('/api/db?t=all_orders');
+  const sess = sb ? (await sb.auth.getSession()).data.session : null;
+  const r = await fetch('/api/db?t=all_orders', sess ? { headers: { Authorization: 'Bearer ' + sess.access_token } } : {});
   const data = await r.json();
   const filter = $('#filterSt').value;
   const list = Array.isArray(data) ? (filter === 'all' ? data : data.filter(x => x.status === filter)) : [];
@@ -404,21 +405,22 @@ async function loadOrders(){
     </select></td>
   </tr>`).join('');
   document.querySelectorAll('.stSel').forEach(sel => sel.onchange = async () => {
-    await fetch('/api/db?t=set_status', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: sel.dataset.id, status: sel.value }) });
+    const sess = sb ? (await sb.auth.getSession()).data.session : null;
+    await fetch('/api/db?t=set_status', { method:'POST', headers:{'Content-Type':'application/json', ...(sess ? { Authorization: 'Bearer ' + sess.access_token } : {})}, body: JSON.stringify({ id: sel.dataset.id, status: sel.value }) });
     loadOrders();
   });
 }
-function exportCSV(){
-  fetch('/api/db?t=all_orders').then(r=>r.json()).then(data => {
-    const rows = [['کد','تاریخ','نام','موبایل','ایمیل','محصول','کد واریز','وضعیت','یادداشت']];
-    (Array.isArray(data)?data:[]).forEach(o => rows.push([o.id, new Date(o.created_at).toLocaleString('fa-IR'), o.name, o.phone, o.email, o.product, o.ref, o.status, o.note || '']));
-    const csv = '\uFEFF' + rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'dailyfitbeat-orders.csv';
-    a.click();
-  });
+async function exportCSV(){
+  const sess = sb ? (await sb.auth.getSession()).data.session : null;
+  const data = await (await fetch('/api/db?t=all_orders', sess ? { headers: { Authorization: 'Bearer ' + sess.access_token } } : {})).json();
+  const rows = [['کد','تاریخ','نام','موبایل','ایمیل','محصول','کد واریز','وضعیت','یادداشت']];
+  (Array.isArray(data)?data:[]).forEach(o => rows.push([o.id, new Date(o.created_at).toLocaleString('fa-IR'), o.name, o.phone, o.email, o.product, o.ref, o.status, o.note || '']));
+  const csv = '\uFEFF' + rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dailyfitbeat-orders.csv';
+  a.click();
 }
 async function initUser(){
   if(page !== 'user') return;
@@ -430,9 +432,10 @@ async function initUser(){
   $('#uEmail').textContent = USER.email;
   $('#uPhone').textContent = (prof && prof.phone) || '—';
   const pe = $('#phEdit'); if(pe) pe.onclick = phoneModal;
-  const o = await (await fetch('/api/db?t=my_orders&uid=' + USER.id)).json();
+  const sessU = (await sb.auth.getSession()).data.session;
+  const o = await (await fetch('/api/db?t=my_orders', { headers: { Authorization: 'Bearer ' + sessU.access_token } })).json();
   $('#myOrders').innerHTML = (Array.isArray(o) && o.length) ? o.map(x => `<div class="my-order"><div><b>#${x.id}</b> — ${x.product}<br><small>${new Date(x.created_at).toLocaleString('fa-IR')}</small></div><span class="status-pill status-${x.status}">${{'new':'جدید','paid':'پرداخت شده','sent':'ارسال شده'}[x.status] || x.status}</span></div>`).join('') : '<p>هنوز سفارشی نداری</p>';
-  const f = await (await fetch('/api/db?t=my_favs&uid=' + USER.id)).json();
+  const f = await (await fetch('/api/db?t=my_favs', { headers: { Authorization: 'Bearer ' + sessU.access_token } })).json();
   if(Array.isArray(f) && f.length){
     await loadAll();
     $('#myFavs').innerHTML = f.map(x => { const r = ALL.find(a => a.slug === x.recipe_slug); return r ? card(r) : ''; }).join('');
