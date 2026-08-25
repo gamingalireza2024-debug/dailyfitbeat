@@ -17,7 +17,11 @@
 .admin-tbl .imgin{width:180px;direction:ltr}
 .del-btn{background:#d33;color:#fff;border:0;border-radius:10px;padding:8px 12px;cursor:pointer;font:inherit}
 .add-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.add-form input,.add-form textarea{padding:10px;border-radius:10px;border:1px solid #ccc;font:inherit;font-size:13px}
+.add-form input{padding:10px;border-radius:10px;border:1px solid #ccc;font:inherit;font-size:13px}
+.rec-form{background:#fff;border-radius:18px;padding:20px;margin:16px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.06)}
+.rec-form input,.rec-form select,.rec-form textarea{padding:10px;border-radius:10px;border:1px solid #ccc;font:inherit;font-size:13px}
+.rec-form textarea{grid-column:1/-1;height:80px}
+.rec-form .full{grid-column:1/-1}
 </style>
 </head>
 <body data-page="admin">
@@ -29,6 +33,7 @@
   <div class="container">
     <div class="atabs">
       <button class="atab on" data-t="orders">📦 سفارش‌ها</button>
+      <button class="atab" data-t="recipes">🍳 رسپی‌ها</button>
       <button class="atab" data-t="prods">🛍️ محصولات</button>
       <button class="atab" data-t="plans">💎 پلان‌های PRO</button>
     </div>
@@ -50,6 +55,37 @@
       </table>
     </div>
 
+    <div class="apane" id="pane-recipes">
+      <button class="btn" id="rNew">➕ رسپی جدید</button>
+      <div id="recForm" class="rec-form" style="display:none">
+        <input id="rSlug" placeholder="slug انگلیسی (مثل kuku-sabzi)">
+        <input id="rNameFa" placeholder="نام فارسی">
+        <input id="rNameEn" placeholder="نام انگلیسی">
+        <select id="rCat"><option value="iranian">iranian</option><option value="main">main</option><option value="salad">salad</option><option value="sandwich">sandwich</option><option value="breakfast">breakfast</option><option value="soup">soup</option></select>
+        <input id="rRegion" placeholder="کشور (ایران/ژاپن/...)">
+        <input id="rTime" type="number" placeholder="زمان پخت">
+        <input id="rKcal" type="number" placeholder="کالری">
+        <input id="rProtein" type="number" placeholder="پروتئین">
+        <input id="rCarbs" type="number" placeholder="کربوهیدرات">
+        <input id="rFat" type="number" placeholder="چربی">
+        <input id="rFiber" type="number" placeholder="فیبر">
+        <input id="rSugar" type="number" placeholder="قند">
+        <input id="rImage" class="imgin" placeholder="تصویر (img/...)">
+        <input id="rVideo" class="imgin" placeholder="لینک ویدیو (اختیاری)">
+        <input id="rTags" placeholder="تگ‌ها: high-protein,quick">
+        <input id="rKeys" placeholder="کلیدها: chicken,egg">
+        <textarea id="rDesc" class="full" placeholder="توضیح فارسی"></textarea>
+        <textarea id="rIngs" placeholder="مواد (هر خط: نام:مقدار)&#10;مرغ:۴۰۰گ&#10;قارچ:۲۰۰گ"></textarea>
+        <textarea id="rSteps" placeholder="مراحل پخت (هر خط یک مرحله)"></textarea>
+        <textarea id="rTips" placeholder="نکات پخت (هر خط یک نکته)"></textarea>
+        <button class="btn full" id="rSave">💾 ذخیره رسپی</button>
+      </div>
+      <table class="admin-tbl">
+        <thead><tr><th>رسپی</th><th>دسته</th><th>کشور</th><th>کالری</th><th>تصویر</th><th></th><th></th></tr></thead>
+        <tbody id="recBody"></tbody>
+      </table>
+    </div>
+
     <div class="apane" id="pane-prods">
       <table class="admin-tbl">
         <thead><tr><th>محصول</th><th>قیمت (ریال)</th><th>قیمت قدیم</th><th>تخفیف ٪</th><th>امتیاز</th><th>تصویر</th><th>فعال</th><th></th><th></th></tr></thead>
@@ -63,7 +99,7 @@
         <input id="aOld" type="number" placeholder="قیمت قدیم (اختیاری)">
         <input id="aOff" type="number" placeholder="تخفیف ٪">
         <input id="aRate" type="number" step="0.1" value="4.8" placeholder="امتیاز">
-        <input id="aImg" class="imgin" placeholder="آدرس تصویر (مثلاً img/hero-store.jpg)">
+        <input id="aImg" class="imgin" placeholder="آدرس تصویر">
         <button class="btn" id="aAdd">افزودن</button>
       </div>
     </div>
@@ -83,7 +119,6 @@
       </div>
     </div>
 
-    <!-- مخفی: برای سازگاری با نسخه قبلی app.js -->
     <div id="prodBody" hidden></div>
     <div id="plansBody" hidden></div>
   </div>
