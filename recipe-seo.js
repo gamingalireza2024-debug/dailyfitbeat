@@ -2,7 +2,18 @@
   if(document.body.dataset.page !== 'recipe') return;
   const slug = new URLSearchParams(location.search).get('slug');
   if(!slug) return;
-  fetch('/api/db?t=all').then(r=>r.json()).then(ALL=>{
+
+  // اول از کش app.js می‌خونه؛ اگه آماده نبود، خودش fetch می‌کنه
+  const getAll = () => new Promise(res => {
+    let n = 0;
+    const t = setInterval(() => {
+      n++;
+      if (window.DFB && DFB.all && DFB.all.length) { clearInterval(t); res(DFB.all); }
+      else if (n > 10) { clearInterval(t); fetch('/api/db?t=all').then(r=>r.json()).then(res); }
+    }, 200);
+  });
+
+  getAll().then(ALL=>{
     const list = Array.isArray(ALL) ? ALL : [];
     const r = list.find(x=>x.slug===slug);
     if(!r) return;
@@ -60,7 +71,7 @@
       <div class="rel-head"><h2>رسپی‌های مرتبط</h2>
       <a class="btn ghost" href="${window.SITE ? SITE.social.instagram : '#'}" target="_blank" rel="noopener">📸 ویدیوی این رسپی در اینستاگرام</a></div>
       <div class="cards">${rel.map(x => `<a class="card" href="/recipes/${x.slug}">
-        <div class="c-img"><img src="${x.image || '/img/hero-home.jpg'}" loading="lazy" alt="${x.name_fa}"></div>
+        <div class="c-img"><img src="${x.image || '/img/hero-home.jpg'}" loading="lazy" decoding="async" alt="${x.name_fa}"></div>
         <div class="c-body"><h3>${x.name_fa}</h3>
         <div class="c-meta"><span>پخت: ${x.time_min} دقیقه</span><span>${x.kcal} کالری</span><span>پروتئین ${x.protein}g</span></div>
         </div></a>`).join('')}</div>
