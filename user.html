@@ -4,37 +4,75 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>پنل کاربری | DailyFitBeat</title>
-<meta name="description" content="پنل کاربری DailyFitBeat — سفارش‌ها و علاقه‌مندی‌های شما">
 <meta name="robots" content="noindex, nofollow">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+.u-hero{background:linear-gradient(135deg,#2d6a35,#1e4a26);border-radius:26px;color:#fff;padding:34px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin:20px 0}
+.u-ava{width:74px;height:74px;border-radius:50%;background:#fff;color:#2d6a35;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.u-hero h2{font-size:24px}
+.u-hero p{opacity:.9;font-size:13px;margin-top:6px}
+.u-pro-badge{background:#ffd76a;color:#5c4300;border-radius:999px;padding:7px 16px;font-weight:800;font-size:12px}
+.u-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.u-card{background:#fff;border-radius:20px;padding:22px;box-shadow:0 6px 20px rgba(30,43,28,.07)}
+.u-card h3{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.u-card .big{font-size:22px;font-weight:900;color:#2d6a35}
+.u-list{max-height:220px;overflow:auto;font-size:13px}
+.u-list div{padding:9px 4px;border-bottom:1px dashed #e5e5e5}
+.u-empty{color:#98a298;font-size:12px;text-align:center;padding:18px 0}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:20px;overflow:hidden;margin:22px 0;box-shadow:0 8px 26px rgba(30,43,28,.10)}
+.vs>div{padding:24px}
+.vs .free{background:#fff}
+.vs .pro{background:#1e2b1c;color:#fff}
+.vs h4{margin-bottom:12px}
+.vs li{list-style:none;padding:6px 0;font-size:13px}
+.vs .pro li:before{content:"✔ ";color:#8fd18f}
+.vs .free li:before{content:"✔ ";color:#2d6a35}
+@media(max-width:700px){.vs{grid-template-columns:1fr}}
+.dl-btn{display:inline-block;margin:4px 0 0;padding:8px 14px;border-radius:10px;background:#2d6a35;color:#fff;font-size:12px;text-decoration:none}
+</style>
 </head>
 <body data-page="user">
 <header id="hdr"></header>
 
-<div class="page-head"><div class="container"><h1>👤 پنل کاربری</h1><p id="userStat">در حال بارگذاری...</p></div></div>
+<section><div class="container">
+  <p id="userStat" hidden></p>
+  <div id="userBody" style="display:none">
+    <div class="u-hero">
+      <div class="u-ava" id="uAva">D</div>
+      <div style="flex:1">
+        <h2 id="uWelcome">سلام!</h2>
+        <p>امروز هم یه قدم به سبک زندگی سالم نزدیک‌تر 🌿</p>
+      </div>
+      <span id="uProBadge"></span>
+    </div>
 
-<section id="userBody" style="display:none">
-  <div class="container">
-    <div class="user-card">
-      <h3>اطلاعات من</h3>
-      <p><b>نام:</b> <span id="uName"></span></p>
-      <p><b>ایمیل:</b> <span id="uEmail"></span></p>
-      <p><b>موبایل:</b> <span id="uPhone"></span> <button class="chip" id="phEdit">ویرایش</button></p>
+    <div class="u-grid">
+      <div class="u-card"><h3>💎 وضعیت اشتراک</h3><div id="uProCard"></div></div>
+      <div class="u-card"><h3>🥗 برنامه غذایی من</h3><div id="uDiets" class="u-list"></div></div>
+      <div class="u-card"><h3>🎁 محصولات من</h3><div id="uProducts" class="u-list"></div></div>
+      <div class="u-card"><h3>📦 سفارش‌های من</h3><div id="myOrders" class="u-list"></div></div>
+      <div class="u-card"><h3>❤️ رسپی‌های ذخیره‌شده</h3><div id="myFavs" class="u-list"></div></div>
+      <div class="u-card"><h3>🔔 اعلان‌ها</h3><div id="uNotifs" class="u-list"></div></div>
+      <div class="u-card"><h3>🛒 لیست خرید هوشمند <span class="u-pro-badge" style="background:#e8f4e9;color:#2d6a35">PRO</span></h3><div id="uList"></div></div>
+      <div class="u-card"><h3>👤 پروفایل</h3>
+        <p style="font-size:13px">نام: <b id="uName"></b><br>ایمیل: <b id="uEmail"></b><br>موبایل: <b id="uPhone"></b></p>
+        <button class="btn ghost small" id="phEdit" style="margin-top:8px">ویرایش موبایل</button>
+      </div>
     </div>
-    <div class="user-section">
-      <h3>📦 سفارش‌های من</h3>
-      <div id="myOrders"></div>
-    </div>
-    <div class="user-section">
-      <h3>❤️ رسپی‌های موردعلاقه</h3>
-      <div id="myFavs" class="fav-grid"></div>
-    </div>
+
+    <div class="vs" id="uVs"></div>
   </div>
-</section>
+  <div id="uLogin" style="display:none;text-align:center;padding:60px 0">
+    <h2>وارد حسابت شو 👋</h2>
+    <p style="color:#777;margin:10px 0 20px">برای دیدن داشبورد، برنامه غذایی و خریدها</p>
+    <button class="btn big" id="uLoginBtn">ورود با گوگل</button>
+  </div>
+</div></section>
 
 <footer id="ftr"></footer>
 <script src="site.js"></script>
 <script src="app.js"></script>
+<script src="user.js"></script>
 </body>
 </html>
