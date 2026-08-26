@@ -10,21 +10,23 @@
 <style>
 .admin-layout{display:grid;grid-template-columns:215px 1fr;gap:22px;align-items:start}
 .aside{position:sticky;top:92px;display:flex;flex-direction:column;gap:5px;background:#fff;border-radius:18px;padding:12px;box-shadow:0 6px 20px rgba(0,0,0,.06)}
-.aside button{border:0;background:transparent;font:inherit;font-weight:700;font-size:13px;padding:11px 14px;border-radius:12px;cursor:pointer;text-align:right;color:#3c4a3c;transition:background .2s}
+.aside button{border:0;background:transparent;font:inherit;font-weight:700;font-size:13px;padding:11px 14px;border-radius:12px;cursor:pointer;text-align:right;color:#3c4a3c;transition:background .2s;white-space:nowrap}
 .aside button:hover{background:#e8f4e9}
 .aside button.on{background:#2d6a35;color:#fff}
-.apane{display:none}
-.admin-tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.05);font-size:12px}
-.admin-tbl th{background:#f2f7f2;padding:10px 8px;text-align:right}
+.apane{display:none;overflow-x:auto}
+.admin-tbl{width:100%;min-width:980px;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.05);font-size:12px}
+.admin-tbl th{background:#f2f7f2;padding:10px 8px;text-align:right;white-space:nowrap}
 .admin-tbl td{padding:9px 8px;border-top:1px solid #eef2ee;vertical-align:middle}
-.admin-tbl input,.admin-tbl textarea,.admin-tbl select{width:110px;padding:7px;border-radius:9px;border:1px solid #ccc;font:inherit;font-size:12px}
-.admin-tbl textarea{width:200px;height:56px}
-.admin-tbl .imgin{width:150px;direction:ltr}
+.admin-tbl .btn,.admin-tbl .del-btn,.admin-tbl .ok-btn,.admin-tbl .warn-btn{white-space:nowrap}
+.admin-tbl input,.admin-tbl textarea,.admin-tbl select{width:100px;padding:7px;border-radius:9px;border:1px solid #ccc;font:inherit;font-size:12px}
+.admin-tbl textarea{width:180px;height:56px}
+.admin-tbl .imgin{width:140px;direction:ltr}
 .del-btn{background:#d33;color:#fff;border:0;border-radius:9px;padding:7px 11px;cursor:pointer;font:inherit;font-size:12px}
 .ok-btn{background:#2d6a35;color:#fff;border:0;border-radius:9px;padding:7px 11px;cursor:pointer;font:inherit;font-size:12px}
 .warn-btn{background:#b26a00;color:#fff;border:0;border-radius:9px;padding:7px 11px;cursor:pointer;font:inherit;font-size:12px}
-.add-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;background:#fff;padding:14px;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.add-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;background:#fff;padding:14px;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.05);align-items:center}
 .add-form input,.add-form select{padding:9px;border-radius:10px;border:1px solid #ccc;font:inherit;font-size:12px}
+.add-form label{font-size:12px;font-weight:700}
 .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
 .stat-cards .sc{background:#fff;border-radius:16px;padding:16px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.05)}
 .stat-cards b{display:block;font-size:20px;color:#2d6a35}
@@ -38,7 +40,7 @@
 .day-box{border:2px dashed #cfe3cf;border-radius:14px;padding:12px;margin:10px 0}
 .meal-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
 .meal-row select,.meal-row input{padding:7px;border-radius:9px;border:1px solid #ccc;font:inherit;font-size:12px}
-.pbadge{border-radius:99px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff}
+.pbadge{border-radius:99px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap}
 @media(max-width:900px){.admin-layout{grid-template-columns:1fr}.aside{position:static;flex-direction:row;overflow-x:auto}}
 </style>
 </head>
@@ -59,7 +61,7 @@
   <button data-t="diet">🥗 برنامه‌های غذایی</button>
   <button data-t="audit">🧾 گزارش رویدادها</button>
 </aside>
-<main>
+<main style="min-width:0">
   <div class="apane" id="pane-dash" style="display:block">
     <div class="stat-cards" id="statsBox"></div>
     <h4>آخرین رویدادها</h4>
@@ -70,18 +72,18 @@
     <div class="add-form"><button class="btn" id="csvBtn">📥 خروجی اکسل</button>
       <select id="filterSt"><option value="all">همه</option><option value="new">جدید</option><option value="pending">در انتظار</option><option value="payment_submitted">واریز ثبت شده</option><option value="paid">پرداخت شده</option><option value="delivered">تحویل شده</option><option value="sent">ارسال شده</option><option value="rejected">رد شده</option><option value="cancelled">لغو شده</option></select>
     </div>
-    <table class="admin-tbl"><thead><tr><th>کد</th><th>تاریخ</th><th>نام</th><th>موبایل</th><th>محصول</th><th>مبلغ</th><th>روش</th><th>وضعیت</th><th></th></tr></thead><tbody id="ordersBody"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>کد</th><th>تاریخ</th><th>نام</th><th>موبایل</th><th>محصول</th><th>مبلغ</th><th>روش</th><th>وضعیت</th><th>تغییر وضعیت</th></tr></thead><tbody id="ordersBody"></tbody></table>
   </div>
 
   <div class="apane" id="pane-payments">
-    <table class="admin-tbl"><thead><tr><th>کد</th><th>سفارش</th><th>کاربر</th><th>مبلغ</th><th>روش</th><th>کد واریز</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="payBody"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>کد</th><th>تاریخ</th><th>سفارش</th><th>کاربر</th><th>مبلغ</th><th>روش</th><th>کد واریز</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="payBody"></tbody></table>
   </div>
 
   <div class="apane" id="pane-recipes">
     <button class="btn" id="rNew">➕ رسپی جدید</button>
     <div id="recForm" class="rec-form" style="display:none">
       <input id="rSlug" placeholder="slug انگلیسی"><input id="rNameFa" placeholder="نام فارسی"><input id="rNameEn" placeholder="نام انگلیسی">
-      <select id="rCat"><option value="iranian">iranian</option><option value="main">main</option><option value="salad">salad</option><option value="sandwich">sandwich</option><option value="breakfast">breakfast</option><option value="soup">soup</option></select>
+      <select id="rCat"><option value="iranian">ایرانی</option><option value="main">غذای اصلی</option><option value="salad">سالاد</option><option value="sandwich">ساندویچ</option><option value="breakfast">صبحانه</option><option value="soup">سوپ</option></select>
       <input id="rRegion" placeholder="کشور"><input id="rTime" type="number" placeholder="زمان"><input id="rKcal" type="number" placeholder="کالری"><input id="rProtein" type="number" placeholder="پروتئین">
       <input id="rCarbs" type="number" placeholder="کربوهیدرات"><input id="rFat" type="number" placeholder="چربی"><input id="rFiber" type="number" placeholder="فیبر"><input id="rSugar" type="number" placeholder="قند">
       <input id="rImage" class="imgin" placeholder="تصویر"><input id="rVideo" class="imgin" placeholder="لینک ویدیو">
@@ -92,46 +94,50 @@
       <textarea id="rTips" placeholder="نکات (هر خط)"></textarea>
       <button class="btn full" id="rSave">💾 ذخیره رسپی</button>
     </div>
-    <table class="admin-tbl"><thead><tr><th>رسپی</th><th>دسته</th><th>کشور</th><th>کالری</th><th></th><th></th></tr></thead><tbody id="recBody"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>رسپی</th><th>دسته</th><th>کشور</th><th>کالری</th><th>ویرایش</th><th>حذف</th></tr></thead><tbody id="recBody"></tbody></table>
   </div>
 
   <div class="apane" id="pane-prods">
-    <table class="admin-tbl"><thead><tr><th>محصول</th><th>قیمت</th><th>قدیم</th><th>تخفیف٪</th><th>نوع</th><th>دسترسی(روز)</th><th>فایل</th><th>فعال</th><th></th><th></th></tr></thead><tbody id="prodBody2"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>محصول</th><th>قیمت</th><th>قیمت قدیم</th><th>تخفیف٪</th><th>نوع</th><th>دسترسی(روز)</th><th>فایل محصول</th><th>فعال</th><th>ذخیره</th><th>حذف</th></tr></thead><tbody id="prodBody2"></tbody></table>
     <div class="add-form">
       <input id="aTitle" placeholder="نام محصول"><input id="aDesc" placeholder="توضیح"><input id="aPrice" type="number" placeholder="قیمت"><input id="aOld" type="number" placeholder="قیمت قدیم"><input id="aOff" type="number" placeholder="تخفیف٪">
-      <select id="aType"><option value="DIGITAL_PRODUCT">DIGITAL_PRODUCT</option><option value="SERVICE">SERVICE</option><option value="SUBSCRIPTION">SUBSCRIPTION</option><option value="BUNDLE">BUNDLE</option></select>
+      <select id="aType"><option value="DIGITAL_PRODUCT">محصول دیجیتال</option><option value="SERVICE">خدمت</option><option value="SUBSCRIPTION">اشتراک</option><option value="BUNDLE">باندل</option></select>
       <input id="aDays" type="number" placeholder="مدت دسترسی(روز)"><input id="aImg" class="imgin" placeholder="تصویر"><input type="file" id="aFile">
       <button class="btn" id="aAdd">افزودن</button>
     </div>
   </div>
 
   <div class="apane" id="pane-plans">
-    <table class="admin-tbl"><thead><tr><th>پلان</th><th>دوره</th><th>روز</th><th>قیمت</th><th>قدیم</th><th>امکانات</th><th></th><th></th></tr></thead><tbody id="plansBody2"></tbody></table>
-    <div class="add-form"><input id="pTitle" placeholder="نام پلان"><input id="pPeriod" placeholder="دوره"><input id="pDays" type="number" placeholder="روز"><input id="pPrice" type="number" placeholder="قیمت"><input id="pOld" type="number" placeholder="قدیم"><button class="btn" id="pAdd">افزودن</button></div>
+    <table class="admin-tbl"><thead><tr><th>پلان</th><th>دوره</th><th>روز</th><th>قیمت</th><th>قیمت قدیم</th><th>امکانات (هر خط یکی)</th><th>ذخیره</th><th>حذف</th></tr></thead><tbody id="plansBody2"></tbody></table>
+    <div class="add-form"><input id="pTitle" placeholder="نام پلان"><input id="pPeriod" placeholder="دوره"><input id="pDays" type="number" placeholder="روز"><input id="pPrice" type="number" placeholder="قیمت"><input id="pOld" type="number" placeholder="قیمت قدیم"><button class="btn" id="pAdd">افزودن</button></div>
   </div>
 
   <div class="apane" id="pane-users">
     <div class="add-form"><input id="uq" placeholder="جستجو: ایمیل / نام / موبایل"><button class="btn" id="uqBtn">جستجو</button></div>
-    <table class="admin-tbl"><thead><tr><th>ایمیل</th><th>نام</th><th>موبایل</th><th>ثبت‌نام</th><th>وضعیت</th><th></th></tr></thead><tbody id="usersBody"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>ایمیل</th><th>نام</th><th>موبایل</th><th>تاریخ ثبت‌نام</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="usersBody"></tbody></table>
     <div id="userDetail" class="ubox" style="display:none"></div>
   </div>
 
   <div class="apane" id="pane-coupons">
-    <div class="add-form"><input id="cCode" placeholder="کد"><select id="cType"><option value="PERCENT">درصد</option><option value="FIXED">مبلغ ثابت</option></select><input id="cValue" type="number" placeholder="مقدار"><input id="cLimit" type="number" placeholder="سقف استفاده"><input id="cEnd" type="date" placeholder="انقضا"><label style="font-size:12px"><input type="checkbox" id="cPro"> فقط PRO</label><button class="btn" id="cAdd">ساخت کوپن</button></div>
-    <table class="admin-tbl"><thead><tr><th>کد</th><th>نوع</th><th>مقدار</th><th>استفاده</th><th>فعال</th><th></th></tr></thead><tbody id="couponBody"></tbody></table>
+    <div class="add-form"><input id="cCode" placeholder="کد"><select id="cType"><option value="PERCENT">درصدی</option><option value="FIXED">مبلغ ثابت</option></select><input id="cValue" type="number" placeholder="مقدار"><input id="cLimit" type="number" placeholder="سقف استفاده"><input id="cEnd" placeholder="انقضا (۱۴۰۵/۰۶/۰۱)"><label><input type="checkbox" id="cPro"> فقط PRO</label><button class="btn" id="cAdd">ساخت کوپن</button></div>
+    <table class="admin-tbl"><thead><tr><th>کد</th><th>نوع</th><th>مقدار</th><th>استفاده شده</th><th>فعال</th><th>حذف</th></tr></thead><tbody id="couponBody"></tbody></table>
   </div>
 
   <div class="apane" id="pane-diet">
-    <div class="add-form"><input id="dq" placeholder="جستجوی کاربر (ایمیل)"><button class="btn" id="dqBtn">پیدا کن</button><select id="duPick"></select><button class="btn" id="dNew">➕ برنامه جدید</button></div>
+    <div class="add-form">
+      <input id="dq" placeholder="ایمیل کاربر را بنویس"><button class="btn" id="dqBtn">پیدا کن</button>
+      <label>کاربر انتخاب‌شده: <select id="duPick"></select></label>
+      <button class="btn" id="dNew">➕ برنامه جدید</button>
+    </div>
     <div id="dietList"></div>
     <div id="dietForm" style="display:none" class="rec-form">
-      <input id="dTitle" placeholder="عنوان برنامه"><input id="dGoal" placeholder="هدف"><input id="dStart" type="date"><input id="dEnd" type="date"><input id="dDur" type="number" placeholder="مدت(روز)">
+      <input id="dTitle" placeholder="عنوان برنامه"><input id="dGoal" placeholder="هدف"><input id="dStart" placeholder="شروع (۱۴۰۵/۰۶/۰۱)"><input id="dEnd" placeholder="پایان (۱۴۵/۰۷/۰۱)"><input id="dDur" type="number" placeholder="مدت(روز)">
       <input id="dKcal" type="number" placeholder="کالری هدف"><input id="dPro" type="number" placeholder="پروتئین"><input id="dCarb" type="number" placeholder="کربوهیدرات"><input id="dFat" type="number" placeholder="چربی">
       <textarea id="dNotes" class="full" placeholder="توضیحات و نکات برنامه"></textarea>
       <div id="daysBox" class="full"></div>
       <button class="btn" id="dAddDay">➕ روز جدید</button>
       <button class="btn full" id="dSave">💾 ذخیره</button>
-      <button class="warn-btn full" id="dPdf"> ساخت PDF و انتشار</button>
+      <button class="warn-btn full" id="dPdf">📄 ساخت PDF و انتشار</button>
     </div>
   </div>
 
