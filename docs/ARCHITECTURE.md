@@ -53,3 +53,10 @@ Supabase (DB/Auth/Storage) • Vercel (هاست/serverless) • GitHub Actions (
 
 ## ۱۱. راهنمای ادمین
 تب‌ها: داشبورد (آمار واقعی) • سفارش‌ها (فیلتر/وضعیت/CSV) • پرداخت‌ها (تأیید/رد) • رسپی‌ها • محصولات (آپلود فایل دیجیتال) • پلان‌ها • کاربران (جستجو/جزئیات/اعطا-لغو-تمدید PRO/غیرفعال) • کوپن‌ها • برنامه‌های غذایی (ساخت+PDF+انتشار) • گزارش رویدادها.
+## ۱۲. زیرساخت AI (فاز ۳.۱)
+- الگو: Frontend → /api/ai → Orchestrator → Provider Adapter → Model. هیچ کلیدی در فرانت نیست.
+- Adapter Registry در api/ai.js؛ Provider با env انتخاب می‌شه (AI_PROVIDER، AI_MODEL)؛ بدون کلید → 503 ai_not_configured.
+- کووتا: جدول ai_usage (فقط Service Role)؛ Free=۵/ماه، PRO=۱۰۰/ماه؛ فاصله حداقل ۲ ثانیه؛ اجرای کووتا فقط سروری.
+- Grounding سبک: لیست کوتاه رسپی‌های واقعی از rpc/match_recipes به عنوان context؛ RAG کامل بعداً.
+- پروفایل تغذیه: جدول جدا nutrition_profiles (RLS: کاربر فقط خودش؛ ادمین فقط خواندن)؛ فقط با include_profile به مدل داده می‌شه.
+- امنیت: اعتبارسنجی طول پیام، sanitize آرایه‌ها/رشته‌ها، عدم افشای secret در خطاها، ثبت مصرف فقط پس از پاسخ موفق.
