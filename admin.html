@@ -27,6 +27,10 @@
 .add-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;background:#fff;padding:14px;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.05);align-items:center}
 .add-form input,.add-form select{padding:9px;border-radius:10px;border:1px solid #ccc;font:inherit;font-size:12px}
 .add-form label{font-size:12px;font-weight:700}
+.pager{display:flex;gap:10px;align-items:center;justify-content:center;margin:12px 0;font-size:12px}
+.pager button{border:0;background:#e8f4e9;border-radius:10px;padding:7px 14px;cursor:pointer;font:inherit}
+.pager button:disabled{opacity:.4;cursor:default}
+.jal{font-size:11px;color:#2d6a35;margin-inline-start:6px}
 .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
 .stat-cards .sc{background:#fff;border-radius:16px;padding:16px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.05)}
 .stat-cards b{display:block;font-size:20px;color:#2d6a35}
@@ -72,11 +76,13 @@
     <div class="add-form"><button class="btn" id="csvBtn">📥 خروجی اکسل</button>
       <select id="filterSt"><option value="all">همه</option><option value="new">جدید</option><option value="pending">در انتظار</option><option value="payment_submitted">واریز ثبت شده</option><option value="paid">پرداخت شده</option><option value="delivered">تحویل شده</option><option value="sent">ارسال شده</option><option value="rejected">رد شده</option><option value="cancelled">لغو شده</option></select>
     </div>
-    <table class="admin-tbl"><thead><tr><th>کد</th><th>تاریخ</th><th>نام</th><th>موبایل</th><th>محصول</th><th>مبلغ</th><th>روش</th><th>وضعیت</th><th>تغییر وضعیت</th></tr></thead><tbody id="ordersBody"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>کد</th><th>تاریخ</th><th>نام</th><th>موبایل</th><th>محصول</th><th>مبلغ</th><th>روش</th><th>وضعیت</th><th>تغییر وضعیت</th><th>حذف</th></tr></thead><tbody id="ordersBody"></tbody></table>
+    <div class="pager" id="pagerO"></div>
   </div>
 
   <div class="apane" id="pane-payments">
-    <table class="admin-tbl"><thead><tr><th>کد</th><th>تاریخ</th><th>سفارش</th><th>کاربر</th><th>مبلغ</th><th>روش</th><th>کد واریز</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="payBody"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>کد</th><th>تاریخ</th><th>سفارش</th><th>کاربر</th><th>مبلغ</th><th>روش</th><th>کد واریز</th><th>وضعیت</th><th>عملیات</th><th>حذف</th></tr></thead><tbody id="payBody"></tbody></table>
+    <div class="pager" id="pagerP"></div>
   </div>
 
   <div class="apane" id="pane-recipes">
@@ -100,7 +106,7 @@
   <div class="apane" id="pane-prods">
     <table class="admin-tbl"><thead><tr><th>محصول</th><th>قیمت</th><th>قیمت قدیم</th><th>تخفیف٪</th><th>نوع</th><th>دسترسی(روز)</th><th>فایل محصول</th><th>فعال</th><th>ذخیره</th><th>حذف</th></tr></thead><tbody id="prodBody2"></tbody></table>
     <div class="add-form">
-      <input id="aTitle" placeholder="نام محصول"><input id="aDesc" placeholder="توضیح"><input id="aPrice" type="number" placeholder="قیمت"><input id="aOld" type="number" placeholder="قیمت قدیم"><input id="aOff" type="number" placeholder="تخفیف٪">
+      <input id="aTitle" placeholder="نام محصول"><input id="aDesc" placeholder="توضیح"><input id="aPrice" type="number" placeholder="قیمت (ریال)"><input id="aOld" type="number" placeholder="قیمت قدیم"><input id="aOff" type="number" placeholder="تخفیف٪">
       <select id="aType"><option value="DIGITAL_PRODUCT">محصول دیجیتال</option><option value="SERVICE">خدمت</option><option value="SUBSCRIPTION">اشتراک</option><option value="BUNDLE">باندل</option></select>
       <input id="aDays" type="number" placeholder="مدت دسترسی(روز)"><input id="aImg" class="imgin" placeholder="تصویر"><input type="file" id="aFile">
       <button class="btn" id="aAdd">افزودن</button>
@@ -109,17 +115,18 @@
 
   <div class="apane" id="pane-plans">
     <table class="admin-tbl"><thead><tr><th>پلان</th><th>دوره</th><th>روز</th><th>قیمت</th><th>قیمت قدیم</th><th>امکانات (هر خط یکی)</th><th>ذخیره</th><th>حذف</th></tr></thead><tbody id="plansBody2"></tbody></table>
-    <div class="add-form"><input id="pTitle" placeholder="نام پلان"><input id="pPeriod" placeholder="دوره"><input id="pDays" type="number" placeholder="روز"><input id="pPrice" type="number" placeholder="قیمت"><input id="pOld" type="number" placeholder="قیمت قدیم"><button class="btn" id="pAdd">افزودن</button></div>
+    <div class="add-form"><input id="pTitle" placeholder="نام پلان"><input id="pPeriod" placeholder="دوره"><input id="pDays" type="number" placeholder="روز"><input id="pPrice" type="number" placeholder="قیمت (ریال)"><input id="pOld" type="number" placeholder="قیمت قدیم"><button class="btn" id="pAdd">افزودن</button></div>
   </div>
 
   <div class="apane" id="pane-users">
     <div class="add-form"><input id="uq" placeholder="جستجو: ایمیل / نام / موبایل"><button class="btn" id="uqBtn">جستجو</button></div>
     <table class="admin-tbl"><thead><tr><th>ایمیل</th><th>نام</th><th>موبایل</th><th>تاریخ ثبت‌نام</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="usersBody"></tbody></table>
+    <div class="pager" id="pagerU"></div>
     <div id="userDetail" class="ubox" style="display:none"></div>
   </div>
 
   <div class="apane" id="pane-coupons">
-    <div class="add-form"><input id="cCode" placeholder="کد"><select id="cType"><option value="PERCENT">درصدی</option><option value="FIXED">مبلغ ثابت</option></select><input id="cValue" type="number" placeholder="مقدار"><input id="cLimit" type="number" placeholder="سقف استفاده"><input id="cEnd" placeholder="انقضا (۱۴۰۵/۰۶/۰۱)"><label><input type="checkbox" id="cPro"> فقط PRO</label><button class="btn" id="cAdd">ساخت کوپن</button></div>
+    <div class="add-form"><input id="cCode" placeholder="کد"><select id="cType"><option value="PERCENT">درصدی</option><option value="FIXED">مبلغ ثابت (ریال)</option></select><input id="cValue" type="number" placeholder="مقدار"><input id="cLimit" type="number" placeholder="سقف کل"><input id="cEnd" type="date"><label><input type="checkbox" id="cPro"> فقط PRO</label><button class="btn" id="cAdd">ساخت کوپن</button></div>
     <table class="admin-tbl"><thead><tr><th>کد</th><th>نوع</th><th>مقدار</th><th>استفاده شده</th><th>فعال</th><th>حذف</th></tr></thead><tbody id="couponBody"></tbody></table>
   </div>
 
@@ -131,7 +138,7 @@
     </div>
     <div id="dietList"></div>
     <div id="dietForm" style="display:none" class="rec-form">
-      <input id="dTitle" placeholder="عنوان برنامه"><input id="dGoal" placeholder="هدف"><input id="dStart" placeholder="شروع (۱۴۰۵/۰۶/۰۱)"><input id="dEnd" placeholder="پایان (۱۴۵/۰۷/۰۱)"><input id="dDur" type="number" placeholder="مدت(روز)">
+      <input id="dTitle" placeholder="عنوان برنامه"><input id="dGoal" placeholder="هدف"><input id="dStart" type="date"><input id="dEnd" type="date"><input id="dDur" type="number" placeholder="مدت(روز)">
       <input id="dKcal" type="number" placeholder="کالری هدف"><input id="dPro" type="number" placeholder="پروتئین"><input id="dCarb" type="number" placeholder="کربوهیدرات"><input id="dFat" type="number" placeholder="چربی">
       <textarea id="dNotes" class="full" placeholder="توضیحات و نکات برنامه"></textarea>
       <div id="daysBox" class="full"></div>
