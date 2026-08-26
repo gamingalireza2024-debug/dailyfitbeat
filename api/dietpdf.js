@@ -27,5 +27,5 @@ export default async function handler(req, res) {
   const sign = await fetch(SB_URL + "/storage/v1/object/sign/dfb-files/" + plan.pdf_path, { method: "POST", headers: { ...svc, "Content-Type": "application/json" }, body: JSON.stringify({ expiresIn: 300 }) });
   const sj = await sign.json();
   if (!sj.signedURL) { res.status(500).json({ error: "sign failed" }); return; }
-  res.status(200).json({ url: SB_URL + "/storage/v1/object" + sj.signedURL });
+  res.status(200).json({ url: SB_URL + "/storage/v1" + sj.signedURL });
 }
