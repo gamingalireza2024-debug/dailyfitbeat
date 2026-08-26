@@ -39,7 +39,6 @@ async function isDisabled(uid) {
   const p = await sbGet("/rest/v1/profiles?id=eq." + uid + "&select=disabled");
   return Array.isArray(p) && p[0] && !!p[0].disabled;
 }
-// کاربر واردشده و فعال؛ وگرنه null
 async function activeUser(req) {
   const user = await authUser(req);
   if (!user) return null;
@@ -67,7 +66,7 @@ async function notify(uid, type, title, body) {
 
 export default async function handler(req, res) {
   const t = req.query.t || "";
-  if (t === "ping") { res.status(200).json({ v: 17 }); return; }
+  if (t === "ping") { res.status(200).json({ v: 18 }); return; }
 
   // ---------- عمومی ----------
   if (t === "ingredients") { res.status(200).json(await sbGet("/rest/v1/ingredients?select=key,fa,en&key=in.(chicken,beef,egg,tomato,rice,potato,onion,garlic,mushroom,spinach,avocado,bread,greek-yogurt,salmon,chickpea,lentil,fish,shrimp,eggplant,kashk,walnut,pomegranate-molasses)")); return; }
@@ -89,7 +88,7 @@ export default async function handler(req, res) {
     res.status(200).json({ id, tg, mail }); return;
   }
 
-  // ---------- چک‌آوت (کاربر فعال) ----------
+  // ---------- چک‌آوت ----------
   if (t === "checkout" && req.method === "POST") {
     const user = await activeUser(req);
     if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
@@ -146,7 +145,7 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true }); return;
   }
 
-  // ---------- خصوصی کاربر (با enforce غیرفعال) ----------
+  // ---------- خصوصی کاربر ----------
   if (["my_orders","my_favs","my_payments","my_entitlements","my_diet_plans","my_notifications","my_list","save_list","download"].includes(t)) {
     const user = await activeUser(req);
     if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
@@ -202,7 +201,7 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true, path }); return;
   }
 
-  // ---------- ادمین: پرداخت‌ها (با pagination) ----------
+  // ---------- ادمین: پرداخت‌ها ----------
   if (t === "admin_payments") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -267,7 +266,7 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true }); return;
   }
 
-  // ---------- ادمین: سفارش‌ها (pagination + فیلتر سروری) ----------
+  // ---------- ادمین: سفارش‌ها ----------
   if (t === "all_orders") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -307,12 +306,13 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true }); return;
   }
 
-  // ---------- ادمین: کاربران (RPC امن + pagination) ----------
+  // ---------- ادمین: کاربران (RPC با توکن خود ادمین) ----------
   if (t === "admin_users") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
     const q = String(req.query.q || ""); const pageN = Math.max(1, +(req.query.page || 1)); const lim = 20;
-    const r = await fetch(SB_URL + "/rest/v1/rpc/admin_list_users", { method: "POST", headers: { ...svc, "Content-Type": "application/json" }, body: JSON.stringify({ q, lim, off: (pageN - 1) * lim }) });
+    const callerAuth = req.headers.authorization || ("Bearer " + SERVICE);
+    const r = await fetch(SB_URL + "/rest/v1/rpc/admin_list_users", { method: "POST", headers: { apikey: ANON, Authorization: callerAuth, "Content-Type": "application/json" }, body: JSON.stringify({ q, lim, off: (pageN - 1) * lim }) });
     if (!r.ok) { console.log("admin_list_users error:", r.status); res.status(502).json({ error: "user list failed", rows: [], total: 0 }); return; }
     const rows = await r.json();
     res.status(200).json({ rows: Array.isArray(rows) ? rows : [], total: (Array.isArray(rows) && rows.length === lim) ? (pageN * lim + 1) : ((pageN - 1) * lim + (Array.isArray(rows) ? rows.length : 0)) }); return;
@@ -384,7 +384,7 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true }); return;
   }
 
-  // ---------- ادمین: اعطا/لغو دسترسی محصول ----------
+  // ---------- ادمین: دسترسی محصول ----------
   if (t === "admin_grant_product" && req.method === "POST") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
