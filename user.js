@@ -1,5 +1,6 @@
 (async function () {
   if (document.body.dataset.page !== 'user') return;
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const t0 = setInterval(() => {
     if (!window.DFB || !DFB.sb) return;
     clearInterval(t0);
@@ -16,7 +17,7 @@
     const s = (await DFB.sb.auth.getSession()).data.session;
     const hd = { 'Content-Type': 'application/json' };
     if (s) hd.Authorization = 'Bearer ' + s.access_token;
-    return fetch('/api/db?t=' + t, Object.assign({ headers: hd }, opts || {}));
+    return fetch(t.startsWith('/') ? t : '/api/db?t=' + t, Object.assign({ headers: hd }, opts || {}));
   }
 
   async function main() {
@@ -26,13 +27,14 @@
     document.getElementById('uWelcome').textContent = 'سلام ' + name + '، آماده‌ای امروز بهتر بخوری؟';
 
     const ent = await (await api('my_entitlements')).json();
+    if (ent.error === 'account disabled') { document.getElementById('userBody').innerHTML = '<div class="u-card" style="margin:30px auto;max-width:500px;text-align:center"><h3>حساب غیرفعال است</h3><p style="color:#777">با پشتیبانی تماس بگیر.</p></div>'; return; }
     const badge = document.getElementById('uProBadge');
     const proCard = document.getElementById('uProCard');
     if (ent.pro) {
       const days = ent.pro_expires ? Math.max(0, Math.ceil((new Date(ent.pro_expires) - new Date()) / 86400000)) : null;
       badge.innerHTML = '<span class="u-pro-badge">💎 PRO فعال</span>';
       proCard.innerHTML = `<div class="big">PRO فعال است ✅</div>
-        <p style="font-size:12px;color:#667;margin-top:8px">${days != null ? days + ' روز تا پایان اشتراک' : 'بدون انقضا'}</p>
+        <p style="font-size:12px;color:#667;margin-top:8px">${days != null ? days.toLocaleString('fa-IR') + ' روز تا پایان اشتراک' : 'بدون انقضا'}</p>
         <a class="btn ghost small" href="pro.html" style="margin-top:10px">مدیریت اشتراک</a>`;
     } else {
       badge.innerHTML = '<span class="u-pro-badge" style="background:#e8f4e9;color:#2d6a35">پلان رایگان</span>';
@@ -41,7 +43,6 @@
         <a class="btn small" href="pro.html" style="margin-top:10px">ارتقا به PRO</a>`;
     }
 
-    // مقایسه FREE vs PRO
     document.getElementById('uVs').innerHTML = `
       <div class="free"><h4>پلان رایگان</h4><ul>
         <li>مشاهده همه رسپی‌ها</li><li>برنامه غذایی پایه (پلنر)</li><li>یخچال‌یاب (Ingredient Finder)</li><li>ذخیره تا ۱۰ رسپی</li>
@@ -50,9 +51,8 @@
         <li>ذخیره نامحدود رسپی</li><li>لیست خرید هوشمند</li><li>برنامه غذایی اختصاصی از ادمین</li><li>PDF حرفه‌ای رژیم</li><li>اولویت پشتیبانی</li>
       </ul>${ent.pro ? '' : '<a class="btn" href="pro.html" style="margin-top:12px">ارتقا به PRO</a>'}</div>`;
 
-    // محصولات من
     const prods = ent.products || [];
-    document.getElementById('uProducts').innerHTML = prods.length ? prods.map(p => `<div><b>${p.products.title_fa}</b><br><small>خرید: ${new Date(p.granted_at).toLocaleDateString('fa-IR')}${p.expires_at ? ' — تا ' + new Date(p.expires_at).toLocaleDateString('fa-IR') : ''}</small><br><a class="dl-btn" data-e="${p.id}" href="#">⬇ دانلود</a></div>`).join('') : '<div class="u-empty">هنوز محصولی نخریدی — <a href="market.html">فیت مارکت</a></div>';
+    document.getElementById('uProducts').innerHTML = prods.length ? prods.map(p => `<div><b>${esc(p.products.title_fa)}</b><br><small>خرید: ${new Date(p.granted_at).toLocaleDateString('fa-IR')}${p.expires_at ? ' — تا ' + new Date(p.expires_at).toLocaleDateString('fa-IR') : ''}</small><br><a class="dl-btn" data-e="${p.id}" href="#">⬇ دانلود</a></div>`).join('') : '<div class="u-empty">هنوز محصولی نخریدی — <a href="market.html">فیت مارکت</a></div>';
     document.querySelectorAll('#uProducts .dl-btn').forEach(a => a.onclick = async (e) => {
       e.preventDefault();
       const r = await api('download', { method: 'POST', body: JSON.stringify({ entitlement_id: +a.dataset.e }) });
@@ -60,20 +60,23 @@
       if (r.ok) window.open(j.url, '_blank'); else alert(j.error === 'entitlement expired' ? 'دسترسی منقضی شده' : 'خطا در دانلود');
     });
 
-    // برنامه‌های غذایی
     const diets = await (await api('my_diet_plans')).json();
-    document.getElementById('uDiets').innerHTML = (Array.isArray(diets) && diets.length) ? diets.map(d => `<div><b>${d.title}</b> — ${d.duration_days || '—'} روز<br><small>هدف: ${d.goal || '—'} | کالری: ${d.kcal_target || '—'}</small><br>${d.pdf_path ? `<a class="dl-btn" href="/api/dietpdf?id=${d.id}" target="_blank">⬇ دانلود PDF</a>` : ''}</div>`).join('') : '<div class="u-empty">هنوز برنامه غذایی نداری.<br>با PRO، ادمین برات برنامه اختصاصی می‌سازه 💚</div>';
+    document.getElementById('uDiets').innerHTML = (Array.isArray(diets) && diets.length) ? diets.map(d => `<div><b>${esc(d.title)}</b> — ${(d.duration_days || '—').toLocaleString ? (d.duration_days || '—').toLocaleString('fa-IR') : d.duration_days} روز<br><small>هدف: ${esc(d.goal) || '—'} | کالری: ${(d.kcal_target || '—').toLocaleString ? (d.kcal_target || '—').toLocaleString('fa-IR') : d.kcal_target}</small><br>${d.pdf_path ? `<a class="dl-btn" data-d="${d.id}" href="#">⬇ دانلود PDF</a>` : '<small>در انتظار PDF</small>'}</div>`).join('') : '<div class="u-empty">هنوز برنامه غذایی نداری.<br>با PRO، ادمین برات برنامه اختصاصی می‌سازه 💚</div>';
+    document.querySelectorAll('#uDiets .dl-btn').forEach(a => a.onclick = async (e) => {
+      e.preventDefault();
+      const r = await api('/api/dietpdf?id=' + a.dataset.d);
+      const j = await r.json();
+      if (r.ok && j.url) window.open(j.url, '_blank'); else alert(j.error === 'forbidden' ? 'دسترسی به این برنامه نداری' : 'خطا در دریافت PDF');
+    });
 
-    // اعلان‌ها
     const notifs = await (await api('my_notifications')).json();
-    document.getElementById('uNotifs').innerHTML = (Array.isArray(notifs) && notifs.length) ? notifs.map(n => `<div><b>${n.title}</b><br><small>${n.body}</small><br><small style="color:#98a298">${new Date(n.created_at).toLocaleDateString('fa-IR')}</small></div>`).join('') : '<div class="u-empty">اعلانی نداری</div>';
+    document.getElementById('uNotifs').innerHTML = (Array.isArray(notifs) && notifs.length) ? notifs.map(n => `<div><b>${esc(n.title)}</b><br><small>${esc(n.body)}</small><br><small style="color:#98a298">${new Date(n.created_at).toLocaleDateString('fa-IR')}</small></div>`).join('') : '<div class="u-empty">اعلانی نداری</div>';
 
-    // لیست خرید PRO
     const listBox = document.getElementById('uList');
     if (ent.pro) {
       const cur = await (await api('my_list')).json();
       const items = Array.isArray(cur) && cur[0] && cur[0].items ? cur[0].items : [];
-      listBox.innerHTML = `<textarea id="slItems" style="width:100%;height:110px;border-radius:12px;border:1px solid #ccc;padding:10px;font:inherit;font-size:13px" placeholder="هر خط یک قلم خرید...">${(items || []).join('\n')}</textarea>
+      listBox.innerHTML = `<textarea id="slItems" style="width:100%;height:110px;border-radius:12px;border:1px solid #ccc;padding:10px;font:inherit;font-size:13px" placeholder="هر خط یک قلم خرید...">${esc((items || []).join('\n'))}</textarea>
         <button class="btn small" id="slSave" style="margin-top:8px">ذخیره لیست</button>`;
       document.getElementById('slSave').onclick = async () => {
         const arr = document.getElementById('slItems').value.split('\n').map(s => s.trim()).filter(Boolean);
