@@ -1,84 +1,78 @@
-(async function () {
-  if (document.body.dataset.page !== 'user') return;
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const t0 = setInterval(() => {
-    if (!window.DFB || !DFB.sb) return;
-    clearInterval(t0);
-    if (!DFB.user) {
-      document.getElementById('userBody').style.display = 'none';
-      document.getElementById('uLogin').style.display = 'block';
-      document.getElementById('uLoginBtn').onclick = () => DFB.sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + '/user.html' } });
-      return;
-    }
-    main();
-  }, 400);
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل کاربری | DailyFitBeat</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.u-hero{background:linear-gradient(135deg,#2d6a35,#1e4a26);border-radius:26px;color:#fff;padding:34px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin:20px 0}
+.u-ava{width:74px;height:74px;border-radius:50%;background:#fff;color:#2d6a35;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.u-hero h2{font-size:24px}
+.u-hero p{opacity:.9;font-size:13px;margin-top:6px}
+.u-pro-badge{background:#ffd76a;color:#5c4300;border-radius:999px;padding:7px 16px;font-weight:800;font-size:12px}
+.u-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.u-card{background:#fff;border-radius:20px;padding:22px;box-shadow:0 6px 20px rgba(30,43,28,.07)}
+.u-card h3{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.u-card .big{font-size:22px;font-weight:900;color:#2d6a35}
+.u-list{max-height:220px;overflow:auto;font-size:13px}
+.u-list div{padding:9px 4px;border-bottom:1px dashed #e5e5e5}
+.u-empty{color:#98a298;font-size:12px;text-align:center;padding:18px 0}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:20px;overflow:hidden;margin:22px 0;box-shadow:0 8px 26px rgba(30,43,28,.10)}
+.vs>div{padding:24px}
+.vs .free{background:#fff}
+.vs .pro{background:#1e2b1c;color:#fff}
+.vs h4{margin-bottom:12px}
+.vs li{list-style:none;padding:6px 0;font-size:13px}
+.vs .pro li:before{content:"✔ ";color:#8fd18f}
+.vs .free li:before{content:"✔ ";color:#2d6a35}
+@media(max-width:700px){.vs{grid-template-columns:1fr}}
+.dl-btn{display:inline-block;margin:4px 0 0;padding:8px 14px;border-radius:10px;background:#2d6a35;color:#fff;font-size:12px;text-decoration:none}
+</style>
+</head>
+<body data-page="user">
+<header id="hdr"></header>
 
-  async function api(t, opts) {
-    const s = (await DFB.sb.auth.getSession()).data.session;
-    const hd = { 'Content-Type': 'application/json' };
-    if (s) hd.Authorization = 'Bearer ' + s.access_token;
-    return fetch('/api/db?t=' + t, Object.assign({ headers: hd }, opts || {}));
-  }
+<section><div class="container">
+  <p id="userStat" hidden></p>
+  <div id="userBody" style="display:none">
+    <div class="u-hero">
+      <div class="u-ava" id="uAva">D</div>
+      <div style="flex:1">
+        <h2 id="uWelcome">سلام!</h2>
+        <p>امروز هم یه قدم به سبک زندگی سالم نزدیک‌تر 🌿</p>
+      </div>
+      <span id="uProBadge"></span>
+    </div>
 
-  async function main() {
-    const U = DFB.user;
-    const name = (U.user_metadata && U.user_metadata.name) || (U.email || '').split('@')[0];
-    document.getElementById('uAva').textContent = (name[0] || 'D').toUpperCase();
-    document.getElementById('uWelcome').textContent = 'سلام ' + name + '، آماده‌ای امروز بهتر بخوری؟';
+    <div class="u-grid">
+      <div class="u-card"><h3>💎 وضعیت اشتراک</h3><div id="uProCard"></div></div>
+      <div class="u-card"><h3>🥗 برنامه غذایی من</h3><div id="uDiets" class="u-list"></div></div>
+      <div class="u-card"><h3>🎁 محصولات من</h3><div id="uProducts" class="u-list"></div></div>
+      <div class="u-card"><h3>📦 سفارش‌های من</h3><div id="myOrders" class="u-list"></div></div>
+      <div class="u-card"><h3>❤️ رسپی‌های ذخیره‌شده</h3><div id="myFavs" class="u-list"></div></div>
+      <div class="u-card"><h3>🔔 اعلان‌ها</h3><div id="uNotifs" class="u-list"></div></div>
+      <div class="u-card"><h3>🛒 لیست خرید هوشمند <span class="u-pro-badge" style="background:#e8f4e9;color:#2d6a35">PRO</span></h3><div id="uList"></div></div>
+      <div class="u-card"><h3>👤 پروفایل</h3>
+        <p style="font-size:13px">نام: <b id="uName"></b><br>ایمیل: <b id="uEmail"></b><br>موبایل: <b id="uPhone"></b></p>
+        <button class="btn ghost small" id="phEdit" style="margin-top:8px">ویرایش موبایل</button>
+      </div>
+    </div>
 
-    const ent = await (await api('my_entitlements')).json();
-    if (ent.error === 'account disabled') { document.getElementById('userBody').innerHTML = '<div class="u-card" style="margin:30px auto;max-width:500px;text-align:center"><h3>حساب غیرفعال است</h3><p style="color:#777">با پشتیبانی تماس بگیر.</p></div>'; return; }
-    const badge = document.getElementById('uProBadge');
-    const proCard = document.getElementById('uProCard');
-    if (ent.pro) {
-      const days = ent.pro_expires ? Math.max(0, Math.ceil((new Date(ent.pro_expires) - new Date()) / 86400000)) : null;
-      badge.innerHTML = '<span class="u-pro-badge">💎 PRO فعال</span>';
-      proCard.innerHTML = `<div class="big">PRO فعال است ✅</div>
-        <p style="font-size:12px;color:#667;margin-top:8px">${days != null ? days.toLocaleString('fa-IR') + ' روز تا پایان اشتراک' : 'بدون انقضا'}</p>
-        <a class="btn ghost small" href="pro.html" style="margin-top:10px">مدیریت اشتراک</a>`;
-    } else {
-      badge.innerHTML = '<span class="u-pro-badge" style="background:#e8f4e9;color:#2d6a35">پلان رایگان</span>';
-      proCard.innerHTML = `<div class="big">FREE</div>
-        <p style="font-size:12px;color:#667;margin-top:8px">با PRO، برنامه شخصی، ذخیره نامحدود و لیست خرید هوشمند باز می‌شه.</p>
-        <a class="btn small" href="pro.html" style="margin-top:10px">ارتقا به PRO</a>`;
-    }
+    <div class="vs" id="uVs"></div>
+  </div>
+  <div id="uLogin" style="display:none;text-align:center;padding:60px 0">
+    <h2>وارد حسابت شو 👋</h2>
+    <p style="color:#777;margin:10px 0 20px">برای دیدن داشبورد، برنامه غذایی و خریدها</p>
+    <button class="btn big" id="uLoginBtn">ورود با گوگل</button>
+  </div>
+</div></section>
 
-    document.getElementById('uVs').innerHTML = `
-      <div class="free"><h4>پلان رایگان</h4><ul>
-        <li>مشاهده همه رسپی‌ها</li><li>برنامه غذایی پایه (پلنر)</li><li>یخچال‌یاب (Ingredient Finder)</li><li>ذخیره تا ۱۰ رسپی</li>
-      </ul></div>
-      <div class="pro"><h4>💎 PRO</h4><ul>
-        <li>ذخیره نامحدود رسپی</li><li>لیست خرید هوشمند</li><li>برنامه غذایی اختصاصی از ادمین</li><li>PDF حرفه‌ای رژیم</li><li>اولویت پشتیبانی</li>
-      </ul>${ent.pro ? '' : '<a class="btn" href="pro.html" style="margin-top:12px">ارتقا به PRO</a>'}</div>`;
-
-    const prods = ent.products || [];
-    document.getElementById('uProducts').innerHTML = prods.length ? prods.map(p => `<div><b>${esc(p.products.title_fa)}</b><br><small>خرید: ${new Date(p.granted_at).toLocaleDateString('fa-IR')}${p.expires_at ? ' — تا ' + new Date(p.expires_at).toLocaleDateString('fa-IR') : ''}</small><br><a class="dl-btn" data-e="${p.id}" href="#">⬇ دانلود</a></div>`).join('') : '<div class="u-empty">هنوز محصولی نخریدی — <a href="market.html">فیت مارکت</a></div>';
-    document.querySelectorAll('#uProducts .dl-btn').forEach(a => a.onclick = async (e) => {
-      e.preventDefault();
-      const r = await api('download', { method: 'POST', body: JSON.stringify({ entitlement_id: +a.dataset.e }) });
-      const j = await r.json();
-      if (r.ok) window.open(j.url, '_blank'); else alert(j.error === 'entitlement expired' ? 'دسترسی منقضی شده' : 'خطا در دانلود');
-    });
-
-    const diets = await (await api('my_diet_plans')).json();
-    document.getElementById('uDiets').innerHTML = (Array.isArray(diets) && diets.length) ? diets.map(d => `<div><b>${esc(d.title)}</b> — ${esc(d.duration_days) || '—'} روز<br><small>هدف: ${esc(d.goal) || '—'} | کالری: ${esc(d.kcal_target) || '—'}</small><br>${d.pdf_path ? `<a class="dl-btn" href="/api/dietpdf?id=${d.id}" target="_blank">⬇ دانلود PDF</a>` : ''}</div>`).join('') : '<div class="u-empty">هنوز برنامه غذایی نداری.<br>با PRO، ادمین برات برنامه اختصاصی می‌سازه 💚</div>';
-
-    const notifs = await (await api('my_notifications')).json();
-    document.getElementById('uNotifs').innerHTML = (Array.isArray(notifs) && notifs.length) ? notifs.map(n => `<div><b>${esc(n.title)}</b><br><small>${esc(n.body)}</small><br><small style="color:#98a298">${new Date(n.created_at).toLocaleDateString('fa-IR')}</small></div>`).join('') : '<div class="u-empty">اعلانی نداری</div>';
-
-    const listBox = document.getElementById('uList');
-    if (ent.pro) {
-      const cur = await (await api('my_list')).json();
-      const items = Array.isArray(cur) && cur[0] && cur[0].items ? cur[0].items : [];
-      listBox.innerHTML = `<textarea id="slItems" style="width:100%;height:110px;border-radius:12px;border:1px solid #ccc;padding:10px;font:inherit;font-size:13px" placeholder="هر خط یک قلم خرید...">${esc((items || []).join('\n'))}</textarea>
-        <button class="btn small" id="slSave" style="margin-top:8px">ذخیره لیست</button>`;
-      document.getElementById('slSave').onclick = async () => {
-        const arr = document.getElementById('slItems').value.split('\n').map(s => s.trim()).filter(Boolean);
-        await api('save_list', { method: 'POST', body: JSON.stringify({ items: arr }) });
-        alert('ذخیره شد ✅');
-      };
-    } else {
-      listBox.innerHTML = '<div class="u-empty">🔒 لیست خرید هوشمند مخصوص PRO است.<br><a class="btn small" href="pro.html" style="margin-top:8px">ارتقا به PRO</a></div>';
-    }
-  }
-})();
+<footer id="ftr"></footer>
+<script src="site.js"></script>
+<script src="app.js"></script>
+<script src="user.js"></script>
+</body>
+</html>
