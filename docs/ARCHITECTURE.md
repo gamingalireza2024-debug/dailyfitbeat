@@ -60,3 +60,4 @@ Supabase (DB/Auth/Storage) • Vercel (هاست/serverless) • GitHub Actions (
 - Grounding سبک: لیست کوتاه رسپی‌های واقعی از rpc/match_recipes به عنوان context؛ RAG کامل بعداً.
 - پروفایل تغذیه: جدول جدا nutrition_profiles (RLS: کاربر فقط خودش؛ ادمین فقط خواندن)؛ فقط با include_profile به مدل داده می‌شه.
 - امنیت: اعتبارسنجی طول پیام، sanitize آرایه‌ها/رشته‌ها، عدم افشای secret در خطاها، ثبت مصرف فقط پس از پاسخ موفق.
+
