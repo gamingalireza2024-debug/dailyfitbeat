@@ -1,17 +1,21 @@
 const SB_URL = "https://hvqchqqlfcjxsohxywbd.supabase.co";
-const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cWNocWxmY2p4c29oeHlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTI3ODYsImV4cCI6MjEwMjk4ODc4Nn0.yJursP15upa_-nE8P41l4uUssITBK319dzfaa2tbJ1k";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cWNocXFsZmNqeHNvaHh5d2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTI3ODYsImV4cCI6MjEwMjk4ODc4Nn0.yJursP15upa_-nE8P41l4uUssITBK319dzfaa2tbJ1k";
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const svc = { apikey: ANON, Authorization: "Bearer " + SERVICE };
 const h = { apikey: ANON, Authorization: "Bearer " + ANON };
 
 const FREE_MONTHLY = 5, PRO_MONTHLY = 100, MIN_GAP_MS = 2000, MAX_MSG = 2000;
 
+// احراز هویت: اول X-Supabase-Auth، بعد Authorization: Bearer
+// توکن همچنان فقط با Supabase Auth در سرور اعتبارسنجی می‌شود.
 async function authUser(req) {
+  const x = req.headers["x-supabase-auth"];
   const a = req.headers.authorization || "";
   const m = a.match(/^Bearer\s+(.+)$/i);
-  if (!m) return null;
+  const token = (typeof x === "string" && x.trim()) ? x.trim() : (m ? m[1] : null);
+  if (!token) return null;
   try {
-    const r = await fetch(SB_URL + "/auth/v1/user", { headers: { apikey: ANON, Authorization: "Bearer " + m[1] } });
+    const r = await fetch(SB_URL + "/auth/v1/user", { headers: { apikey: ANON, Authorization: "Bearer " + token } });
     if (!r.ok) return null;
     return await r.json();
   } catch (e) { return null; }
@@ -25,6 +29,7 @@ async function userIsPro(uid) {
   return (Array.isArray(e) && e.length && act(e, 'expires_at')) || (Array.isArray(s) && s.length && act(s, 'end_date'));
 }
 
+// ---------- Provider Adapter Registry ----------
 const ADAPTERS = {
   gemini: {
     isConfigured: () => !!process.env.GEMINI_API_KEY,
@@ -64,6 +69,7 @@ export default async function handler(req, res) {
   if (!message) { res.status(400).json({ error: "message required" }); return; }
   if (message.length > MAX_MSG) { res.status(400).json({ error: "message too long" }); return; }
 
+  // ---------- Quota (فقط سروری) ----------
   const pro = await userIsPro(user.id);
   const limit = pro ? PRO_MONTHLY : FREE_MONTHLY;
   const ps = monthStart();
@@ -72,6 +78,7 @@ export default async function handler(req, res) {
   if (row && row.last_request_at && (Date.now() - new Date(row.last_request_at).getTime()) < MIN_GAP_MS) { res.status(429).json({ error: "too fast" }); return; }
   if (row && (row.request_count || 0) >= limit) { res.status(429).json({ error: "quota_exceeded", usage: { used: row.request_count, limit, reset_at: ps } }); return; }
 
+  // ---------- Grounding سبک ----------
   let context = "";
   if (Array.isArray(b.have) && b.have.length) {
     const matches = await (await fetch(SB_URL + "/rest/v1/rpc/match_recipes", { method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ have: b.have.slice(0, 12) }) })).json();
@@ -105,6 +112,7 @@ export default async function handler(req, res) {
   }
   if (!reply) { res.status(502).json({ error: "empty_reply" }); return; }
 
+  // ---------- ثبت مصرف ----------
   const used = (row ? row.request_count || 0 : 0) + 1;
   if (row) await fetch(SB_URL + "/rest/v1/ai_usage?id=eq." + row.id, { method: "PATCH", headers: { ...svc, "Content-Type": "application/json" }, body: JSON.stringify({ request_count: used, last_request_at: new Date().toISOString() }) });
   else await fetch(SB_URL + "/rest/v1/ai_usage", { method: "POST", headers: { ...svc, "Content-Type": "application/json" }, body: JSON.stringify({ user_id: user.id, period_start: ps, request_count: 1, last_request_at: new Date().toISOString() }) });
