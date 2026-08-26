@@ -6,10 +6,17 @@
     if (DFB.isAdmin()) { started = true; clearInterval(wait); sb = DFB.sb; init(); }
   }, 400);
 
-  // ---------- ابزارها ----------
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const rialFa = n => (Number(n) || 0).toLocaleString('fa-IR') + ' ریال';
+  const fmt = n => (Number(n) || 0).toLocaleString('fa-IR');
   const faDate = d => d ? new Date(d).toLocaleDateString('fa-IR') : '—';
+  function normNum(s) {
+    if (s === '' || s == null) return null;
+    const t = String(s).replace(/[۰-۹]/g, x => '۰۱۲۳۴۵۶۷۸۹'.indexOf(x)).replace(/[,،٬\s]/g, '');
+    const n = Number(t);
+    return isNaN(n) ? null : n;
+  }
+  const OK_EXT = /\.(pdf|zip|rar|jpe?g|png|webp|mp4|mp3)$/i;
   async function tok() { const s = (await sb.auth.getSession()).data.session; return s ? s.access_token : null; }
   async function api(t, opts) {
     const token = await tok();
@@ -55,18 +62,17 @@
   }
   async function refreshREC() { REC = await (await fetch('/api/db?t=all')).json(); }
 
-  // ---------- داشبورد / audit ----------
   async function loadDash() {
     const r = await api('admin_stats'); if (!r.ok) return;
     const s = await r.json();
     document.getElementById('statsBox').innerHTML = `
-      <div class="sc"><b>${s.users.toLocaleString('fa-IR')}</b><span>کاربران</span></div>
-      <div class="sc"><b>${s.orders.toLocaleString('fa-IR')}</b><span>سفارش‌ها</span></div>
-      <div class="sc"><b>${s.paid_orders.toLocaleString('fa-IR')}</b><span>پرداخت شده</span></div>
-      <div class="sc"><b>${s.pending_orders.toLocaleString('fa-IR')}</b><span>در انتظار</span></div>
+      <div class="sc"><b>${fmt(s.users)}</b><span>کاربران</span></div>
+      <div class="sc"><b>${fmt(s.orders)}</b><span>سفارش‌ها</span></div>
+      <div class="sc"><b>${fmt(s.paid_orders)}</b><span>پرداخت شده</span></div>
+      <div class="sc"><b>${fmt(s.pending_orders)}</b><span>در انتظار</span></div>
       <div class="sc"><b>${rialFa(s.revenue)}</b><span>درآمد تأییدشده</span></div>
-      <div class="sc"><b>${s.active_pro.toLocaleString('fa-IR')}</b><span>PRO فعال</span></div>
-      <div class="sc"><b>${s.expired_pro.toLocaleString('fa-IR')}</b><span>PRO منقضی</span></div>`;
+      <div class="sc"><b>${fmt(s.active_pro)}</b><span>PRO فعال</span></div>
+      <div class="sc"><b>${fmt(s.expired_pro)}</b><span>PRO منقضی</span></div>`;
     const a = await (await api('admin_audit')).json();
     document.getElementById('dashAudit').innerHTML = (Array.isArray(a) ? a.slice(0, 8) : []).map(x => `<tr><td>${faDate(x.created_at)}</td><td>${esc(x.admin_email)}</td><td>${esc(x.action)}</td><td>${esc(x.target_type)}#${esc(x.target_id)}</td></tr>`).join('');
   }
@@ -75,7 +81,6 @@
     document.getElementById('auditBody').innerHTML = (Array.isArray(a) ? a : []).map(x => `<tr><td>${faDate(x.created_at)}</td><td>${esc(x.admin_email)}</td><td>${esc(x.action)}</td><td>${esc(x.target_type)}#${esc(x.target_id)}</td><td>${esc(JSON.stringify(x.meta || {}))}</td></tr>`).join('');
   }
 
-  // ---------- سفارش‌ها ----------
   async function loadOrders(page) {
     const st = document.getElementById('filterSt').value;
     const r = await api('all_orders&page=' + page + '&status=' + st); if (!r.ok) return;
@@ -97,7 +102,6 @@
     document.querySelectorAll('.delO').forEach(b => b.onclick = async () => { if (!confirm('سفارش حذف بشه؟')) return; await api('admin_delete_order', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) }); loadOrders(page); });
   }
 
-  // ---------- پرداخت‌ها ----------
   async function loadPayments(page) {
     const r = await api('admin_payments&page=' + page); if (!r.ok) return;
     const j = await r.json(); const list = j.rows || [];
@@ -113,10 +117,9 @@
     document.querySelectorAll('.delPay').forEach(b => b.onclick = async () => { if (!confirm('پرداخت حذف بشه؟')) return; await api('admin_delete_payment', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) }); loadPayments(page); });
   }
 
-  // ---------- رسپی‌ها ----------
   async function loadRecipes() {
     document.getElementById('recBody').innerHTML = REC.map(r => `<tr>
-      <td><b>${esc(r.name_fa)}</b><br><small dir="ltr">${esc(r.slug)}</small></td><td>${esc(r.category)}</td><td>${esc(r.region) || '-'}</td><td>${(r.kcal || 0).toLocaleString('fa-IR')}</td>
+      <td><b>${esc(r.name_fa)}</b><br><small dir="ltr">${esc(r.slug)}</small></td><td>${esc(r.category)}</td><td>${esc(r.region) || '-'}</td><td>${fmt(r.kcal)}</td>
       <td><button class="btn small edR" data-s="${esc(r.slug)}">ویرایش</button></td><td><button class="del-btn dlR" data-s="${esc(r.slug)}">حذف</button></td>
     </tr>`).join('');
     document.querySelectorAll('.edR').forEach(b => b.onclick = () => fillForm(REC.find(x => x.slug === b.dataset.s)));
@@ -150,30 +153,31 @@
     alert('ذخیره شد ✅'); document.getElementById('recForm').style.display = 'none'; loadRecipes();
   }
 
-  // ---------- محصولات / پلان‌ها ----------
   async function loadProds() {
     const data = await (await fetch('/api/db?t=products')).json();
     document.getElementById('prodBody2').innerHTML = (Array.isArray(data) ? data : []).map(p => `<tr>
       <td><b>${esc(p.title_fa)}</b></td>
-      <td><input type="number" data-id="${p.id}" data-f="price_rial" value="${p.price_rial}"></td>
-      <td><input type="number" data-id="${p.id}" data-f="old_price_rial" value="${p.old_price_rial || ''}"></td>
+      <td><input type="text" data-id="${p.id}" data-f="price_rial" value="${p.price_rial ? fmt(p.price_rial) : ''}"></td>
+      <td><input type="text" data-id="${p.id}" data-f="old_price_rial" value="${p.old_price_rial ? fmt(p.old_price_rial) : ''}"></td>
       <td><input type="number" data-id="${p.id}" data-f="off_percent" value="${p.off_percent || 0}"></td>
       <td><select data-id="${p.id}" data-f="type">${Object.entries(TYPE_FA).map(([k, v]) => `<option value="${k}" ${p.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select></td>
       <td><input type="number" data-id="${p.id}" data-f="access_days" value="${p.access_days || ''}"></td>
-      <td><input type="file" class="pFile" data-id="${p.id}"><br><small dir="ltr">${esc(p.file_path) || '—'}</small></td>
-      <td><input type="checkbox" data-id="${p.id}" data-f="active" ${p.active ? 'checked' : ''}></td>
-      <td><button class="btn small svP" data-id="${p.id}">ذخیره</button></td>
+      <td><input type="file" class="pFile" data-id="${p.id}" accept=".pdf,.zip,.rar,.jpg,.jpeg,.png,.webp,.mp4,.mp3"><span class="hint">PDF/ZIP/JPG/MP4… تا ۱۵MB</span><br><small dir="ltr">${esc(p.file_path) || '—'}</small></td>
       <td><button class="del-btn dlP" data-id="${p.id}">حذف</button></td>
+      <td><button class="btn small svP" data-id="${p.id}">ذخیره</button></td>
+      <td><input type="checkbox" data-id="${p.id}" data-f="active" ${p.active ? 'checked' : ''}></td>
     </tr>`).join('');
     document.querySelectorAll('.svP').forEach(b => b.onclick = async () => {
       const id = b.dataset.id, upd = {};
       document.querySelectorAll(`#prodBody2 [data-id="${id}"][data-f]`).forEach(i => {
         if (i.dataset.f === 'active') upd.active = i.checked;
         else if (i.dataset.f === 'type') upd.type = i.value;
+        else if (['price_rial', 'old_price_rial'].includes(i.dataset.f)) upd[i.dataset.f] = normNum(i.value);
         else upd[i.dataset.f] = i.value === '' ? null : +i.value;
       });
       const file = document.querySelector(`.pFile[data-id="${id}"]`).files[0];
       if (file) {
+        if (!OK_EXT.test(file.name)) { alert('فرمت مجاز: PDF/ZIP/RAR/JPG/PNG/WEBP/MP4/MP3'); return; }
         const base64 = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result.split(',')[1]); fr.readAsDataURL(file); });
         const path = 'products/p' + id + '-' + file.name;
         const up = await api('upload_file', { method: 'POST', body: JSON.stringify({ path, base64, mime: file.type }) });
@@ -186,12 +190,13 @@
     document.querySelectorAll('.dlP').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await sb.from('products').delete().eq('id', b.dataset.id); loadProds(); });
   }
   async function addProd() {
-    const t = document.getElementById('aTitle').value.trim(); const pr = +document.getElementById('aPrice').value;
+    const t = document.getElementById('aTitle').value.trim(); const pr = normNum(document.getElementById('aPrice').value);
     if (!t || !pr) { alert('نام و قیمت لازمه'); return; }
-    const ins = await sb.from('products').insert({ title_fa: t, desc_fa: document.getElementById('aDesc').value.trim(), price_rial: pr, old_price_rial: +document.getElementById('aOld').value || null, off_percent: +document.getElementById('aOff').value || 0, rating: 4.8, type: document.getElementById('aType').value, access_days: +document.getElementById('aDays').value || null, image: document.getElementById('aImg').value || null }).select().single();
+    const ins = await sb.from('products').insert({ title_fa: t, desc_fa: document.getElementById('aDesc').value.trim(), price_rial: pr, old_price_rial: normNum(document.getElementById('aOld').value), off_percent: +document.getElementById('aOff').value || 0, rating: 4.8, type: document.getElementById('aType').value, access_days: +document.getElementById('aDays').value || null, image: document.getElementById('aImg').value || null }).select().single();
     if (ins.error) { alert(ins.error.message); return; }
     const file = document.getElementById('aFile').files[0];
     if (file && ins.data) {
+      if (!OK_EXT.test(file.name)) { alert('فرمت مجاز: PDF/ZIP/RAR/JPG/PNG/WEBP/MP4/MP3'); return; }
       const base64 = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result.split(',')[1]); fr.readAsDataURL(file); });
       const path = 'products/p' + ins.data.id + '-' + file.name;
       await api('upload_file', { method: 'POST', body: JSON.stringify({ path, base64, mime: file.type }) });
@@ -199,13 +204,14 @@
     }
     alert('اضافه شد ✅'); loadProds();
   }
+
   async function loadPlans() {
     const data = await (await fetch('/api/db?t=plans')).json();
     document.getElementById('plansBody2').innerHTML = (Array.isArray(data) ? data : []).map(p => `<tr>
       <td><input data-id="${p.id}" data-f="title_fa" value="${esc(p.title_fa)}"></td><td><input data-id="${p.id}" data-f="period" value="${esc(p.period)}"></td>
       <td><input type="number" data-id="${p.id}" data-f="days" value="${p.days || 30}"></td>
-      <td><input type="number" data-id="${p.id}" data-f="price_rial" value="${p.price_rial}"></td>
-      <td><input type="number" data-id="${p.id}" data-f="old_price_rial" value="${p.old_price_rial || ''}"></td>
+      <td><input type="text" data-id="${p.id}" data-f="price_rial" value="${p.price_rial ? fmt(p.price_rial) : ''}"></td>
+      <td><input type="text" data-id="${p.id}" data-f="old_price_rial" value="${p.old_price_rial ? fmt(p.old_price_rial) : ''}"></td>
       <td><textarea data-id="${p.id}" data-f="features">${esc((p.features || []).join('\n'))}</textarea></td>
       <td><button class="btn small svL" data-id="${p.id}">ذخیره</button></td><td><button class="del-btn dlL" data-id="${p.id}">حذف</button></td>
     </tr>`).join('');
@@ -214,6 +220,7 @@
       document.querySelectorAll(`#plansBody2 [data-id="${id}"][data-f]`).forEach(i => {
         if (i.dataset.f === 'features') upd.features = i.value.split('\n').map(s => s.trim()).filter(Boolean);
         else if (['title_fa', 'period'].includes(i.dataset.f)) upd[i.dataset.f] = i.value;
+        else if (['price_rial', 'old_price_rial'].includes(i.dataset.f)) upd[i.dataset.f] = normNum(i.value);
         else upd[i.dataset.f] = i.value === '' ? null : +i.value;
       });
       await sb.from('plans').update(upd).eq('id', id); alert('ذخیره شد ✅'); loadPlans();
@@ -221,7 +228,6 @@
     document.querySelectorAll('.dlL').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await sb.from('plans').delete().eq('id', b.dataset.id); loadPlans(); });
   }
 
-  // ---------- کاربران ----------
   async function loadUsers(q, page) {
     const r = await api('admin_users&q=' + encodeURIComponent(q || '') + '&page=' + page);
     if (!r.ok) { document.getElementById('usersBody').innerHTML = '<tr><td colspan="6">خطا در دریافت کاربران</td></tr>'; return; }
@@ -253,10 +259,10 @@
       <div class="add-form"><button class="ok-btn gP">🎁 اعطای PRO (۳۰ روز)</button><button class="warn-btn eP">⏳ تمدید +۳۰ روز</button><button class="del-btn rP">🚫 لغو PRO</button></div>
       <h4>🎁 اعطای دسترسی محصول</h4>
       <div class="add-form"><select id="gpSel">${(Array.isArray(prods) ? prods : []).map(p => `<option value="${p.id}">${esc(p.title_fa)}</option>`).join('')}</select><input id="gpDays" type="number" placeholder="مدت(روز، خالی=همیشگی)"><button class="ok-btn gpB">اعطای محصول</button></div>
-      <h4>دسترسی‌های محصول (${prodEnts.length.toLocaleString('fa-IR')})</h4><p>${prodEnts.map(e => `${esc((e.products && e.products.title_fa) || 'محصول')} — ${e.status} — تا ${faDate(e.expires_at)} <button class="del-btn rvPr" data-id="${e.id}">لغو</button>`).join('<br>') || '—'}</p>
+      <h4>دسترسی‌های محصول (${fmt(prodEnts.length)})</h4><p>${prodEnts.map(e => `${esc((e.products && e.products.title_fa) || 'محصول')} — ${esc(e.status)} — تا ${faDate(e.expires_at)} <button class="del-btn rvPr" data-id="${e.id}">لغو</button>`).join('<br>') || '—'}</p>
       <h4>اشتراک‌ها</h4><p>${subs.map(s => `${s.plans ? esc(s.plans.title_fa) : 'PRO'} — ${esc(s.status)} — تا ${faDate(s.end_date)}`).join('<br>') || '—'}</p>
-      <h4>سفارش‌ها (${myO.length.toLocaleString('fa-IR')})</h4><p>${myO.map(o => `#${o.id} ${esc(o.product)} — ${STATUS_FA[o.status] || esc(o.status)} — ${faDate(o.created_at)}`).join('<br>') || '—'}</p>
-      <h4>پرداخت‌ها (${myP.length.toLocaleString('fa-IR')})</h4><p>${myP.map(p => `#${p.id} — ${PAY_FA[p.status] || esc(p.status)} — ${rialFa(p.amount)}`).join('<br>') || '—'}</p>`;
+      <h4>سفارش‌ها (${fmt(myO.length)})</h4><p>${myO.map(o => `#${o.id} ${esc(o.product)} — ${STATUS_FA[o.status] || esc(o.status)} — ${faDate(o.created_at)}`).join('<br>') || '—'}</p>
+      <h4>پرداخت‌ها (${fmt(myP.length)})</h4><p>${myP.map(p => `#${p.id} — ${PAY_FA[p.status] || esc(p.status)} — ${rialFa(p.amount)}`).join('<br>') || '—'}</p>`;
     box.querySelector('.gP').onclick = async () => { await api('admin_grant_pro', { method: 'POST', body: JSON.stringify({ uid, days: 30 }) }); alert('اعطا شد ✅'); showUser(uid, email); };
     box.querySelector('.eP').onclick = async () => { await api('admin_extend_pro', { method: 'POST', body: JSON.stringify({ uid, days: 30 }) }); alert('تمدید شد ✅'); showUser(uid, email); };
     box.querySelector('.rP').onclick = async () => { if (!confirm('لغو PRO؟')) return; await api('admin_revoke_pro', { method: 'POST', body: JSON.stringify({ uid }) }); alert('لغو شد'); showUser(uid, email); };
@@ -265,12 +271,11 @@
     box.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // ---------- کوپن‌ها ----------
   async function loadCoupons() {
     const r = await api('admin_coupons'); if (!r.ok) return;
     const data = await r.json();
     document.getElementById('couponBody').innerHTML = (Array.isArray(data) ? data : []).map(c => `<tr>
-      <td><b>${esc(c.code)}</b></td><td>${c.type === 'PERCENT' ? 'درصدی' : 'ثابت'}</td><td>${c.type === 'PERCENT' ? c.value + '٪' : rialFa(c.value)}</td><td>${(c.used_count || 0).toLocaleString('fa-IR')}${c.usage_limit ? '/' + c.usage_limit.toLocaleString('fa-IR') : ''}</td>
+      <td><b>${esc(c.code)}</b></td><td>${c.type === 'PERCENT' ? 'درصدی' : 'ثابت'}</td><td>${c.type === 'PERCENT' ? fmt(c.value) + '٪' : rialFa(c.value)}</td><td>${fmt(c.used_count || 0)}${c.usage_limit ? '/' + fmt(c.usage_limit) : ''}</td>
       <td><input type="checkbox" class="cAct" data-id="${c.id}" ${c.active ? 'checked' : ''}></td>
       <td><button class="del-btn cDel" data-id="${c.id}">حذف</button></td>
     </tr>`).join('');
@@ -278,7 +283,6 @@
     document.querySelectorAll('.cDel').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await api('admin_coupons?id=' + b.dataset.id, { method: 'DELETE' }); loadCoupons(); });
   }
 
-  // ---------- Diet Builder ----------
   let dietPlanId = null, dayCount = 0;
   async function pickUsers() {
     const q = document.getElementById('dq').value;
@@ -294,7 +298,7 @@
     dayCount++;
     const div = document.createElement('div');
     div.className = 'day-box';
-    div.innerHTML = `<b>روز ${dayCount.toLocaleString('fa-IR')}</b> <button class="del-btn rmDay">حذف روز</button><div class="meals"></div><button class="btn small addMeal">➕ وعده</button>`;
+    div.innerHTML = `<b>روز ${fmt(dayCount)}</b> <button class="del-btn rmDay">حذف روز</button><div class="meals"></div><button class="btn small addMeal">➕ وعده</button>`;
     div.querySelector('.rmDay').onclick = () => div.remove();
     div.querySelector('.addMeal').onclick = () => addMealRow(div.querySelector('.meals'));
     document.getElementById('daysBox').appendChild(div);
@@ -330,13 +334,14 @@
     const det = await (await api('admin_diet_detail&id=' + dietPlanId)).json();
     const plan = det.plan; const days = Array.isArray(det.days) ? det.days : [];
     const uname = document.getElementById('duPick').selectedOptions[0] ? document.getElementById('duPick').selectedOptions[0].textContent : '';
+    await new Promise(r => { const i = new Image(); i.onload = r; i.onerror = r; i.src = 'img/logo.png'; });
     const doc = document.getElementById('pdfDoc');
     doc.innerHTML = `
       <div style="padding:40px;font-family:Vazirmatn,sans-serif;direction:rtl;color:#1e2b1c">
-        <div style="background:#2d6a35;border-radius:22px;padding:28px;color:#fff;display:flex;justify-content:space-between;align-items:center">
-          <div><div style="font-size:26px;font-weight:900">DailyFitBeat | دیلی‌بیت</div>
+        <div style="background:#2d6a35;border-radius:22px;padding:24px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:16px">
+          <div><div style="font-size:24px;font-weight:900">DailyFitBeat | دیلی‌بیت</div>
           <div style="opacity:.9;margin-top:6px">برنامه غذایی اختصاصی — ${plan.title}</div></div>
-          <div style="font-size:40px">🥗</div>
+          <img src="img/logo.png" alt="DailyFitBeat" style="height:70px;border-radius:18px;background:#fff;padding:6px">
         </div>
         <div style="display:flex;gap:14px;margin:22px 0;flex-wrap:wrap">
           <div style="background:#f2f7f2;border-radius:14px;padding:12px 18px"><b>کاربر:</b> ${uname}</div>
@@ -345,13 +350,13 @@
           <div style="background:#f2f7f2;border-radius:14px;padding:12px 18px"><b>تاریخ:</b> ${new Date().toLocaleDateString('fa-IR')}</div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
-          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${plan.kcal_target || 0}</b><br><small>کالری روزانه</small></div>
-          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${plan.protein_target || 0}g</b><br><small>پروتئین</small></div>
-          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${plan.carbs_target || 0}g</b><br><small>کربوهیدرات</small></div>
-          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${plan.fat_target || 0}g</b><br><small>چربی</small></div>
+          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.kcal_target) || 0}</b><br><small>کالری روزانه</small></div>
+          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.protein_target)}g</b><br><small>پروتئین</small></div>
+          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.carbs_target)}g</b><br><small>کربوهیدرات</small></div>
+          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.fat_target)}g</b><br><small>چربی</small></div>
         </div>
         ${days.map(d => `<div style="margin-bottom:20px">
-          <div style="background:#2d6a35;color:#fff;display:inline-block;border-radius:10px;padding:6px 16px;font-weight:800">روز ${d.day_number}</div>
+          <div style="background:#2d6a35;color:#fff;display:inline-block;border-radius:10px;padding:6px 16px;font-weight:800">روز ${fmt(d.day_number)}</div>
           <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:13px">
             ${(d.diet_plan_meals || []).map(m => `<tr style="border-bottom:1px solid #e5efe5"><td style="padding:9px;font-weight:700;width:90px">${{ breakfast: 'صبحانه', lunch: 'ناهار', snack: 'میان‌وعده', dinner: 'شام' }[m.meal_type] || m.meal_type}</td><td style="padding:9px">${m.title || (REC.find(x => x.id === m.recipe_id) || {}).name_fa || '—'}</td><td style="padding:9px;color:#557">${m.portion || ''}</td></tr>`).join('')}
           </table>
@@ -412,9 +417,9 @@
     document.getElementById('rSave').onclick = saveRecipe;
     document.getElementById('aAdd').onclick = addProd;
     document.getElementById('pAdd').onclick = async () => {
-      const t = document.getElementById('pTitle').value.trim(); const pr = +document.getElementById('pPrice').value;
+      const t = document.getElementById('pTitle').value.trim(); const pr = normNum(document.getElementById('pPrice').value);
       if (!t || !pr) { alert('نام و قیمت لازمه'); return; }
-      await sb.from('plans').insert({ key: 'plan-' + Date.now(), title_fa: t, period: document.getElementById('pPeriod').value || 'ماهانه', days: +document.getElementById('pDays').value || 30, price_rial: pr, old_price_rial: +document.getElementById('pOld').value || null, features: [] });
+      await sb.from('plans').insert({ key: 'plan-' + Date.now(), title_fa: t, period: document.getElementById('pPeriod').value || 'ماهانه', days: +document.getElementById('pDays').value || 30, price_rial: pr, old_price_rial: normNum(document.getElementById('pOld').value), features: [] });
       loadPlans();
     };
     document.getElementById('uqBtn').onclick = () => loadUsers(document.getElementById('uq').value, 1);
