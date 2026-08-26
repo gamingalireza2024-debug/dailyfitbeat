@@ -13,7 +13,25 @@
     if (token) headers.Authorization = 'Bearer ' + token;
     return fetch('/api/db?t=' + t, Object.assign({ headers }, opts || {}));
   }
-  const STATUS_FA = { new: 'جدید', pending: 'در انتظار پرداخت', payment_submitted: 'واریز ثبت شده', under_review: 'در بررسی', paid: 'پرداخت شده', processing: 'پردازش', delivered: 'تحویل شده', sent: 'ارسال شده', rejected: 'رد شده', cancelled: 'لغو شده', refunded: 'مسترد' };
+  const STATUS_FA = { new: 'جدید', pending: 'در انتظار پرداخت', payment_submitted: 'واریز ثبت شده', under_review: 'در بررسی', paid: 'پرداخت شده', processing: 'در حال پردازش', delivered: 'تحویل شده', sent: 'ارسال شده', rejected: 'رد شده', cancelled: 'لغو شده', refunded: 'مسترد شده' };
+  const PAY_FA = { pending: 'در انتظار', submitted: 'واریز ثبت شده', approved: 'تأیید شده', rejected: 'رد شده', refunded: 'مسترد' };
+  const TYPE_FA = { DIGITAL_PRODUCT: 'محصول دیجیتال', SERVICE: 'خدمت', SUBSCRIPTION: 'اشتراک', BUNDLE: 'باندل' };
+  const faDate = d => d ? new Date(d).toLocaleDateString('fa-IR') : '—';
+  function jalaliToISO(str) {
+    const m = String(str || '').trim().replace(/[۰-۹]/g, x => '۰۱۲۳۴۵۶۷۸۹'.indexOf(x)).match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+    if (!m) return null;
+    const jy = +m[1], jm = +m[2], jd = +m[3];
+    const gy = jy + 621;
+    const days = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 30];
+    let doy = jd;
+    for (let i = 0; i < jm - 1; i++) doy += days[i];
+    const d = new Date(Date.UTC(gy, 2, 21) + (doy - 1) * 86400000);
+    return d.toISOString().slice(0, 10);
+  }
+  function isoToJalali(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleDateString('fa-IR-u-nu-latn');
+  }
 
   async function init() {
     document.querySelectorAll('.aside button').forEach(b => b.onclick = () => {
@@ -25,13 +43,13 @@
       if (b.dataset.t === 'users') loadUsers('');
       if (b.dataset.t === 'coupons') loadCoupons();
       if (b.dataset.t === 'audit') loadAudit();
+      if (b.dataset.t === 'diet') { pickUsers(); loadDietList(); }
     });
     REC = await (await fetch('/api/db?t=all')).json();
     await loadDash(); await loadOrders(); await loadProds(); await loadPlans(); await loadRecipes();
     bindAll();
   }
 
-  // ---------- داشبورد ----------
   async function loadDash() {
     const r = await api('admin_stats'); if (!r.ok) return;
     const s = await r.json();
@@ -44,22 +62,21 @@
       <div class="sc"><b>${s.active_pro}</b><span>PRO فعال</span></div>
       <div class="sc"><b>${s.expired_pro}</b><span>PRO منقضی</span></div>`;
     const a = await (await api('admin_audit')).json();
-    document.getElementById('dashAudit').innerHTML = (Array.isArray(a) ? a.slice(0, 8) : []).map(x => `<tr><td>${new Date(x.created_at).toLocaleString('fa-IR')}</td><td>${x.admin_email}</td><td>${x.action}</td><td>${x.target_type}#${x.target_id}</td></tr>`).join('');
+    document.getElementById('dashAudit').innerHTML = (Array.isArray(a) ? a.slice(0, 8) : []).map(x => `<tr><td>${faDate(x.created_at)}</td><td>${x.admin_email}</td><td>${x.action}</td><td>${x.target_type}#${x.target_id}</td></tr>`).join('');
   }
   async function loadAudit() {
     const a = await (await api('admin_audit')).json();
-    document.getElementById('auditBody').innerHTML = (Array.isArray(a) ? a : []).map(x => `<tr><td>${new Date(x.created_at).toLocaleString('fa-IR')}</td><td>${x.admin_email}</td><td>${x.action}</td><td>${x.target_type}#${x.target_id}</td><td>${JSON.stringify(x.meta || {})}</td></tr>`).join('');
+    document.getElementById('auditBody').innerHTML = (Array.isArray(a) ? a : []).map(x => `<tr><td>${faDate(x.created_at)}</td><td>${x.admin_email}</td><td>${x.action}</td><td>${x.target_type}#${x.target_id}</td><td>${JSON.stringify(x.meta || {})}</td></tr>`).join('');
   }
 
-  // ---------- سفارش‌ها ----------
   async function loadOrders() {
     const r = await api('all_orders'); if (!r.ok) return;
     const data = await r.json();
     const f = document.getElementById('filterSt').value;
     const list = Array.isArray(data) ? (f === 'all' ? data : data.filter(x => x.status === f)) : [];
     document.getElementById('ordersBody').innerHTML = list.map(o => `<tr>
-      <td>#${o.id}</td><td>${new Date(o.created_at).toLocaleDateString('fa-IR')}</td><td>${o.name || '-'}</td><td dir="ltr">${o.phone || '-'}</td><td>${o.product || '-'}</td>
-      <td>${o.total ? (o.total / 10).toLocaleString('fa-IR') + ' ت' : '-'}</td><td>${o.payment_method || 'MANUAL'}</td>
+      <td>#${o.id}</td><td>${faDate(o.created_at)}</td><td>${o.name || '-'}</td><td dir="ltr">${o.phone || '-'}</td><td>${o.product || '-'}</td>
+      <td>${o.total ? (o.total / 10).toLocaleString('fa-IR') + ' ت' : '-'}</td><td>${o.payment_method === 'GATEWAY' ? 'درگاه' : 'دستی'}</td>
       <td><span class="pbadge" style="background:${['paid','delivered','sent'].includes(o.status) ? '#2d6a35' : ['rejected','cancelled'].includes(o.status) ? '#d33' : '#b26a00'}">${STATUS_FA[o.status] || o.status}</span></td>
       <td><select data-id="${o.id}" class="stSel"><option value="">تغییر وضعیت…</option>${Object.entries(STATUS_FA).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></td>
     </tr>`).join('');
@@ -71,20 +88,18 @@
     });
   }
 
-  // ---------- پرداخت‌ها ----------
   async function loadPayments() {
     const r = await api('admin_payments'); if (!r.ok) return;
     const data = await r.json();
     document.getElementById('payBody').innerHTML = (Array.isArray(data) ? data : []).map(p => `<tr>
-      <td>#${p.id}</td><td>#${p.order_id}</td><td>${(p.orders && p.orders.email) || '-'}</td><td>${(p.amount / 10).toLocaleString('fa-IR')} ت</td><td>${p.provider}</td><td dir="ltr">${p.reference || '-'}</td>
-      <td><span class="pbadge" style="background:${p.status === 'approved' ? '#2d6a35' : p.status === 'rejected' ? '#d33' : '#b26a00'}">${p.status}</span></td>
+      <td>#${p.id}</td><td>${faDate(p.created_at)}</td><td>#${p.order_id}</td><td>${(p.orders && p.orders.email) || '-'}</td><td>${(p.amount / 10).toLocaleString('fa-IR')} ت</td><td>${p.provider === 'GATEWAY' ? 'درگاه' : 'دستی'}</td><td dir="ltr">${p.reference || '-'}</td>
+      <td><span class="pbadge" style="background:${p.status === 'approved' ? '#2d6a35' : p.status === 'rejected' ? '#d33' : '#b26a00'}">${PAY_FA[p.status] || p.status}</span></td>
       <td>${p.status === 'submitted' || p.status === 'pending' ? `<button class="ok-btn apP" data-id="${p.id}">تأیید</button> <button class="del-btn rjP" data-id="${p.id}">رد</button>` : '—'}</td>
     </tr>`).join('');
-    document.querySelectorAll('.apP').forEach(b => b.onclick = async () => { const r2 = await api('approve_payment', { method: 'POST', body: JSON.stringify({ payment_id: +b.dataset.id }) }); const j = await r2.json(); alert(r2.ok ? (j.already ? 'قبلاً تأیید شده' : 'تأیید شد ✅ Entitlement ساخته شد') : 'خطا'); loadPayments(); loadOrders(); });
+    document.querySelectorAll('.apP').forEach(b => b.onclick = async () => { const r2 = await api('approve_payment', { method: 'POST', body: JSON.stringify({ payment_id: +b.dataset.id }) }); const j = await r2.json(); alert(r2.ok ? (j.already ? 'قبلاً تأیید شده' : 'تأیید شد ✅ دسترسی ساخته شد') : 'خطا'); loadPayments(); loadOrders(); });
     document.querySelectorAll('.rjP').forEach(b => b.onclick = async () => { const reason = prompt('دلیل رد (اختیاری):') || ''; await api('reject_payment', { method: 'POST', body: JSON.stringify({ payment_id: +b.dataset.id, reason }) }); loadPayments(); loadOrders(); });
   }
 
-  // ---------- رسپی‌ها ----------
   let REC_CACHE = [];
   async function loadRecipes() {
     REC_CACHE = REC;
@@ -122,7 +137,6 @@
     alert('ذخیره شد ✅'); document.getElementById('recForm').style.display = 'none'; loadRecipes();
   }
 
-  // ---------- محصولات ----------
   async function loadProds() {
     const data = await (await fetch('/api/db?t=products')).json();
     document.getElementById('prodBody2').innerHTML = (Array.isArray(data) ? data : []).map(p => `<tr>
@@ -130,7 +144,7 @@
       <td><input type="number" data-id="${p.id}" data-f="price_rial" value="${p.price_rial}"></td>
       <td><input type="number" data-id="${p.id}" data-f="old_price_rial" value="${p.old_price_rial || ''}"></td>
       <td><input type="number" data-id="${p.id}" data-f="off_percent" value="${p.off_percent || 0}"></td>
-      <td><select data-id="${p.id}" data-f="type"><option ${p.type === 'DIGITAL_PRODUCT' ? 'selected' : ''}>DIGITAL_PRODUCT</option><option ${p.type === 'SERVICE' ? 'selected' : ''}>SERVICE</option><option ${p.type === 'SUBSCRIPTION' ? 'selected' : ''}>SUBSCRIPTION</option><option ${p.type === 'BUNDLE' ? 'selected' : ''}>BUNDLE</option></select></td>
+      <td><select data-id="${p.id}" data-f="type">${Object.entries(TYPE_FA).map(([k, v]) => `<option value="${k}" ${p.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select></td>
       <td><input type="number" data-id="${p.id}" data-f="access_days" value="${p.access_days || ''}"></td>
       <td><input type="file" class="pFile" data-id="${p.id}"><br><small dir="ltr">${p.file_path || '—'}</small></td>
       <td><input type="checkbox" data-id="${p.id}" data-f="active" ${p.active ? 'checked' : ''}></td>
@@ -172,7 +186,6 @@
     alert('اضافه شد ✅'); loadProds();
   }
 
-  // ---------- پلان‌ها ----------
   async function loadPlans() {
     const data = await (await fetch('/api/db?t=plans')).json();
     document.getElementById('plansBody2').innerHTML = (Array.isArray(data) ? data : []).map(p => `<tr>
@@ -195,17 +208,16 @@
     document.querySelectorAll('.dlL').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await sb.from('plans').delete().eq('id', b.dataset.id); loadPlans(); });
   }
 
-  // ---------- کاربران ----------
   async function loadUsers(q) {
     const r = await api('admin_users&q=' + encodeURIComponent(q || '')); if (!r.ok) return;
     const data = await r.json();
     document.getElementById('usersBody').innerHTML = (Array.isArray(data) ? data : []).map(u => `<tr>
-      <td>${u.email}</td><td>${u.name || '-'}</td><td dir="ltr">${u.phone || '-'}</td><td>${new Date(u.created_at).toLocaleDateString('fa-IR')}</td>
+      <td>${u.email}</td><td>${u.name || '-'}</td><td dir="ltr">${u.phone || '-'}</td><td>${faDate(u.created_at)}</td>
       <td><span class="pbadge" style="background:${u.disabled ? '#d33' : '#2d6a35'}">${u.disabled ? 'غیرفعال' : 'فعال'}</span></td>
-      <td><button class="btn small vuD" data-id="${u.id}" data-e="${u.email}">جزئیات</button> <button class="${u.disabled ? 'ok-btn' : 'del-btn'}" id="disU" data-id="${u.id}" data-d="${u.disabled ? 0 : 1}">${u.disabled ? 'فعال‌سازی' : 'غیرفعال'}</button></td>
-    </tr>`).join('');
+      <td><button class="btn small vuD" data-id="${u.id}" data-e="${u.email}">جزئیات</button> <button class="${u.disabled ? 'ok-btn' : 'del-btn'} disU" data-id="${u.id}" data-d="${u.disabled ? 0 : 1}">${u.disabled ? 'فعال‌سازی' : 'غیرفعال'}</button></td>
+    </tr>`).join('') || '<tr><td colspan="6">کاربری پیدا نشد</td></tr>';
     document.querySelectorAll('.vuD').forEach(b => b.onclick = () => showUser(b.dataset.id, b.dataset.e));
-    document.querySelectorAll('#usersBody #disU').forEach(b => b.onclick = async () => { await api('admin_user_disable', { method: 'POST', body: JSON.stringify({ uid: b.dataset.id, disabled: b.dataset.d === '1' }) }); loadUsers(document.getElementById('uq').value); });
+    document.querySelectorAll('.disU').forEach(b => b.onclick = async () => { await api('admin_user_disable', { method: 'POST', body: JSON.stringify({ uid: b.dataset.id, disabled: b.dataset.d === '1' }) }); loadUsers(document.getElementById('uq').value); });
   }
   async function showUser(uid, email) {
     const box = document.getElementById('userDetail'); box.style.display = 'block';
@@ -221,21 +233,20 @@
     box.innerHTML = `<h3>👤 ${email}</h3>
       <p>وضعیت PRO: <span class="pbadge" style="background:${activePro ? '#2d6a35' : '#777'}">${activePro ? 'فعال' : 'ندارد'}</span></p>
       <div class="add-form"><button class="ok-btn gP">🎁 اعطای PRO (۳۰ روز)</button><button class="warn-btn eP">⏳ تمدید +۳۰ روز</button><button class="del-btn rP">🚫 لغو PRO</button></div>
-      <h4>اشتراک‌ها</h4><p>${subs.map(s => `${s.plans ? s.plans.title_fa : 'PRO'} — ${s.status} — تا ${s.end_date ? new Date(s.end_date).toLocaleDateString('fa-IR') : '—'}`).join('<br>') || '—'}</p>
-      <h4>سفارش‌ها (${myO.length})</h4><p>${myO.map(o => `#${o.id} ${o.product} — ${STATUS_FA[o.status] || o.status}`).join('<br>') || '—'}</p>
-      <h4>پرداخت‌ها (${myP.length})</h4><p>${myP.map(p => `#${p.id} — ${p.status} — ${(p.amount / 10).toLocaleString('fa-IR')} ت`).join('<br>') || '—'}</p>`;
+      <h4>اشتراک‌ها</h4><p>${subs.map(s => `${s.plans ? s.plans.title_fa : 'PRO'} — ${s.status} — تا ${faDate(s.end_date)}`).join('<br>') || '—'}</p>
+      <h4>سفارش‌ها (${myO.length})</h4><p>${myO.map(o => `#${o.id} ${o.product} — ${STATUS_FA[o.status] || o.status} — ${faDate(o.created_at)}`).join('<br>') || '—'}</p>
+      <h4>پرداخت‌ها (${myP.length})</h4><p>${myP.map(p => `#${p.id} — ${PAY_FA[p.status] || p.status} — ${(p.amount / 10).toLocaleString('fa-IR')} ت`).join('<br>') || '—'}</p>`;
     box.querySelector('.gP').onclick = async () => { await api('admin_grant_pro', { method: 'POST', body: JSON.stringify({ uid, days: 30 }) }); alert('اعطا شد ✅'); showUser(uid, email); };
     box.querySelector('.eP').onclick = async () => { await api('admin_extend_pro', { method: 'POST', body: JSON.stringify({ uid, days: 30 }) }); alert('تمدید شد ✅'); showUser(uid, email); };
     box.querySelector('.rP').onclick = async () => { if (!confirm('لغو PRO؟')) return; await api('admin_revoke_pro', { method: 'POST', body: JSON.stringify({ uid }) }); alert('لغو شد'); showUser(uid, email); };
     box.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // ---------- کوپن‌ها ----------
   async function loadCoupons() {
     const r = await api('admin_coupons'); if (!r.ok) return;
     const data = await r.json();
     document.getElementById('couponBody').innerHTML = (Array.isArray(data) ? data : []).map(c => `<tr>
-      <td><b>${c.code}</b></td><td>${c.type === 'PERCENT' ? '٪' : 'تومان'}</td><td>${c.value}</td><td>${c.used_count || 0}${c.usage_limit ? '/' + c.usage_limit : ''}</td>
+      <td><b>${c.code}</b></td><td>${c.type === 'PERCENT' ? 'درصدی' : 'ثابت'}</td><td>${c.value}</td><td>${c.used_count || 0}${c.usage_limit ? '/' + c.usage_limit : ''}</td>
       <td><input type="checkbox" class="cAct" data-id="${c.id}" ${c.active ? 'checked' : ''}></td>
       <td><button class="del-btn cDel" data-id="${c.id}">حذف</button></td>
     </tr>`).join('');
@@ -243,12 +254,15 @@
     document.querySelectorAll('.cDel').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await api('admin_coupons?id=' + b.dataset.id, { method: 'DELETE' }); loadCoupons(); });
   }
 
-  // ---------- Diet Builder ----------
   let dietUid = null, dietPlanId = null, dayCount = 0;
   async function pickUsers() {
     const q = document.getElementById('dq').value;
-    const r = await api('admin_users&q=' + encodeURIComponent(q)); const data = await r.json();
-    document.getElementById('duPick').innerHTML = (Array.isArray(data) ? data : []).map(u => `<option value="${u.id}">${u.email}</option>`).join('');
+    const r = await api('admin_users&q=' + encodeURIComponent(q || ''));
+    const data = await r.json();
+    const sel = document.getElementById('duPick');
+    sel.innerHTML = (Array.isArray(data) ? data : []).map(u => `<option value="${u.id}">${u.email}</option>`).join('');
+    if (q && (!Array.isArray(data) || !data.length)) alert('کاربری با این مشخصات پیدا نشد. دقیقاً ایمیلی رو بنویس که کاربر باهاش وارد شده.');
+    if (Array.isArray(data) && data.length) loadDietList();
   }
   function addDayBox() {
     dayCount++;
@@ -278,9 +292,9 @@
   }
   async function saveDiet() {
     dietUid = document.getElementById('duPick').value;
-    if (!dietUid) { alert('کاربر انتخاب کن'); return; }
+    if (!dietUid) { alert('اول کاربر رو پیدا و انتخاب کن'); return; }
     const g = id => document.getElementById(id).value;
-    const r = await api('admin_diet_save', { method: 'POST', body: JSON.stringify({ id: dietPlanId, user_id: dietUid, title: g('dTitle'), goal: g('dGoal'), start_date: g('dStart') || null, end_date: g('dEnd') || null, duration_days: g('dDur'), kcal_target: g('dKcal'), protein_target: g('dPro'), carbs_target: g('dCarb'), fat_target: g('dFat'), notes: g('dNotes'), days: collectDays() }) });
+    const r = await api('admin_diet_save', { method: 'POST', body: JSON.stringify({ id: dietPlanId, user_id: dietUid, title: g('dTitle'), goal: g('dGoal'), start_date: jalaliToISO(g('dStart')), end_date: jalaliToISO(g('dEnd')), duration_days: g('dDur'), kcal_target: g('dKcal'), protein_target: g('dPro'), carbs_target: g('dCarb'), fat_target: g('dFat'), notes: g('dNotes'), days: collectDays() }) });
     const j = await r.json();
     if (!r.ok) { alert(j.error || 'خطا'); return; }
     dietPlanId = j.id; alert('ذخیره شد ✅'); loadDietList();
@@ -345,17 +359,17 @@
     const data = await r.json();
     document.getElementById('dietList').innerHTML = (Array.isArray(data) ? data : []).map(p => `<div class="ubox" style="margin:8px 0;padding:12px">
       <b>${p.title}</b> — <span class="pbadge" style="background:${p.status === 'published' ? '#2d6a35' : '#b26a00'}">${p.status === 'published' ? 'منتشر شده' : 'پیش‌نویس'}</span>
-      <small> — ${new Date(p.created_at).toLocaleDateString('fa-IR')}</small><br>
+      <small> — ${faDate(p.created_at)}</small><br>
       <button class="btn small dEdit" data-id="${p.id}">ویرایش</button>
       <button class="warn-btn dPub" data-id="${p.id}">انتشار</button>
       <button class="del-btn dDel" data-id="${p.id}">حذف</button>
-    </div>`).join('') || '<p>هنوز برنامه‌ای نیست</p>';
+    </div>`).join('') || '<p>هنوز برنامه‌ای ساخته نشده</p>';
     document.querySelectorAll('.dEdit').forEach(b => b.onclick = async () => {
       dietPlanId = +b.dataset.id;
       const det = await (await api('admin_diet_detail&id=' + dietPlanId)).json();
       const pl = det.plan;
       const g = id => document.getElementById(id);
-      g('dTitle').value = pl.title; g('dGoal').value = pl.goal || ''; g('dStart').value = pl.start_date || ''; g('dEnd').value = pl.end_date || ''; g('dDur').value = pl.duration_days || ''; g('dKcal').value = pl.kcal_target || ''; g('dPro').value = pl.protein_target || ''; g('dCarb').value = pl.carbs_target || ''; g('dFat').value = pl.fat_target || ''; g('dNotes').value = pl.notes || '';
+      g('dTitle').value = pl.title; g('dGoal').value = pl.goal || ''; g('dStart').value = isoToJalali(pl.start_date); g('dEnd').value = isoToJalali(pl.end_date); g('dDur').value = pl.duration_days || ''; g('dKcal').value = pl.kcal_target || ''; g('dPro').value = pl.protein_target || ''; g('dCarb').value = pl.carbs_target || ''; g('dFat').value = pl.fat_target || ''; g('dNotes').value = pl.notes || '';
       document.getElementById('daysBox').innerHTML = ''; dayCount = 0;
       (Array.isArray(det.days) ? det.days : []).forEach(d => { addDayBox(); const mb = document.querySelectorAll('#daysBox .day-box').slice(-1)[0].querySelector('.meals'); (d.diet_plan_meals || []).forEach(m => addMealRow(mb, m)); });
       document.getElementById('dietForm').style.display = 'grid';
@@ -378,10 +392,10 @@
     };
     document.getElementById('uqBtn').onclick = () => loadUsers(document.getElementById('uq').value);
     document.getElementById('cAdd').onclick = async () => {
-      const r = await api('admin_coupons', { method: 'POST', body: JSON.stringify({ code: document.getElementById('cCode').value, type: document.getElementById('cType').value, value: +document.getElementById('cValue').value, usage_limit: +document.getElementById('cLimit').value || null, end_date: document.getElementById('cEnd').value || null, pro_only: document.getElementById('cPro').checked }) });
+      const r = await api('admin_coupons', { method: 'POST', body: JSON.stringify({ code: document.getElementById('cCode').value, type: document.getElementById('cType').value, value: +document.getElementById('cValue').value, usage_limit: +document.getElementById('cLimit').value || null, end_date: jalaliToISO(document.getElementById('cEnd').value), pro_only: document.getElementById('cPro').checked }) });
       if (!r.ok) alert('خطا'); loadCoupons();
     };
-    document.getElementById('dqBtn').onclick = async () => { await pickUsers(); loadDietList(); };
+    document.getElementById('dqBtn').onclick = pickUsers;
     document.getElementById('dNew').onclick = () => { dietPlanId = null; dayCount = 0; document.getElementById('daysBox').innerHTML = ''; document.getElementById('dietForm').style.display = 'grid'; addDayBox(); };
     document.getElementById('dAddDay').onclick = addDayBox;
     document.getElementById('dSave').onclick = saveDiet;
@@ -390,7 +404,7 @@
   async function exportCSV() {
     const r = await api('all_orders'); const data = await r.json();
     const rows = [['کد', 'تاریخ', 'نام', 'موبایل', 'ایمیل', 'محصول', 'کد واریز', 'وضعیت', 'مبلغ', 'یادداشت']];
-    (Array.isArray(data) ? data : []).forEach(o => rows.push([o.id, new Date(o.created_at).toLocaleString('fa-IR'), o.name, o.phone, o.email, o.product, o.ref, o.status, o.total || '', o.note || '']));
+    (Array.isArray(data) ? data : []).forEach(o => rows.push([o.id, new Date(o.created_at).toLocaleString('fa-IR'), o.name, o.phone, o.email, o.product, o.ref, STATUS_FA[o.status] || o.status, o.total || '', o.note || '']));
     const csv = '\uFEFF' + rows.map(r2 => r2.map(c => `"${String(c || '').replace(/"/g, '""')}"`).join(',')).join('\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
