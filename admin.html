@@ -21,6 +21,7 @@
 .admin-tbl input,.admin-tbl textarea,.admin-tbl select{width:100px;padding:7px;border-radius:9px;border:1px solid #ccc;font:inherit;font-size:12px}
 .admin-tbl textarea{width:180px;height:56px}
 .admin-tbl .imgin{width:140px;direction:ltr}
+.hint{font-size:10px;color:#8a938a;display:block;margin-top:3px}
 .del-btn{background:#d33;color:#fff;border:0;border-radius:9px;padding:7px 11px;cursor:pointer;font:inherit;font-size:12px}
 .ok-btn{background:#2d6a35;color:#fff;border:0;border-radius:9px;padding:7px 11px;cursor:pointer;font:inherit;font-size:12px}
 .warn-btn{background:#b26a00;color:#fff;border:0;border-radius:9px;padding:7px 11px;cursor:pointer;font:inherit;font-size:12px}
@@ -33,7 +34,7 @@
 .jal{font-size:11px;color:#2d6a35;margin-inline-start:6px}
 .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
 .stat-cards .sc{background:#fff;border-radius:16px;padding:16px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.05)}
-.stat-cards b{display:block;font-size:20px;color:#2d6a35}
+.stat-cards b{display:block;font-size:18px;color:#2d6a35}
 .stat-cards span{font-size:11px;color:#777}
 .rec-form{background:#fff;border-radius:18px;padding:18px;margin:14px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;box-shadow:0 6px 20px rgba(0,0,0,.06)}
 .rec-form input,.rec-form select,.rec-form textarea{padding:9px;border-radius:10px;border:1px solid #ccc;font:inherit;font-size:12px}
@@ -104,18 +105,19 @@
   </div>
 
   <div class="apane" id="pane-prods">
-    <table class="admin-tbl"><thead><tr><th>محصول</th><th>قیمت</th><th>قیمت قدیم</th><th>تخفیف٪</th><th>نوع</th><th>دسترسی(روز)</th><th>فایل محصول</th><th>فعال</th><th>ذخیره</th><th>حذف</th></tr></thead><tbody id="prodBody2"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>محصول</th><th>قیمت (ریال)</th><th>قیمت قدیم</th><th>تخفیف٪</th><th>نوع</th><th>دسترسی(روز)</th><th>فایل محصول</th><th>حذف</th><th>ذخیره</th><th>فعال</th></tr></thead><tbody id="prodBody2"></tbody></table>
     <div class="add-form">
-      <input id="aTitle" placeholder="نام محصول"><input id="aDesc" placeholder="توضیح"><input id="aPrice" type="number" placeholder="قیمت (ریال)"><input id="aOld" type="number" placeholder="قیمت قدیم"><input id="aOff" type="number" placeholder="تخفیف٪">
+      <input id="aTitle" placeholder="نام محصول"><input id="aDesc" placeholder="توضیح"><input id="aPrice" type="text" placeholder="قیمت (ریال)"><input id="aOld" type="text" placeholder="قیمت قدیم"><input id="aOff" type="number" placeholder="تخفیف٪">
       <select id="aType"><option value="DIGITAL_PRODUCT">محصول دیجیتال</option><option value="SERVICE">خدمت</option><option value="SUBSCRIPTION">اشتراک</option><option value="BUNDLE">باندل</option></select>
-      <input id="aDays" type="number" placeholder="مدت دسترسی(روز)"><input id="aImg" class="imgin" placeholder="تصویر"><input type="file" id="aFile">
+      <input id="aDays" type="number" placeholder="مدت دسترسی(روز)"><input id="aImg" class="imgin" placeholder="تصویر">
+      <span><input type="file" id="aFile" accept=".pdf,.zip,.rar,.jpg,.jpeg,.png,.webp,.mp4,.mp3"><span class="hint">PDF/ZIP/RAR/JPG/PNG/WEBP/MP4/MP3 — تا ۱۵MB</span></span>
       <button class="btn" id="aAdd">افزودن</button>
     </div>
   </div>
 
   <div class="apane" id="pane-plans">
-    <table class="admin-tbl"><thead><tr><th>پلان</th><th>دوره</th><th>روز</th><th>قیمت</th><th>قیمت قدیم</th><th>امکانات (هر خط یکی)</th><th>ذخیره</th><th>حذف</th></tr></thead><tbody id="plansBody2"></tbody></table>
-    <div class="add-form"><input id="pTitle" placeholder="نام پلان"><input id="pPeriod" placeholder="دوره"><input id="pDays" type="number" placeholder="روز"><input id="pPrice" type="number" placeholder="قیمت (ریال)"><input id="pOld" type="number" placeholder="قیمت قدیم"><button class="btn" id="pAdd">افزودن</button></div>
+    <table class="admin-tbl"><thead><tr><th>پلان</th><th>دوره</th><th>روز</th><th>قیمت (ریال)</th><th>قیمت قدیم</th><th>امکانات (هر خط یکی)</th><th>ذخیره</th><th>حذف</th></tr></thead><tbody id="plansBody2"></tbody></table>
+    <div class="add-form"><input id="pTitle" placeholder="نام پلان"><input id="pPeriod" placeholder="دوره"><input id="pDays" type="number" placeholder="روز"><input id="pPrice" type="text" placeholder="قیمت (ریال)"><input id="pOld" type="text" placeholder="قیمت قدیم"><button class="btn" id="pAdd">افزودن</button></div>
   </div>
 
   <div class="apane" id="pane-users">
