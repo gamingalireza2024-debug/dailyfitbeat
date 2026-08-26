@@ -16,6 +16,14 @@
     const n = Number(t);
     return isNaN(n) ? null : n;
   }
+  function bindMoney(inp) {
+    if (!inp || inp.dataset.money) return;
+    inp.dataset.money = '1';
+    inp.addEventListener('input', () => {
+      const digits = inp.value.replace(/[۰-۹]/g, x => '۰۱۲۳۴۵۶۷۸۹'.indexOf(x)).replace(/\D/g, '');
+      inp.value = digits ? Number(digits).toLocaleString('fa-IR') : '';
+    });
+  }
   const OK_EXT = /\.(pdf|zip|rar|jpe?g|png|webp|mp4|mp3)$/i;
   async function tok() { const s = (await sb.auth.getSession()).data.session; return s ? s.access_token : null; }
   async function api(t, opts) {
@@ -58,6 +66,7 @@
     await refreshREC();
     await loadDash(); await loadOrders(1); await loadProds(); await loadPlans(); await loadRecipes();
     bindJalali('dStart'); bindJalali('dEnd'); bindJalali('cEnd');
+    ['aPrice', 'aOld', 'pPrice', 'pOld'].forEach(id => bindMoney(document.getElementById(id)));
     bindAll();
   }
   async function refreshREC() { REC = await (await fetch('/api/db?t=all')).json(); }
@@ -167,6 +176,7 @@
       <td><button class="btn small svP" data-id="${p.id}">ذخیره</button></td>
       <td><input type="checkbox" data-id="${p.id}" data-f="active" ${p.active ? 'checked' : ''}></td>
     </tr>`).join('');
+    document.querySelectorAll('#prodBody2 input[data-f="price_rial"], #prodBody2 input[data-f="old_price_rial"]').forEach(bindMoney);
     document.querySelectorAll('.svP').forEach(b => b.onclick = async () => {
       const id = b.dataset.id, upd = {};
       document.querySelectorAll(`#prodBody2 [data-id="${id}"][data-f]`).forEach(i => {
@@ -187,7 +197,11 @@
       if (error) { alert('خطا: ' + error.message); return; }
       alert('ذخیره شد ✅'); loadProds();
     });
-    document.querySelectorAll('.dlP').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await sb.from('products').delete().eq('id', b.dataset.id); loadProds(); });
+    document.querySelectorAll('.dlP').forEach(b => b.onclick = async () => {
+      if (!confirm('محصول حذف بشه؟ (سفارش‌های قبلی حفظ می‌مونن)')) return;
+      const r = await api('admin_delete_product', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) });
+      if (!r.ok) alert('حذف ناموفق'); else loadProds();
+    });
   }
   async function addProd() {
     const t = document.getElementById('aTitle').value.trim(); const pr = normNum(document.getElementById('aPrice').value);
@@ -215,6 +229,7 @@
       <td><textarea data-id="${p.id}" data-f="features">${esc((p.features || []).join('\n'))}</textarea></td>
       <td><button class="btn small svL" data-id="${p.id}">ذخیره</button></td><td><button class="del-btn dlL" data-id="${p.id}">حذف</button></td>
     </tr>`).join('');
+    document.querySelectorAll('#plansBody2 input[data-f="price_rial"], #plansBody2 input[data-f="old_price_rial"]').forEach(bindMoney);
     document.querySelectorAll('.svL').forEach(b => b.onclick = async () => {
       const id = b.dataset.id, upd = {};
       document.querySelectorAll(`#plansBody2 [data-id="${id}"][data-f]`).forEach(i => {
@@ -280,7 +295,11 @@
       <td><button class="del-btn cDel" data-id="${c.id}">حذف</button></td>
     </tr>`).join('');
     document.querySelectorAll('.cAct').forEach(i => i.onchange = async () => { await api('admin_coupons', { method: 'PATCH', body: JSON.stringify({ id: i.dataset.id, upd: { active: i.checked } }) }); });
-    document.querySelectorAll('.cDel').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await api('admin_coupons?id=' + b.dataset.id, { method: 'DELETE' }); loadCoupons(); });
+    document.querySelectorAll('.cDel').forEach(b => b.onclick = async () => {
+      if (!confirm('کوپن حذف بشه؟')) return;
+      const r = await api('admin_coupons&id=' + b.dataset.id, { method: 'DELETE' });
+      if (!r.ok) alert('حذف ناموفق'); else loadCoupons();
+    });
   }
 
   let dietPlanId = null, dayCount = 0;
@@ -350,7 +369,7 @@
           <div style="background:#f2f7f2;border-radius:14px;padding:12px 18px"><b>تاریخ:</b> ${new Date().toLocaleDateString('fa-IR')}</div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
-          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.kcal_target) || 0}</b><br><small>کالری روزانه</small></div>
+          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.kcal_target) || '0'}</b><br><small>کالری روزانه</small></div>
           <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.protein_target)}g</b><br><small>پروتئین</small></div>
           <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.carbs_target)}g</b><br><small>کربوهیدرات</small></div>
           <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.fat_target)}g</b><br><small>چربی</small></div>
