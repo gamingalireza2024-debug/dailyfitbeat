@@ -57,6 +57,13 @@ async function proExpiry(uid) {
   const d = [...(Array.isArray(e) ? e : []).map(x => x.expires_at), ...(Array.isArray(s) ? s : []).map(x => x.end_date)].filter(Boolean).sort().pop();
   return d || null;
 }
+async function lockCouponFor(couponId, uid) {
+  const c = await sbGet("/rest/v1/coupons?id=eq." + couponId + "&select=used_by");
+  if (Array.isArray(c) && c[0]) {
+    const ub = Array.isArray(c[0].used_by) ? c[0].used_by : [];
+    if (!ub.includes(uid)) { ub.push(uid); await sbWrite("/rest/v1/coupons?id=eq." + couponId, "PATCH", { used_by: ub }); }
+  }
+}
 async function audit(admin, action, type, id, meta) {
   await sbWrite("/rest/v1/audit_logs", "POST", { admin_email: admin, action, target_type: type, target_id: String(id), meta: meta || {} });
 }
@@ -66,9 +73,8 @@ async function notify(uid, type, title, body) {
 
 export default async function handler(req, res) {
   const t = req.query.t || "";
-  if (t === "ping") { res.status(200).json({ v: 18 }); return; }
+  if (t === "ping") { res.status(200).json({ v: 20 }); return; }
 
-  // ---------- عمومی ----------
   if (t === "ingredients") { res.status(200).json(await sbGet("/rest/v1/ingredients?select=key,fa,en&key=in.(chicken,beef,egg,tomato,rice,potato,onion,garlic,mushroom,spinach,avocado,bread,greek-yogurt,salmon,chickpea,lentil,fish,shrimp,eggplant,kashk,walnut,pomegranate-molasses)")); return; }
   if (t === "popular") { res.status(200).json(await sbGet("/rest/v1/recipes?select=*&limit=4")); return; }
   if (t === "all") { res.status(200).json(await sbGet("/rest/v1/recipes?select=*&limit=300")); return; }
@@ -77,7 +83,6 @@ export default async function handler(req, res) {
   if (t === "plans") { res.status(200).json(await sbGet("/rest/v1/plans?select=*&order=id.asc")); return; }
   if (t === "admin_check") { const auth = req.headers.authorization; res.status(200).json(await (await fetch(SB_URL + "/rest/v1/admins?select=email", { headers: auth ? { apikey: ANON, Authorization: auth } : h })).json()); return; }
 
-  // ---------- سفارش مهمان ----------
   if (t === "order" && req.method === "POST") {
     const b = req.body || {};
     if (!b.name || !b.phone || !b.product) { res.status(400).json({ error: "fields required" }); return; }
@@ -88,7 +93,6 @@ export default async function handler(req, res) {
     res.status(200).json({ id, tg, mail }); return;
   }
 
-  // ---------- چک‌آوت ----------
   if (t === "checkout" && req.method === "POST") {
     const user = await activeUser(req);
     if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
@@ -128,7 +132,6 @@ export default async function handler(req, res) {
     res.status(200).json({ order_id: orderId, payment_id: payId, total, discount }); return;
   }
 
-  // ---------- ثبت واریز ----------
   if (t === "submit_payment" && req.method === "POST") {
     const user = await activeUser(req);
     if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
@@ -141,11 +144,11 @@ export default async function handler(req, res) {
     if (pay.status !== "pending") { res.status(400).json({ error: "payment not pending" }); return; }
     await sbWrite("/rest/v1/payments?id=eq." + pay.id, "PATCH", { reference: String(ref).trim(), status: "submitted" });
     await sbWrite("/rest/v1/orders?id=eq." + pay.order_id, "PATCH", { status: "payment_submitted", updated_at: new Date().toISOString() });
+    if (pay.meta && pay.meta.coupon_id) await lockCouponFor(pay.meta.coupon_id, user.id);
     await sendTelegram("💳 واریز ثبت شد — سفارش #" + pay.order_id + " کد: " + ref);
     res.status(200).json({ ok: true }); return;
   }
 
-  // ---------- خصوصی کاربر ----------
   if (["my_orders","my_favs","my_payments","my_entitlements","my_diet_plans","my_notifications","my_list","save_list","download"].includes(t)) {
     const user = await activeUser(req);
     if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
@@ -188,7 +191,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // ---------- آپلود (ادمین) ----------
   if (t === "upload_file" && req.method === "POST") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -201,7 +203,6 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true, path }); return;
   }
 
-  // ---------- ادمین: پرداخت‌ها ----------
   if (t === "admin_payments") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -242,11 +243,7 @@ export default async function handler(req, res) {
     }
     if (meta.coupon_id) {
       const c = await sbGet("/rest/v1/coupons?id=eq." + meta.coupon_id + "&select=used_count,used_by");
-      if (Array.isArray(c) && c[0]) {
-        const ub = Array.isArray(c[0].used_by) ? c[0].used_by : [];
-        if (!ub.includes(pay.user_id)) ub.push(pay.user_id);
-        await sbWrite("/rest/v1/coupons?id=eq." + meta.coupon_id, "PATCH", { used_count: (c[0].used_count || 0) + 1, used_by: ub });
-      }
+      if (Array.isArray(c) && c[0]) await sbWrite("/rest/v1/coupons?id=eq." + meta.coupon_id, "PATCH", { used_count: (c[0].used_count || 0) + 1 });
     }
     await audit(user.email, "APPROVE_PAYMENT", "payment", pay.id, { order: pay.order_id, amount: pay.amount });
     await sendTelegram("✅ پرداخت #" + pay.id + " تأیید شد — سفارش #" + pay.order_id);
@@ -266,7 +263,6 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true }); return;
   }
 
-  // ---------- ادمین: سفارش‌ها ----------
   if (t === "all_orders") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -305,8 +301,19 @@ export default async function handler(req, res) {
     await audit(user.email, "DELETE_PAYMENT", "payment", id, {});
     res.status(200).json({ ok: true }); return;
   }
+  if (t === "admin_delete_product" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const { id } = req.body || {};
+    await sbWrite("/rest/v1/order_items?product_id=eq." + id, "PATCH", { product_id: null });
+    await sbWrite("/rest/v1/orders?product_id=eq." + id, "PATCH", { product_id: null });
+    const ents = await sbGet("/rest/v1/entitlements?product_id=eq." + id + "&select=id");
+    for (const e of (Array.isArray(ents) ? ents : [])) await sbWrite("/rest/v1/entitlements?id=eq." + e.id, "PATCH", { product_id: null, status: "REVOKED" });
+    await fetch(SB_URL + "/rest/v1/products?id=eq." + id, { method: "DELETE", headers: svc });
+    await audit(user.email, "DELETE_PRODUCT", "product", id, {});
+    res.status(200).json({ ok: true }); return;
+  }
 
-  // ---------- ادمین: کاربران (RPC با توکن خود ادمین) ----------
   if (t === "admin_users") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -339,7 +346,6 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true }); return;
   }
 
-  // ---------- ادمین: PRO دستی ----------
   if (t === "admin_grant_pro" && req.method === "POST") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -383,8 +389,6 @@ export default async function handler(req, res) {
     await audit(user.email, "EXTEND_PRO", "user", uid, { days: d });
     res.status(200).json({ ok: true }); return;
   }
-
-  // ---------- ادمین: دسترسی محصول ----------
   if (t === "admin_grant_product" && req.method === "POST") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -405,7 +409,6 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true }); return;
   }
 
-  // ---------- ادمین: کوپن‌ها ----------
   if (t === "admin_coupons") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -430,7 +433,6 @@ export default async function handler(req, res) {
     res.status(200).json(await sbGet("/rest/v1/coupons?select=*&order=id.desc")); return;
   }
 
-  // ---------- ادمین: Diet Builder ----------
   if (t === "admin_diet_plans") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
@@ -488,7 +490,6 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true }); return;
   }
 
-  // ---------- ادمین: آنالیتیکس + audit ----------
   if (t === "admin_stats") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
