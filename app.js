@@ -11,7 +11,7 @@ const FALL = { iranian:'img/iranian.jpg', salad:'img/salad.jpg', sandwich:'img/s
 const diff = t => t <= 20 ? 'آسان' : t <= 60 ? 'متوسط' : 'مفصل';
 const ADJ = {'ایران':'ایرانی','گیلان':'گیلانی','ژاپن':'ژاپنی','تایلند':'تایلندی','اسپانیا':'اسپانیایی','مراکش':'مراکشی','فرانسه':'فرانسوی','ایتالیا':'ایتالیایی','چین':'چینی','هند':'هندی','ترکیه':'ترکی','مکزیک':'مکزیکی','انگلستان':'انگلیسی','یونان':'یونانی','کره':'کره‌ای','لبنان':'لبنانی'};
 const countryFa = reg => 'غذای ' + (ADJ[reg] || reg || 'ایرانی');
-const NAV = [['home','index.html','خانه','Home'],['recipes','recipes.html','رسپی‌ها','Recipes'],['planner','planner.html','برنامه غذایی','Meal Plan'],['market','market.html','فیت مارکت','Fit Market'],['pro','pro.html','PRO','PRO']];
+const NAV = [['home','index.html','خانه','Home'],['recipes','recipes.html','رسپی‌ها','Recipes'],['planner','planner.html','برنامه غذایی','Meal Plan'],['market','market.html','فیت مارکت','Fit Market'],['ai','ai.html','دستیار AI','AI Assistant'],['mealplan','mealplan.html','برنامه هوشمند','Smart Plan'],['pro','pro.html','PRO','PRO']];
 window.DFB = { get sb(){ return sb; }, get user(){ return USER; }, get all(){ return ALL; }, isAdmin: () => isAdmin() };
 
 async function loadAdminList(token){
