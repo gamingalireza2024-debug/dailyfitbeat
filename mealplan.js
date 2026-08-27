@@ -54,40 +54,37 @@
     await new Promise(r => { const i = new Image(); i.onload = r; i.onerror = r; i.src = 'img/logo.png'; });
     const doc = document.getElementById('pdfDoc');
     const total = days.reduce((s, d) => s + (d.kcal || 0), 0);
-    doc.innerHTML = `
-    <div style="padding:36px;font-family:Vazirmatn,sans-serif;direction:rtl;color:#1e2b1c">
-      <div style="background:#2d6a35;border-radius:22px;padding:24px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:16px">
-        <div><div style="font-size:24px;font-weight:900">DailyFitBeat | دیلی‌بیت</div>
-        <div style="opacity:.9;margin-top:6px">برنامه غذایی هوشمند — ${faN(days.length)} روز</div></div>
-        <img src="img/logo.png" alt="DailyFitBeat" style="height:70px;border-radius:18px;background:#fff;padding:6px">
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:18px 0">
+    const wrap = inner => `<div style="padding:24px;font-family:Vazirmatn,sans-serif;direction:rtl;color:#1e2b1c">${inner}</div>`;
+    const secs = [];
+    secs.push(wrap(`<div style="background:#2d6a35;border-radius:22px;padding:24px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:16px">
+      <div><div style="font-size:24px;font-weight:900">DailyFitBeat | دیلی‌بیت</div><div style="opacity:.9;margin-top:6px">برنامه غذایی هوشمند — ${faN(days.length)} روز</div></div>
+      <img src="img/logo.png" alt="DailyFitBeat" style="height:70px;border-radius:18px;background:#fff;padding:6px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
         <div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>تاریخ:</b> ${new Date().toLocaleDateString('fa-IR')}</div>
         <div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>میانگین کالری روزانه:</b> ${faN(Math.round(total / days.length))}</div>
-      </div>
-      ${(plan.constraints && plan.constraints.length) ? `<div style="background:#fff8e6;border-radius:14px;padding:14px;margin-bottom:16px"><b>⚙️ محدودیت‌ها و اهداف:</b><br>${plan.constraints.map(c => '• ' + esc(c)).join('<br>')}</div>` : ''}
-      ${days.map(d => `
-      <div style="margin-bottom:18px">
-        <div style="background:#2d6a35;color:#fff;display:inline-block;border-radius:10px;padding:6px 16px;font-weight:800">روز ${faN(d.day)} — ${faN(d.kcal)} کالری${d.protein != null ? ' | ' + faN(d.protein) + 'g پروتئین' : ''}${d.carbs != null ? ' | ' + faN(d.carbs) + 'g کربوهیدرات' : ''}${d.fat != null ? ' | ' + faN(d.fat) + 'g چربی' : ''}</div>
-        <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:13px">
-          <tr style="background:#e8f4e9"><th style="padding:8px;text-align:right">وعده</th><th style="padding:8px;text-align:right">رسپی</th><th style="padding:8px;text-align:right">کالری</th><th style="padding:8px;text-align:right">پروتئین</th><th style="padding:8px;text-align:right">یادداشت</th></tr>
-          ${d.meals.map(m => `<tr style="border-bottom:1px solid #e5efe5"><td style="padding:8px;font-weight:700">${esc(m.type_fa)}</td><td style="padding:8px">${esc(m.title)}</td><td style="padding:8px">${faN(m.kcal)}</td><td style="padding:8px">${m.protein != null ? faN(m.protein) + 'g' : '—'}</td><td style="padding:8px;color:#557">${esc(m.note || '')}</td></tr>`).join('')}
-        </table>
-      </div>`).join('')}
-      ${plan.activity ? `<div style="background:#e8f4e9;border-radius:14px;padding:16px;margin-top:10px"><b>🏃 پیشنهاد فعالیت:</b><br>${plan.activity.items.map(a => '• ' + esc(a)).join('<br>')}${plan.activity.note ? '<br>• ' + esc(plan.activity.note) : ''}<br><small style="color:#557">${esc(plan.activity.disclaimer)}</small></div>` : ''}
-      <div style="margin-top:26px;border-top:2px solid #e8f4e9;padding-top:12px;display:flex;justify-content:space-between;font-size:11px;color:#77807a">
-        <span>dailyfitbeat.ir</span><span>اینستاگرام: @dailyfitbeat</span><span>خوب بخور، بهتر زندگی کن 💚</span>
-      </div>
-    </div>`;
-    await document.fonts.ready;
-    const canvas = await html2canvas(doc, { scale: 2, backgroundColor: '#fff' });
+      </div>`));
+    if (plan.constraints && plan.constraints.length) secs.push(wrap(`<div style="background:#fff8e6;border-radius:14px;padding:14px"><b>⚙️ محدودیت‌ها و اهداف:</b><br>${plan.constraints.map(c => '• ' + esc(c)).join('<br>')}</div>`));
+    days.forEach(d => secs.push(wrap(`<div style="background:#2d6a35;color:#fff;display:inline-block;border-radius:10px;padding:6px 16px;font-weight:800">روز ${faN(d.day)} — ${faN(d.kcal)} کالری${d.protein != null ? ' | ' + faN(d.protein) + 'g پروتئین' : ''}${d.carbs != null ? ' | ' + faN(d.carbs) + 'g کربوهیدرات' : ''}${d.fat != null ? ' | ' + faN(d.fat) + 'g چربی' : ''}</div>
+      <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:13px">
+        <tr style="background:#e8f4e9"><th style="padding:8px;text-align:right">وعده</th><th style="padding:8px;text-align:right">رسپی</th><th style="padding:8px;text-align:right">کالری</th><th style="padding:8px;text-align:right">پروتئین</th><th style="padding:8px;text-align:right">یادداشت</th></tr>
+        ${d.meals.map(m => `<tr style="border-bottom:1px solid #e5efe5"><td style="padding:8px;font-weight:700">${esc(m.type_fa)}</td><td style="padding:8px">${esc(m.title)}</td><td style="padding:8px">${faN(m.kcal)}</td><td style="padding:8px">${m.protein != null ? faN(m.protein) + 'g' : '—'}</td><td style="padding:8px;color:#557">${esc(m.note || '')}</td></tr>`).join('')}
+      </table>`));
+    if (plan.activity) secs.push(wrap(`<div style="background:#e8f4e9;border-radius:14px;padding:16px"><b>🏃 پیشنهاد فعالیت:</b><br>${plan.activity.items.map(a => '• ' + esc(a)).join('<br>')}${plan.activity.note ? '<br>• ' + esc(plan.activity.note) : ''}<br><small style="color:#557">${esc(plan.activity.disclaimer)}</small></div>`));
+    secs.push(wrap(`<div style="border-top:2px solid #e8f4e9;padding-top:12px;display:flex;justify-content:space-between;font-size:11px;color:#77807a"><span>dailyfitbeat.ir</span><span>اینستاگرام: @dailyfitbeat</span><span>خوب بخور، بهتر زندگی کن 💚</span></div>`));
+
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
-    const pw = 210, ph = 297, iw = pw, ih = canvas.height * pw / canvas.width;
-    let left = ih, pos = 0;
-    pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, pos, iw, ih);
-    left -= ph;
-    while (left > 0) { pos -= ph; pdf.addPage(); pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, pos, iw, ih); left -= ph; }
+    let y = 10;
+    for (let i = 0; i < secs.length; i++) {
+      doc.innerHTML = secs[i];
+      await document.fonts.ready;
+      const canvas = await html2canvas(doc.firstElementChild, { scale: 2, backgroundColor: '#fff' });
+      let w = 200, h = canvas.height * w / canvas.width;
+      if (h > 277) { const s2 = 277 / h; w *= s2; h *= s2; }
+      if (y + h > 287) { pdf.addPage(); y = 10; }
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', (210 - w) / 2, y, w, h);
+      y += h + 6;
+    }
     pdf.save('DailyFitBeat-MealPlan.pdf');
   }
 
