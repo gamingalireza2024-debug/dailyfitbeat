@@ -110,7 +110,7 @@
       <input id="aTitle" placeholder="نام محصول"><input id="aDesc" placeholder="توضیح"><input id="aPrice" type="text" placeholder="قیمت (ریال)"><input id="aOld" type="text" placeholder="قیمت قدیم"><input id="aOff" type="number" placeholder="تخفیف٪">
       <select id="aType"><option value="DIGITAL_PRODUCT">محصول دیجیتال</option><option value="SERVICE">خدمت</option><option value="SUBSCRIPTION">اشتراک</option><option value="BUNDLE">باندل</option></select>
       <input id="aDays" type="number" placeholder="مدت دسترسی(روز)"><input id="aImg" class="imgin" placeholder="تصویر">
-      <span><input type="file" id="aFile" accept=".pdf,.zip,.rar,.jpg,.jpeg,.png,.webp,.mp4,.mp3"><span class="hint">PDF/ZIP/RAR/JPG/PNG/WEBP/MP4/MP3 — تا ۱۵MB</span></span>
+      <span><input type="file" id="aFile" accept=".pdf,.zip,.rar,.jpg,.jpeg,.png,.webp,.mp4,.mp3"><span class="hint">PDF/ZIP/RAR/JPG/PNG/WEBP/MP4/MP3 — تا ۱MB</span></span>
       <button class="btn" id="aAdd">افزودن</button>
     </div>
   </div>
@@ -142,7 +142,10 @@
     <div id="dietForm" style="display:none" class="rec-form">
       <input id="dTitle" placeholder="عنوان برنامه"><input id="dGoal" placeholder="هدف"><input id="dStart" type="date"><input id="dEnd" type="date"><input id="dDur" type="number" placeholder="مدت(روز)">
       <input id="dKcal" type="number" placeholder="کالری هدف"><input id="dPro" type="number" placeholder="پروتئین"><input id="dCarb" type="number" placeholder="کربوهیدرات"><input id="dFat" type="number" placeholder="چربی">
-      <textarea id="dNotes" class="full" placeholder="توضیحات و نکات برنامه"></textarea>
+      <textarea id="dNotes" class="full" placeholder="توضیحات برنامه"></textarea>
+      <textarea id="dRestr" class="full" placeholder="محدودیت‌ها و ممنوعات غذایی"></textarea>
+      <textarea id="dTips" class="full" placeholder="نکات مهم شخصی‌سازی‌شده"></textarea>
+      <textarea id="dAct" class="full" placeholder="فعالیت بدنی پیشنهادی"></textarea>
       <div id="daysBox" class="full"></div>
       <button class="btn" id="dAddDay">➕ روز جدید</button>
       <button class="btn full" id="dSave">💾 ذخیره</button>
