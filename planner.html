@@ -4,160 +4,52 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>برنامه غذایی | DailyFitBeat</title>
-<meta name="description" content="محاسبه‌گر هوشمند کالری و ریزمغذی‌ها + برنامه غذایی هفتگی شخصی‌سازی‌شده">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<meta name="description" content="برنامه غذایی هفتگی با ۵ وعده در روز + لیست خرید هفتگی + PDF">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="image" href="img/hero-planner.jpg" fetchpriority="high">
 <style>
-.pl-hero{position:relative;min-height:86vh;background:#f6f3ec url('img/hero-planner.jpg') center/cover no-repeat;display:flex;align-items:center;overflow:hidden;padding:110px 0 60px}
-.pl-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(to left,rgba(246,243,236,.97) 0%,rgba(246,243,236,.92) 45%,rgba(246,243,236,.35) 78%,rgba(246,243,236,.08) 100%)}
-.ph-in{position:relative;z-index:2;display:grid;grid-template-columns:1fr .95fr;gap:30px;align-items:center;width:100%}
-.ph-text h1{font-size:clamp(26px,3.6vw,44px);font-weight:900;color:#1e2b1c;line-height:1.5}
-.ph-text h1 span{color:#2d6a35}
-.ph-text p{color:#4d584d;line-height:2;margin:12px 0 18px}
-.ph-feats{display:flex;gap:22px;flex-wrap:wrap}
-.ph-feats div{text-align:center;font-size:12px;color:#3c4a3c}
-.ph-feats span{display:block;font-size:24px;margin-bottom:6px}
-.ph-card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 10px 34px rgba(30,43,28,.12)}
-.ph-card>b{display:block;margin-bottom:16px}
-.steps{display:flex;justify-content:space-between;margin-bottom:18px}
-.step{text-align:center;font-size:11px;color:#8a938a;flex:1}
-.step i{display:flex;width:40px;height:40px;margin:0 auto 6px;border-radius:50%;background:#f0efe9;align-items:center;justify-content:center;font-style:normal}
-.step.on{color:#1e2b1c;font-weight:700}
-.step.on i{background:#2d6a35}
-.ph-card h4{margin:10px 0 6px}
-.ph-card p{color:#667066;font-size:13px}
-.pbar{background:#eee;border-radius:99px;height:8px;margin:12px 0 6px}
-.pbar i{display:block;height:8px;border-radius:99px;background:#2d6a35}
-@media(max-width:1000px){.ph-in{grid-template-columns:1fr}}
-.calc-card{background:#fff;border-radius:26px;padding:30px;box-shadow:0 10px 34px rgba(30,43,28,.08);margin:30px 0}
-.calc-head{text-align:center;margin-bottom:22px}
-.stat3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:18px}
-.stc{border-radius:18px;padding:22px;text-align:center;background:#f7f6f1}
-.stc.g{background:#2d5a2d;color:#fff}
-.stc b{display:block;font-size:30px;font-weight:900;margin:8px 0}
-.stc small{font-size:12px}
-.stc .row{display:flex;gap:8px;justify-content:center;margin-top:12px}
-.stc select{border:0;border-radius:10px;padding:7px 10px;font:inherit;font-size:12px;background:rgba(255,255,255,.9);color:#1e2b1c}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media(max-width:900px){.two-col{grid-template-columns:1fr}}
-.panel{background:#f7f6f1;border-radius:18px;padding:22px}
-.panel h4{text-align:center;margin-bottom:16px}
-.micro{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.micro div{text-align:center;font-size:12px}
-.micro span{font-size:22px;display:block;margin-bottom:6px}
-.micro b{display:block;margin-top:4px}
-.donut-wrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap;justify-content:center}
-.donut2{width:170px;height:170px;border-radius:50%;position:relative;flex:none}
-.donut2:after{content:attr(data-c);position:absolute;inset:22%;background:#f7f6f1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#1e2b1c}
-.leg{font-size:13px}
-.leg .lr{display:flex;gap:8px;align-items:center;margin:8px 0}
-.leg .dot{width:10px;height:10px;border-radius:50%}
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:22px}
-.fg label{display:block;font-size:12px;color:#5a655a;margin-bottom:6px}
-.fg input,.fg select{width:100%;padding:12px;border-radius:12px;border:1px solid #ddd;font:inherit;background:#fff}
-.seg{display:flex;background:#eee;border-radius:12px;padding:4px}
-.seg button{flex:1;border:0;background:transparent;padding:10px;border-radius:10px;font:inherit;cursor:pointer}
-.seg button.on{background:#2d5a2d;color:#fff;font-weight:700}
-.calc-btn{display:block;width:min(420px,100%);margin:26px auto 8px;padding:16px;border:0;border-radius:14px;background:#2d5a2d;color:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer}
-.privacy{text-align:center;font-size:12px;color:#8a938a}
-.day-card{background:#fff;border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(0,0,0,.05)}
-.day-card h4{color:#2d6a35;margin-bottom:12px;border-bottom:2px solid #e8f4e9;padding-bottom:8px}
-.meal-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #e3e3e3;font-size:14px;flex-wrap:wrap}
-.meal-row b{color:#2d6a35}
-.plan-target{background:#e8f4e9;border-radius:16px;padding:16px;text-align:center;font-weight:800;color:#2d6a35;margin-bottom:20px}
-.shop-list{background:#fff;border-radius:20px;padding:22px}
-.shop-list ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
-.shop-list li{background:#e8f4e9;color:#2d6a35;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700}
+html,body{overflow-x:hidden}
+.pl-wrap{max-width:860px;margin:0 auto;padding:16px}
+.pl-hero{text-align:center;padding:16px 0 6px}
+.pl-hero h1{font-size:22px;font-weight:900}
+.pl-hero p{color:#667066;font-size:13px;margin-top:6px}
+.pl-box{background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border-radius:22px;padding:18px;box-shadow:0 8px 26px rgba(30,43,28,.08);margin:14px 0}
+.pl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
+.pl-row input{padding:9px 12px;border-radius:12px;border:1px solid #ccc;font:inherit;font-size:13px;background:#fff;width:140px}
+.pl-row label{font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center;background:#fff;border-radius:999px;padding:8px 14px;box-shadow:0 3px 10px rgba(0,0,0,.06);cursor:pointer}
+#plGo{margin-top:14px;width:100%}
+.day-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.day-card h4{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
+.meal-line{display:flex;gap:8px;align-items:baseline;padding:7px 0;border-top:1px dashed #e5efe5;font-size:13px;flex-wrap:wrap}
+.meal-line b{color:#2d6a35;min-width:88px}
+.meal-line small{color:#77807a}
+.shop-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.shop-card ul{columns:2;font-size:12.5px;line-height:2.1}
+.shop-card li{list-style:none}
+@media(max-width:600px){.shop-card ul{columns:1}.pl-row{flex-direction:column}.pl-row input{width:100%}}
 </style>
 </head>
 <body data-page="planner">
 <header id="hdr"></header>
-
-<section class="pl-hero"><div class="container ph-in">
-  <div class="ph-text">
-    <h1>برنامه غذایی<br><span>شخصی شما</span></h1>
-    <p>با چند اطلاعات ساده، برنامه غذایی دقیق و متناسب با هدف و سبک زندگی‌تان دریافت کنید.</p>
-    <div class="ph-feats">
-      <div><span>⚡</span>سریع و بی‌دردسر</div>
-      <div><span>⚖️</span>متعادل و اصولی</div>
-      <div><span>🎯</span>دقیق و شخصی‌سازی‌شده</div>
+<section><div class="container pl-wrap">
+  <div class="pl-hero"><h1>برنامه غذایی هفتگی</h1><p>۵ وعده در روز، متناسب با کالری هدف تو + لیست خرید هفتگی.</p></div>
+  <div class="pl-box">
+    <div class="pl-row">
+      <input id="plKcal" type="number" placeholder="کالری هدف روزانه" value="2000">
+      <label><input type="checkbox" id="plProf" checked> استفاده از پروفایل تغذیه من</label>
     </div>
+    <button class="btn" id="plGo">✨ ساخت برنامه ۷ روزه</button>
+    <div style="text-align:center;margin-top:10px"><button class="btn" id="plPdf" disabled>📥 دانلود PDF برنامه</button></div>
   </div>
-  <div class="ph-card">
-    <b>مراحل تکمیل برنامه</b>
-    <div class="steps">
-      <div class="step on"><i>👤</i>اطلاعات فردی</div>
-      <div class="step"><i>🎯</i>هدف و فعالیت</div>
-      <div class="step"><i>🧮</i>محاسبه برنامه</div>
-      <div class="step"><i>📥</i>دریافت برنامه</div>
-    </div>
-    <h4>قدم اول: اطلاعات فردی</h4>
-    <p>اطلاعات خود را وارد کنید تا برنامه دقیق‌تری برای شما طراحی کنیم.</p>
-    <div class="pbar"><i style="width:25%"></i></div>
-    <small>مرحله ۱ از ۴</small>
-  </div>
+  <div id="plOut"></div>
+  <div id="plShopWrap"></div>
 </div></section>
-
-<section><div class="container">
-  <div class="calc-card">
-    <div class="calc-head"><h2>🌿 محاسبه‌گر هوشمند نیاز روزانه</h2><p>با استفاده از فرمول‌های علمی، نیاز کالری و ریزمغذی‌های شما محاسبه می‌شود.</p></div>
-    <div class="stat3">
-      <div class="stc g"><small>متابولیسم پایه شما (BMR)</small><b id="bmrV">—</b><small>کیلوکالری در روز</small></div>
-      <div class="stc"><small>کل کالری مورد نیاز شما (TDEE)</small><b id="tdeeV">—</b><small>کیلوکالری در روز</small></div>
-      <div class="stc g"><small>کالری هدف روزانه</small><b id="tgtV">—</b><small>کیلوکالری در روز</small>
-        <div class="row">
-          <select id="iGoal"><option value="loss">کاهش وزن</option><option value="keep">ثابت</option><option value="gain">افزایش وزن</option></select>
-          <select id="iRate"><option value="0.25">۰٫۲۵ کیلو/هفته</option><option value="0.5" selected>۰٫۵ کیلو/هفته</option><option value="0.75">۰٫۷۵ کیلو/هفته</option></select>
-        </div>
-      </div>
-    </div>
-    <div class="two-col">
-      <div class="panel">
-        <h4>ریزمغذی‌ها و نیازهای روزانه</h4>
-        <div class="micro">
-          <div><span>🛡️</span>کلسیم<b id="caV">1000 mg</b></div>
-          <div><span>🌿</span>فیبر<b id="fibV">28 گرم</b></div>
-          <div><span>💧</span>آب<b id="wV">2.7 L</b></div>
-          <div><span>🍊</span>ویتامین C<b id="vitCV">90 mg</b></div>
-          <div><span>☀️</span>ویتامین D<b id="vitDV">600 IU</b></div>
-          <div><span>🩸</span>آهن<b id="feV">18 mg</b></div>
-        </div>
-      </div>
-      <div class="panel">
-        <h4>درصد مغذی‌های پیشنهادی</h4>
-        <div class="donut-wrap">
-          <div class="donut2" id="donut" data-c="—"></div>
-          <div class="leg">
-            <div class="lr"><span class="dot" style="background:#2d6a35"></span>پروتئین <b id="mPro">—</b> ۲۹٪</div>
-            <div class="lr"><span class="dot" style="background:#e9b949"></span>کربوهیدرات <b id="mCarb">—</b> ۴۰٪</div>
-            <div class="lr"><span class="dot" style="background:#4a90d9"></span>چربی <b id="mFat">—</b> ۳۰٪</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <h3 style="text-align:center;margin-top:26px">اطلاعات شما</h3>
-    <div class="form-grid">
-      <div class="fg"><label>سن</label><input id="iAge" type="number" value="29"></div>
-      <div class="fg"><label>جنسیت</label><div class="seg" id="sexTog"><button type="button" data-v="m">مرد</button><button type="button" data-v="f" class="on">زن</button></div></div>
-      <div class="fg"><label>قد (سانتی‌متر)</label><input id="iH" type="number" value="170"></div>
-      <div class="fg"><label>وزن (کیلوگرم)</label><input id="iW" type="number" value="75"></div>
-      <div class="fg"><label>سطح فعالیت روزانه</label><select id="iAct"><option value="1.2">کم‌تحرک</option><option value="1.375">فعالیت سبک</option><option value="1.55" selected>فعالیت متوسط</option><option value="1.725">فعالیت زیاد</option></select></div>
-      <div class="fg"><label>تعداد وعده‌های غذایی</label><select id="iMeals"><option value="3">۳ وعده</option><option value="4">۴ وعده</option><option value="5">۵ وعده</option></select></div>
-      <div class="fg"><label>واحد محاسبه</label><div class="seg" id="unitTog"><button type="button" data-v="m" class="on">متریک</button><button type="button" data-v="i">امپریال</button></div></div>
-      <div class="fg"><label>حساسیت غذایی (اختیاری)</label><select id="iAllergy"><option value="">انتخاب کنید</option><option>بدون گلوتن</option><option>بدون لاکتوز</option><option>گیاهخواری</option></select></div>
-    </div>
-    <button class="calc-btn" id="goPlan">🧮 محاسبه و دریافت برنامه</button>
-    <p class="privacy">🔒 اطلاعات شما ذخیره نمی‌شود و کاملاً محرمانه است.</p>
-  </div>
-  <div id="planOut"></div>
-</div></section>
-
+<div id="pdfDoc" style="position:fixed;inset-inline-start:-2000px;top:0;width:794px;background:#fff"></div>
 <footer id="ftr"></footer>
 <script src="site.js"></script>
 <script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="planner.js"></script>
 </body>
 </html>
