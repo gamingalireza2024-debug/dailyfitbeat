@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>برنامه هوشمند | DailyFitBeat</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+html,body{overflow-x:hidden}
+.mp-wrap{max-width:860px;margin:0 auto;padding:16px}
+.mp-hero{text-align:center;padding:16px 0 6px}
+.mp-hero h1{font-size:22px;font-weight:900}
+.mp-hero p{color:#667066;font-size:13px;margin-top:6px}
+.mp-box{background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border-radius:22px;padding:18px;box-shadow:0 8px 26px rgba(30,43,28,.08);margin:14px 0}
+.mp-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
+.mp-row label{font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center;background:#fff;border-radius:999px;padding:8px 14px;box-shadow:0 3px 10px rgba(0,0,0,.06);cursor:pointer}
+.mp-row select,.mp-row input{padding:9px 12px;border-radius:12px;border:1px solid #ccc;font:inherit;font-size:13px;background:#fff}
+#mpGo{margin-top:14px;width:100%}
+.chip-usage{display:block;text-align:center;background:#e8f4e9;color:#2d6a35;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800;margin:10px auto 0;width:max-content;max-width:100%}
+.day-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.day-card h4{display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px}
+.meal-line{display:flex;gap:8px;align-items:baseline;padding:8px 0;border-top:1px dashed #e5efe5;font-size:13px;flex-wrap:wrap}
+.meal-line b{color:#2d6a35;min-width:64px}
+.meal-line a{color:#1e2b1c;font-weight:700;text-decoration:none}
+.meal-line small{color:#77807a}
+.mp-empty{color:#98a298;text-align:center;font-size:12px;padding:14px}
+.hist-item{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#fff;border-radius:14px;padding:10px 14px;margin:8px 0;box-shadow:0 3px 10px rgba(0,0,0,.05);font-size:12px}
+@media(max-width:600px){.mp-row{flex-direction:column}.mp-row label{width:100%;justify-content:center}}
+</style>
+</head>
+<body data-page="mealplan">
+<header id="hdr"></header>
+<section><div class="container mp-wrap">
+  <div class="mp-hero"><h1>برنامه غذایی هوشمند</h1><p>از رسپی‌های واقعی DailyFitBeat، متناسب با هدف و پروفایل تو.</p></div>
+  <div class="mp-box">
+    <div class="mp-row">
+      <select id="mpDays"><option value="1">۱ روز</option><option value="3">۳ روز</option><option value="7" selected>۷ روز</option></select>
+      <label><input type="checkbox" id="mB" checked> صبحانه</label>
+      <label><input type="checkbox" id="mL" checked> ناهار</label>
+      <label><input type="checkbox" id="mS"> میان‌وعده</label>
+      <label><input type="checkbox" id="mD" checked> شام</label>
+    </div>
+    <div class="mp-row" style="margin-top:10px">
+      <input id="mpIng" placeholder="مواد یخچالت (اختیاری): مرغ، قارچ، نان…" style="flex:1;min-width:220px">
+      <label><input type="checkbox" id="mpProf"> استفاده از پروفایل تغذیه من</label>
+      <label><input type="checkbox" id="mpSave" checked> ذخیره در سابقه من</label>
+    </div>
+    <button class="btn" id="mpGo">✨ ساخت برنامه</button>
+    <span class="chip-usage" id="mpUsage">…</span>
+  </div>
+  <div id="mpOut"></div>
+  <div class="mp-box"><h3 style="font-size:14px;margin-bottom:8px">سابقه برنامه‌های من</h3><div id="mpHist"></div></div>
+</div></section>
+<footer id="ftr"></footer>
+<script src="site.js"></script>
+<script src="app.js"></script>
+<script src="mealplan.js"></script>
+</body>
+</html>
