@@ -26,7 +26,6 @@
       chip.textContent = faN(j.used) + ' از ' + faN(j.limit) + ' پاسخ این ماه';
     } catch (e) { chip.textContent = '—'; }
   }
-
   function macrosLine(d) {
     const parts = [];
     if (d.protein != null) parts.push('پروتئین ' + faN(d.protein) + 'g');
@@ -42,8 +41,8 @@
       ${d.meals.map(m => `<div class="meal-line"><b>${esc(m.type_fa)}</b><a href="recipe.html?slug=${esc(m.slug)}">${esc(m.title)}</a><small>${faN(m.kcal)} کالری${m.protein != null ? ' | ' + faN(m.protein) + 'g پروتئین' : ''}${m.note ? ' — ' + esc(m.note) : ''}</small></div>`).join('')}
     </div>`).join('') +
       ((plan.constraints && plan.constraints.length) ? `<div class="info-card"><h4>⚙️ محدودیت‌ها و اهداف اعمال‌شده</h4><ul>${plan.constraints.map(c => `<li>• ${esc(c)}</li>`).join('')}</ul></div>` : '') +
-      (plan.activity ? `<div class="info-card"><h4>🏃 پیشنهاد فعالیت</h4><ul>${plan.activity.items.map(a => `<li>• ${esc(a)}</li>`).join('')}${plan.activity.note ? `<li>• ${esc(plan.activity.note)}</li>` : ''}</ul><p style="color:#8a6d00;background:#fff8e6;border-radius:12px;padding:10px;margin-top:8px;font-size:11px">${esc(plan.activity.disclaimer)}</p></div>` : '') ||
-      '<div class="mp-empty">برنامه‌ای ساخته نشد</div>';
+      ((plan.tips && plan.tips.length) ? `<div class="info-card"><h4>💡 نکات مهم شخصی‌سازی‌شده</h4><ul>${plan.tips.map(c => `<li>• ${esc(c)}</li>`).join('')}</ul></div>` : '') +
+      (plan.activity ? `<div class="info-card"><h4>🏃 پیشنهاد فعالیت</h4><ul>${plan.activity.items.map(a => `<li>• ${esc(a)}</li>`).join('')}${plan.activity.note ? `<li>• ${esc(plan.activity.note)}</li>` : ''}</ul><p style="color:#8a6d00;background:#fff8e6;border-radius:12px;padding:10px;margin-top:8px;font-size:11px">${esc(plan.activity.disclaimer)}</p></div>` : '');
     document.getElementById('mpPdf').onclick = () => genPdf(last);
     out.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -64,6 +63,7 @@
         <div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>میانگین کالری روزانه:</b> ${faN(Math.round(total / days.length))}</div>
       </div>`));
     if (plan.constraints && plan.constraints.length) secs.push(wrap(`<div style="background:#fff8e6;border-radius:14px;padding:14px"><b>⚙️ محدودیت‌ها و اهداف:</b><br>${plan.constraints.map(c => '• ' + esc(c)).join('<br>')}</div>`));
+    if (plan.tips && plan.tips.length) secs.push(wrap(`<div style="background:#fff8e6;border-radius:14px;padding:14px"><b>💡 نکات مهم:</b><br>${plan.tips.map(c => '• ' + esc(c)).join('<br>')}</div>`));
     days.forEach(d => secs.push(wrap(`<div style="background:#2d6a35;color:#fff;display:inline-block;border-radius:10px;padding:6px 16px;font-weight:800">روز ${faN(d.day)} — ${faN(d.kcal)} کالری${d.protein != null ? ' | ' + faN(d.protein) + 'g پروتئین' : ''}${d.carbs != null ? ' | ' + faN(d.carbs) + 'g کربوهیدرات' : ''}${d.fat != null ? ' | ' + faN(d.fat) + 'g چربی' : ''}</div>
       <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:13px">
         <tr style="background:#e8f4e9"><th style="padding:8px;text-align:right">وعده</th><th style="padding:8px;text-align:right">رسپی</th><th style="padding:8px;text-align:right">کالری</th><th style="padding:8px;text-align:right">پروتئین</th><th style="padding:8px;text-align:right">یادداشت</th></tr>
