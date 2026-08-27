@@ -15,14 +15,18 @@ html,body{overflow-x:hidden}
 .pl-hero p{color:#667066;font-size:13px;margin-top:6px}
 .pl-box{background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border-radius:22px;padding:18px;box-shadow:0 8px 26px rgba(30,43,28,.08);margin:14px 0}
 .pl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
-.pl-row input{padding:9px 12px;border-radius:12px;border:1px solid #ccc;font:inherit;font-size:13px;background:#fff;width:140px}
+.pl-row input{padding:9px 12px;border-radius:12px;border:1px solid #ccc;font:inherit;font-size:13px;background:#fff;width:150px}
 .pl-row label{font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center;background:#fff;border-radius:999px;padding:8px 14px;box-shadow:0 3px 10px rgba(0,0,0,.06);cursor:pointer}
 #plGo{margin-top:14px;width:100%}
+.pl-empty{color:#98a298;text-align:center;font-size:12px;padding:14px}
 .day-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06)}
 .day-card h4{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
 .meal-line{display:flex;gap:8px;align-items:baseline;padding:7px 0;border-top:1px dashed #e5efe5;font-size:13px;flex-wrap:wrap}
 .meal-line b{color:#2d6a35;min-width:88px}
 .meal-line small{color:#77807a}
+.info-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06);font-size:12.5px;line-height:2}
+.info-card h4{font-size:14px;margin-bottom:8px}
+.info-card li{list-style:none;padding:2px 0}
 .shop-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06)}
 .shop-card ul{columns:2;font-size:12.5px;line-height:2.1}
 .shop-card li{list-style:none}
@@ -32,10 +36,11 @@ html,body{overflow-x:hidden}
 <body data-page="planner">
 <header id="hdr"></header>
 <section><div class="container pl-wrap">
-  <div class="pl-hero"><h1>برنامه غذایی هفتگی</h1><p>۵ وعده در روز، متناسب با کالری هدف تو + لیست خرید هفتگی.</p></div>
+  <div class="pl-hero"><h1>برنامه غذایی هفتگی</h1><p>۵ وعده در روز، شخصی‌سازی‌شده با پروفایل تو + لیست خرید هفتگی.</p></div>
   <div class="pl-box">
     <div class="pl-row">
       <input id="plKcal" type="number" placeholder="کالری هدف روزانه" value="2000">
+      <input id="plIng" placeholder="مواد یخچالت (اختیاری)" style="flex:1;min-width:200px">
       <label><input type="checkbox" id="plProf" checked> استفاده از پروفایل تغذیه من</label>
     </div>
     <button class="btn" id="plGo">✨ ساخت برنامه ۷ روزه</button>
