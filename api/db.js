@@ -445,7 +445,7 @@ export default async function handler(req, res) {
     const b = req.body || {};
     if (!b.user_id || !b.title) { res.status(400).json({ error: "user_id/title required" }); return; }
     let planId = b.id;
-    const plan = { user_id: b.user_id, title: b.title, goal: b.goal || "", start_date: b.start_date || null, end_date: b.end_date || null, duration_days: +b.duration_days || 0, kcal_target: +b.kcal_target || 0, protein_target: +b.protein_target || 0, carbs_target: +b.carbs_target || 0, fat_target: +b.fat_target || 0, notes: b.notes || "", created_by: user.email };
+    const plan = { user_id: b.user_id, title: b.title, goal: b.goal || "", start_date: b.start_date || null, end_date: b.end_date || null, duration_days: +b.duration_days || 0, kcal_target: +b.kcal_target || 0, protein_target: +b.protein_target || 0, carbs_target: +b.carbs_target || 0, fat_target: +b.fat_target || 0, notes: b.notes || "", restrictions_text: b.restrictions_text || null, tips_text: b.tips_text || null, activity_text: b.activity_text || null, created_by: user.email };
     if (planId) await sbWrite("/rest/v1/diet_plans?id=eq." + planId, "PATCH", plan);
     else { const r = await sbWrite("/rest/v1/diet_plans?select=id", "POST", plan); planId = Array.isArray(r) && r[0] ? r[0].id : null; }
     if (!planId) { res.status(500).json({ error: "plan save failed" }); return; }
@@ -502,7 +502,7 @@ export default async function handler(req, res) {
     profile = Object.assign({}, profile || {}, b.overrides || {});
     const r = await pbGenerate({ days: b.days, meals: b.meals, profile, have: b.have, forbidden: b.forbidden });
     if (r.error) { res.status(r.status || 502).json({ error: r.error }); return; }
-    res.status(200).json({ days: r.days, activity: r.activity, constraints: r.constraints }); return;
+    res.status(200).json({ days: r.days, activity: r.activity, constraints: r.constraints, tips: r.tips || [] }); return;
   }
   if (t === "admin_stats") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
