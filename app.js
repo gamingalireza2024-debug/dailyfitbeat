@@ -1,4 +1,5 @@
 document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="glass.css">');
+document.head.insertAdjacentHTML('beforeend', '<style id="dfb-nav-fix">@media(max-width:900px){#hdr nav{display:none!important}#hdr .burger{display:flex!important}#hdr .mnav{display:none}#hdr .mnav.open{display:flex}}@media(min-width:901px){#hdr .mnav{display:none!important}#hdr .burger{display:none!important}}</style>');
 const $ = s => document.querySelector(s);
 let lang = localStorage.getItem('dfb-lang') || 'fa';
 let have = [], ING = [], ALL = [];
