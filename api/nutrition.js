@@ -3,12 +3,15 @@ const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const svc = { apikey: ANON, Authorization: "Bearer " + SERVICE };
 
+// احراز هویت: X-Supabase-Auth اول، Authorization: Bearer فال‌بک — هر دو با Supabase سروری تأیید می‌شن
 async function authUser(req) {
+  const x = req.headers["x-supabase-auth"];
   const a = req.headers.authorization || "";
   const m = a.match(/^Bearer\s+(.+)$/i);
-  if (!m) return null;
+  const token = (typeof x === "string" && x.trim()) ? x.trim() : (m ? m[1] : null);
+  if (!token) return null;
   try {
-    const r = await fetch(SB_URL + "/auth/v1/user", { headers: { apikey: ANON, Authorization: "Bearer " + m[1] } });
+    const r = await fetch(SB_URL + "/auth/v1/user", { headers: { apikey: ANON, Authorization: "Bearer " + token } });
     if (!r.ok) return null;
     return await r.json();
   } catch (e) { return null; }
@@ -32,7 +35,6 @@ export default async function handler(req, res) {
   if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
   if (await isDisabled(user.id)) { res.status(403).json({ error: "account disabled" }); return; }
 
-  // خواندن (خود کاربر، یا ادمین برای Diet Builder)
   if (req.method === "GET") {
     let uid = user.id;
     if (req.query.uid && req.query.uid !== user.id) {
@@ -43,7 +45,6 @@ export default async function handler(req, res) {
     res.status(200).json(Array.isArray(rows) && rows[0] ? rows[0] : { id: uid, empty: true }); return;
   }
 
-  // ذخیره (فقط خود کاربر)
   if (req.method === "POST") {
     const b = req.body || {};
     const obj = {
