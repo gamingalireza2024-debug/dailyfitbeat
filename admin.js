@@ -3,10 +3,12 @@
   let sb = null, started = false, REC = [];
   const wait = setInterval(() => {
     if (started || !window.DFB || !DFB.sb) return;
-    if (DFB.isAdmin()) { started = true; clearInterval(wait); sb = DFB.sb; init(); }
+    if (DFB.isAdmin()) { started = true; clearInterval(wait); sb = DFB.sb; init().catch(e => console.log('admin init error:', e)); }
   }, 400);
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const gv = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const sv = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
   const rialFa = n => (Number(n) || 0).toLocaleString('fa-IR') + ' ریال';
   const fmt = n => (Number(n) || 0).toLocaleString('fa-IR');
   const faDate = d => d ? new Date(d).toLocaleDateString('fa-IR') : '—';
@@ -56,16 +58,18 @@
       document.querySelectorAll('.aside button').forEach(x => x.classList.remove('on'));
       b.classList.add('on');
       document.querySelectorAll('.apane').forEach(p => p.style.display = (p.id === 'pane-' + b.dataset.t) ? 'block' : 'none');
-      if (b.dataset.t === 'dash') loadDash();
-      if (b.dataset.t === 'payments') loadPayments(1);
-      if (b.dataset.t === 'users') loadUsers(document.getElementById('uq').value, 1);
-      if (b.dataset.t === 'coupons') loadCoupons();
-      if (b.dataset.t === 'audit') loadAudit();
-      if (b.dataset.t === 'diet') { pickUsers(); loadDietList(); }
-      if (b.dataset.t === 'orders') loadOrders(1);
+      const safe = fn => Promise.resolve().then(fn).catch(e => console.log('admin section error:', e));
+      if (b.dataset.t === 'dash') safe(loadDash);
+      if (b.dataset.t === 'payments') safe(() => loadPayments(1));
+      if (b.dataset.t === 'users') safe(() => loadUsers(document.getElementById('uq').value, 1));
+      if (b.dataset.t === 'coupons') safe(loadCoupons);
+      if (b.dataset.t === 'audit') safe(loadAudit);
+      if (b.dataset.t === 'diet') safe(() => { pickUsers(); loadDietList(); });
+      if (b.dataset.t === 'orders') safe(() => loadOrders(1));
     });
-    await refreshREC();
-    await loadDash(); await loadOrders(1); await loadProds(); await loadPlans(); await loadRecipes();
+    await refreshREC().catch(() => {});
+    const safe = fn => Promise.resolve().then(fn).catch(e => console.log('admin init section error:', e));
+    await safe(loadDash); await safe(() => loadOrders(1)); await safe(loadProds); await safe(loadPlans); await safe(loadRecipes);
     bindJalali('dStart'); bindJalali('dEnd'); bindJalali('cEnd');
     ['aPrice', 'aOld', 'pPrice', 'pOld'].forEach(id => bindMoney(document.getElementById(id)));
     bindAll();
@@ -306,7 +310,7 @@
   // ---------- Diet Builder ----------
   let dietPlanId = null, dayCount = 0;
   async function pickUsers() {
-    const q = document.getElementById('dq').value;
+    const q = gv('dq');
     const r = await api('admin_users&q=' + encodeURIComponent(q || ''));
     if (!r.ok) { alert('خطا در جستجوی کاربر'); return; }
     const j = await r.json(); const data = j.rows || [];
@@ -329,6 +333,7 @@
     return boxes.length ? boxes[boxes.length - 1].querySelector('.meals') : null;
   }
   function addMealRow(box, m) {
+    if (!box) return;
     const row = document.createElement('div');
     row.className = 'meal-row';
     row.innerHTML = `<select class="mType"><option value="breakfast">صبحانه</option><option value="snack_am">میان‌وعده صبح</option><option value="lunch">ناهار</option><option value="snack_pm">میان‌وعده عصر</option><option value="dinner">شام</option><option value="snack">میان‌وعده (قدیمی)</option></select>
@@ -348,18 +353,16 @@
   async function saveDiet() {
     const dietUid = document.getElementById('duPick').value;
     if (!dietUid) { alert('اول کاربر رو پیدا و انتخاب کن'); return; }
-    const g = id => document.getElementById(id).value;
     const r = await api('admin_diet_save', { method: 'POST', body: JSON.stringify({
-      id: dietPlanId, user_id: dietUid, title: g('dTitle'), goal: g('dGoal'), start_date: g('dStart') || null, end_date: g('dEnd') || null, duration_days: g('dDur'),
-      kcal_target: g('dKcal'), protein_target: g('dPro'), carbs_target: g('dCarb'), fat_target: g('dFat'),
-      notes: g('dNotes'), restrictions_text: g('dRestr'), tips_text: g('dTips'), activity_text: g('dAct'),
+      id: dietPlanId, user_id: dietUid, title: gv('dTitle'), goal: gv('dGoal'), start_date: gv('dStart') || null, end_date: gv('dEnd') || null, duration_days: gv('dDur'),
+      kcal_target: gv('dKcal'), protein_target: gv('dPro'), carbs_target: gv('dCarb'), fat_target: gv('dFat'),
+      notes: gv('dNotes'), restrictions_text: gv('dRestr'), tips_text: gv('dTips'), activity_text: gv('dAct'),
       days: collectDays() }) });
     const j = await r.json();
     if (!r.ok) { alert(j.error || 'خطا'); return; }
     dietPlanId = j.id; alert('ذخیره شد ✅'); loadDietList();
   }
 
-  // ---------- تولید هوشمند (منطق مشترک با دستیار کاربر) ----------
   function initSmartGen() {
     const pane = document.getElementById('pane-diet');
     if (!pane || document.getElementById('sgBox')) return;
@@ -395,19 +398,16 @@
       if (document.getElementById('sgL').checked) meals.push('lunch');
       if (document.getElementById('sgSP').checked) meals.push('snack_pm');
       if (document.getElementById('sgD').checked) meals.push('dinner');
-      const likes = split(document.getElementById('sgLikes').value);
+      const likes = split(gv('sgLikes'));
       document.getElementById('sgMsg').textContent = 'در حال تولید برنامه…';
       const r = await api('admin_mealgen', { method: 'POST', body: JSON.stringify({
         uid, days: +document.getElementById('sgDays').value, meals,
         use_profile: document.getElementById('sgProf').checked,
-        forbidden: split(document.getElementById('sgForbidden').value),
+        forbidden: split(gv('sgForbidden')),
         overrides: {
-          calorie_target: +document.getElementById('sgKcal').value || null,
-          protein_target: +document.getElementById('sgPro').value || null,
-          carbs_target: +document.getElementById('sgCarb').value || null,
-          fat_target: +document.getElementById('sgFat').value || null,
-          activity_level: document.getElementById('sgAct').value || null,
-          food_preferences: likes.length ? likes : undefined
+          calorie_target: +gv('sgKcal') || null, protein_target: +gv('sgPro') || null,
+          carbs_target: +gv('sgCarb') || null, fat_target: +gv('sgFat') || null,
+          activity_level: gv('sgAct') || null, food_preferences: likes.length ? likes : undefined
         }
       }) });
       const j = await r.json();
@@ -419,15 +419,14 @@
         const mb = lastDayMeals();
         (d.meals || []).forEach(m => addMealRow(mb, { meal_type: m.type, recipe_id: m.recipe_id, title: m.title, portion: (m.kcal ? m.kcal + ' کالری' : '') + (m.protein != null ? ' | ' + m.protein + 'g پروتئین' : '') + (m.note ? ' — ' + m.note : '') }));
       });
-      document.getElementById('dRestr').value = (j.constraints || []).join('\n');
-      document.getElementById('dTips').value = (j.tips || []).join('\n');
-      document.getElementById('dAct').value = j.activity ? [...(j.activity.items || []), j.activity.note, j.activity.disclaimer].filter(Boolean).join('\n') : '';
+      sv('dRestr', (j.constraints || []).join('\n'));
+      sv('dTips', (j.tips || []).join('\n'));
+      sv('dAct', j.activity ? [...(j.activity.items || []), j.activity.note, j.activity.disclaimer].filter(Boolean).join('\n') : '');
       document.getElementById('dietForm').style.display = 'grid';
       document.getElementById('sgMsg').textContent = 'برنامه آماده شد — می‌تونی ویرایش کنی و بعد ذخیره / PDF بگیری.';
     };
   }
 
-  // ---------- PDF چندبخشی تمیز ----------
   async function genPdf() {
     if (!dietPlanId) { alert('اول ذخیره کن'); return; }
     const det = await (await api('admin_diet_detail&id=' + dietPlanId)).json();
@@ -499,8 +498,8 @@
       const pl = det.plan;
       const g = id => document.getElementById(id);
       g('dTitle').value = pl.title; g('dGoal').value = pl.goal || ''; g('dStart').value = pl.start_date ? pl.start_date.slice(0, 10) : ''; g('dEnd').value = pl.end_date ? pl.end_date.slice(0, 10) : ''; g('dDur').value = pl.duration_days || ''; g('dKcal').value = pl.kcal_target || ''; g('dPro').value = pl.protein_target || ''; g('dCarb').value = pl.carbs_target || ''; g('dFat').value = pl.fat_target || '';
-      g('dNotes').value = pl.notes || ''; g('dRestr').value = pl.restrictions_text || ''; g('dTips').value = pl.tips_text || ''; g('dAct').value = pl.activity_text || '';
-      ['dStart', 'dEnd'].forEach(i => { const el = g(i); el.dispatchEvent(new Event('change')); });
+      sv('dNotes', pl.notes || ''); sv('dRestr', pl.restrictions_text || ''); sv('dTips', pl.tips_text || ''); sv('dAct', pl.activity_text || '');
+      ['dStart', 'dEnd'].forEach(i => { const el = g(i); if (el) el.dispatchEvent(new Event('change')); });
       document.getElementById('daysBox').innerHTML = ''; dayCount = 0;
       (Array.isArray(det.days) ? det.days : []).forEach(d => { addDayBox(); const mb = lastDayMeals(); (d.diet_plan_meals || []).forEach(m => addMealRow(mb, m)); });
       document.getElementById('dietForm').style.display = 'grid';
@@ -521,7 +520,7 @@
       await sb.from('plans').insert({ key: 'plan-' + Date.now(), title_fa: t, period: document.getElementById('pPeriod').value || 'ماهانه', days: +document.getElementById('pDays').value || 30, price_rial: pr, old_price_rial: normNum(document.getElementById('pOld').value), features: [] });
       loadPlans();
     };
-    document.getElementById('uqBtn').onclick = () => loadUsers(document.getElementById('uq').value, 1);
+    document.getElementById('uqBtn').onclick = () => loadUsers(gv('uq'), 1);
     document.getElementById('cAdd').onclick = async () => {
       const r = await api('admin_coupons', { method: 'POST', body: JSON.stringify({ code: document.getElementById('cCode').value, type: document.getElementById('cType').value, value: +document.getElementById('cValue').value, usage_limit: +document.getElementById('cLimit').value || null, end_date: document.getElementById('cEnd').value || null, pro_only: document.getElementById('cPro').checked }) });
       if (!r.ok) alert('خطا'); loadCoupons();
