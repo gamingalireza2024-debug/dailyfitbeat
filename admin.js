@@ -325,7 +325,7 @@
   function addMealRow(box, m) {
     const row = document.createElement('div');
     row.className = 'meal-row';
-    row.innerHTML = `<select class="mType"><option value="breakfast">صبحانه</option><option value="lunch">ناهار</option><option value="snack">میان‌وعده</option><option value="dinner">شام</option></select>
+        row.innerHTML = `<select class="mType"><option value="breakfast">صبحانه</option><option value="snack_am">میان‌وعده صبح</option><option value="lunch">ناهار</option><option value="snack_pm">میان‌وعده عصر</option><option value="dinner">شام</option><option value="snack">میان‌وعده (قدیمی)</option></select>
     <select class="mRec"><option value="">— رسپی —</option>${REC.map(r => `<option value="${r.id}">${esc(r.name_fa)}</option>`).join('')}</select>
     <input class="mTitle" placeholder="عنوان/ماده" value="${esc(m ? m.title : '')}"><input class="mPortion" placeholder="مقدار" value="${esc(m ? m.portion : '')}"><button class="del-btn rmM">✕</button>`;
     if (m && m.recipe_id) row.querySelector('.mRec').value = m.recipe_id;
@@ -428,7 +428,77 @@
     document.querySelectorAll('.dPub').forEach(b => b.onclick = async () => { await api('admin_diet_publish', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) }); loadDietList(); });
     document.querySelectorAll('.dDel').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await api('admin_diet_delete', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) }); loadDietList(); });
   }
-
+  // ---------- تولید هوشمند (منطق مشترک با دستیار کاربر) ----------
+  function initSmartGen() {
+    const pane = document.getElementById('pane-diet');
+    if (!pane || document.getElementById('sgBox')) return;
+    const box = document.createElement('div');
+    box.id = 'sgBox'; box.className = 'ubox';
+    box.innerHTML = `<h4>🤖 تولید هوشمند برنامه</h4>
+    <div class="add-form">
+      <select id="sgDays"><option value="1">۱ روز</option><option value="3">۳ روز</option><option value="7" selected>۷ روز</option></select>
+      <label><input type="checkbox" id="sgB" checked> صبحانه</label>
+      <label><input type="checkbox" id="sgSA" checked> میان‌وعده صبح</label>
+      <label><input type="checkbox" id="sgL" checked> ناهار</label>
+      <label><input type="checkbox" id="sgSP" checked> میان‌وعده عصر</label>
+      <label><input type="checkbox" id="sgD" checked> شام</label>
+      <label><input type="checkbox" id="sgProf" checked> از پروفایل کاربر</label>
+    </div>
+    <div class="add-form">
+      <input id="sgKcal" type="number" placeholder="کالری هدف (اختیاری)"><input id="sgPro" type="number" placeholder="پروتئین g"><input id="sgCarb" type="number" placeholder="کربوهیدرات g"><input id="sgFat" type="number" placeholder="چربی g">
+      <select id="sgAct"><option value="">سطح فعالیت: از پروفایل</option><option value="sedentary">کم‌تحرک</option><option value="light">سبک</option><option value="moderate">متوسط</option><option value="active">فعال</option></select>
+    </div>
+    <div class="add-form">
+      <input id="sgForbidden" placeholder="غذاهای ممنوع (با ویرگول)" style="flex:1"><input id="sgLikes" placeholder="علاقه‌مندی‌ها (با ویرگول)" style="flex:1">
+    </div>
+    <button class="btn" id="sgGo">✨ تولید برنامه</button>
+    <p class="hint" id="sgMsg"></p>`;
+    pane.insertBefore(box, document.getElementById('dietForm'));
+    const split = v => v.split('،').join(',').split(',').map(s => s.trim()).filter(Boolean);
+    document.getElementById('sgGo').onclick = async () => {
+      const uid = document.getElementById('duPick').value;
+      if (!uid) { alert('اول کاربر را پیدا و انتخاب کن'); return; }
+      const meals = [];
+      if (document.getElementById('sgB').checked) meals.push('breakfast');
+      if (document.getElementById('sgSA').checked) meals.push('snack_am');
+      if (document.getElementById('sgL').checked) meals.push('lunch');
+      if (document.getElementById('sgSP').checked) meals.push('snack_pm');
+      if (document.getElementById('sgD').checked) meals.push('dinner');
+      const likes = split(document.getElementById('sgLikes').value);
+      document.getElementById('sgMsg').textContent = 'در حال تولید برنامه…';
+      const r = await api('admin_mealgen', { method: 'POST', body: JSON.stringify({
+        uid, days: +document.getElementById('sgDays').value, meals,
+        use_profile: document.getElementById('sgProf').checked,
+        forbidden: split(document.getElementById('sgForbidden').value),
+        overrides: {
+          calorie_target: +document.getElementById('sgKcal').value || null,
+          protein_target: +document.getElementById('sgPro').value || null,
+          carbs_target: +document.getElementById('sgCarb').value || null,
+          fat_target: +document.getElementById('sgFat').value || null,
+          activity_level: document.getElementById('sgAct').value || null,
+          food_preferences: likes.length ? likes : undefined
+        }
+      }) });
+      const j = await r.json();
+      if (!r.ok) { document.getElementById('sgMsg').textContent = j.error === 'recipe_catalog_unavailable' ? 'رسپی مطابق محدودیت‌ها پیدا نشد؛ ممنوع‌ها را کمتر کن.' : 'خطا در تولید برنامه'; return; }
+      dietPlanId = null; dayCount = 0;
+      document.getElementById('daysBox').innerHTML = '';
+      (j.days || []).forEach(d => {
+        addDayBox();
+        const mb = document.querySelectorAll('#daysBox .day-box').slice(-1)[0].querySelector('.meals');
+        (d.meals || []).forEach(m => addMealRow(mb, { meal_type: m.type, recipe_id: m.recipe_id, title: m.title, portion: (m.kcal ? m.kcal + ' کالری' : '') + (m.note ? ' — ' + m.note : '') }));
+      });
+      const notes = [];
+      if (j.constraints && j.constraints.length) notes.push('محدودیت‌ها و اهداف: ' + j.constraints.join(' | '));
+      if (j.activity) {
+        notes.push('پیشنهاد فعالیت: ' + (j.activity.items || []).join('، ') + (j.activity.note ? ' — ' + j.activity.note : ''));
+        notes.push(j.activity.disclaimer);
+      }
+      document.getElementById('dNotes').value = notes.join('\n');
+      document.getElementById('dietForm').style.display = 'grid';
+      document.getElementById('sgMsg').textContent = 'برنامه آماده شد — می‌تونی ویرایش کنی و بعد ذخیره / PDF بگیری.';
+    };
+  }
   function bindAll() {
     document.getElementById('csvBtn').onclick = exportCSV;
     document.getElementById('filterSt').onchange = () => loadOrders(1);
@@ -447,6 +517,7 @@
       if (!r.ok) alert('خطا'); loadCoupons();
     };
     document.getElementById('dqBtn').onclick = pickUsers;
+        initSmartGen();
     document.getElementById('dNew').onclick = () => { dietPlanId = null; dayCount = 0; document.getElementById('daysBox').innerHTML = ''; document.getElementById('dietForm').style.display = 'grid'; addDayBox(); };
     document.getElementById('dAddDay').onclick = addDayBox;
     document.getElementById('dSave').onclick = saveDiet;
