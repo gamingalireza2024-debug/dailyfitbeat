@@ -3,7 +3,7 @@
   let sb = null, started = false, REC = [];
   const wait = setInterval(() => {
     if (started || !window.DFB || !DFB.sb) return;
-    if (DFB.isAdmin()) { started = true; clearInterval(wait); sb = DFB.sb; init().catch(e => console.log('admin init error:', e)); }
+    if (DFB.isAdmin()) { started = true; clearInterval(wait); sb = DFB.sb; init().catch(e => { console.error('admin init failed:', e); const st = document.getElementById('adminStat'); if (st) st.textContent = '⚠️ خطا در بارگذاری بخشی از پنل — Console را ببین'; }); }
   }, 400);
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -59,13 +59,14 @@
       b.classList.add('on');
       document.querySelectorAll('.apane').forEach(p => p.style.display = (p.id === 'pane-' + b.dataset.t) ? 'block' : 'none');
       const safe = fn => Promise.resolve().then(fn).catch(e => console.log('admin section error:', e));
-      if (b.dataset.t === 'dash') safe(loadDash);
-      if (b.dataset.t === 'payments') safe(() => loadPayments(1));
-      if (b.dataset.t === 'users') safe(() => loadUsers(document.getElementById('uq').value, 1));
-      if (b.dataset.t === 'coupons') safe(loadCoupons);
-      if (b.dataset.t === 'audit') safe(loadAudit);
-      if (b.dataset.t === 'diet') safe(() => { pickUsers(); loadDietList(); });
-      if (b.dataset.t === 'orders') safe(() => loadOrders(1));
+      const safe = (name, fn) => Promise.resolve().then(fn).catch(e => console.error('admin section error (' + name + '):', e));
+      if (b.dataset.t === 'dash') safe('dash', loadDash);
+      if (b.dataset.t === 'payments') safe('payments', () => loadPayments(1));
+      if (b.dataset.t === 'users') safe('users', () => loadUsers(document.getElementById('uq').value, 1));
+      if (b.dataset.t === 'coupons') safe('coupons', loadCoupons);
+      if (b.dataset.t === 'audit') safe('audit', loadAudit);
+      if (b.dataset.t === 'diet') safe('diet', () => { pickUsers(); loadDietList(); });
+      if (b.dataset.t === 'orders') safe('orders', () => loadOrders(1));
     });
     await refreshREC().catch(() => {});
     const safe = fn => Promise.resolve().then(fn).catch(e => console.log('admin init section error:', e));
@@ -163,9 +164,9 @@
     const exists = REC.find(x => x.slug === slug);
     const res = exists ? await sb.from('recipes').update(obj).eq('slug', slug) : await sb.from('recipes').insert(obj);
     if (res.error) { alert('خطا: ' + res.error.message); return; }
-    await refreshREC();
-    alert('ذخیره شد ✅'); document.getElementById('recForm').style.display = 'none'; loadRecipes();
-  }
+    await refreshREC().catch(e => console.error('recipes load error:', e));
+    const safe = (name, fn) => Promise.resolve().then(fn).catch(e => console.error('admin section error (' + name + '):', e));
+    await safe('dash', loadDash); await safe('orders', () => loadOrders(1)); await safe('prods', loadProds); await safe('plans', loadPlans); await safe('recipes', loadRecipes);
 
   async function loadProds() {
     const data = await (await fetch('/api/db?t=products')).json();
@@ -356,7 +357,7 @@
     const r = await api('admin_diet_save', { method: 'POST', body: JSON.stringify({
       id: dietPlanId, user_id: dietUid, title: gv('dTitle'), goal: gv('dGoal'), start_date: gv('dStart') || null, end_date: gv('dEnd') || null, duration_days: gv('dDur'),
       kcal_target: gv('dKcal'), protein_target: gv('dPro'), carbs_target: gv('dCarb'), fat_target: gv('dFat'),
-      notes: gv('dNotes'), restrictions_text: gv('dRestr'), tips_text: gv('dTips'), activity_text: gv('dAct'),
+      notes: g('dNotes'), restrictions_text: (document.getElementById('dRestr') || { value: '' }).value, tips_text: (document.getElementById('dTips') || { value: '' }).value, activity_text: (document.getElementById('dAct') || { value: '' }).value,
       days: collectDays() }) });
     const j = await r.json();
     if (!r.ok) { alert(j.error || 'خطا'); return; }
