@@ -35,6 +35,7 @@
   const STATUS_FA = { new: 'جدید', pending: 'در انتظار پرداخت', payment_submitted: 'واریز ثبت شده', under_review: 'در بررسی', paid: 'پرداخت شده', processing: 'در حال پردازش', delivered: 'تحویل شده', sent: 'ارسال شده', rejected: 'رد شده', cancelled: 'لغو شده', refunded: 'مسترد شده' };
   const PAY_FA = { pending: 'در انتظار', submitted: 'واریز ثبت شده', approved: 'تأیید شده', rejected: 'رد شده', refunded: 'مسترد' };
   const TYPE_FA = { DIGITAL_PRODUCT: 'محصول دیجیتال', SERVICE: 'خدمت', SUBSCRIPTION: 'اشتراک', BUNDLE: 'باندل' };
+  const MFA = { breakfast: 'صبحانه', snack_am: 'میان‌وعده صبح', lunch: 'ناهار', snack_pm: 'میان‌وعده عصر', dinner: 'شام', snack: 'میان‌وعده' };
   function pager(el, page, total, lim, cb) {
     const pages = Math.max(1, Math.ceil(total / lim));
     el.innerHTML = `<button ${page <= 1 ? 'disabled' : ''} data-p="${page - 1}">قبلی</button><span>صفحه ${page.toLocaleString('fa-IR')} از ${pages.toLocaleString('fa-IR')} (${total.toLocaleString('fa-IR')} رکورد)</span><button ${page >= pages ? 'disabled' : ''} data-p="${page + 1}">بعدی</button>`;
@@ -302,6 +303,7 @@
     });
   }
 
+  // ---------- Diet Builder ----------
   let dietPlanId = null, dayCount = 0;
   async function pickUsers() {
     const q = document.getElementById('dq').value;
@@ -322,12 +324,16 @@
     div.querySelector('.addMeal').onclick = () => addMealRow(div.querySelector('.meals'));
     document.getElementById('daysBox').appendChild(div);
   }
+  function lastDayMeals() {
+    const boxes = [...document.querySelectorAll('#daysBox .day-box')];
+    return boxes.length ? boxes[boxes.length - 1].querySelector('.meals') : null;
+  }
   function addMealRow(box, m) {
     const row = document.createElement('div');
     row.className = 'meal-row';
-        row.innerHTML = `<select class="mType"><option value="breakfast">صبحانه</option><option value="snack_am">میان‌وعده صبح</option><option value="lunch">ناهار</option><option value="snack_pm">میان‌وعده عصر</option><option value="dinner">شام</option><option value="snack">میان‌وعده (قدیمی)</option></select>
+    row.innerHTML = `<select class="mType"><option value="breakfast">صبحانه</option><option value="snack_am">میان‌وعده صبح</option><option value="lunch">ناهار</option><option value="snack_pm">میان‌وعده عصر</option><option value="dinner">شام</option><option value="snack">میان‌وعده (قدیمی)</option></select>
     <select class="mRec"><option value="">— رسپی —</option>${REC.map(r => `<option value="${r.id}">${esc(r.name_fa)}</option>`).join('')}</select>
-    <input class="mTitle" placeholder="عنوان/ماده" value="${esc(m ? m.title : '')}"><input class="mPortion" placeholder="مقدار" value="${esc(m ? m.portion : '')}"><button class="del-btn rmM">✕</button>`;
+    <input class="mTitle" placeholder="عنوان/ماده" value="${esc(m ? m.title : '')}"><input class="mPortion" placeholder="مقدار/کالری" value="${esc(m ? m.portion : '')}"><button class="del-btn rmM">✕</button>`;
     if (m && m.recipe_id) row.querySelector('.mRec').value = m.recipe_id;
     if (m && m.meal_type) row.querySelector('.mType').value = m.meal_type;
     row.querySelector('.rmM').onclick = () => row.remove();
@@ -343,91 +349,16 @@
     const dietUid = document.getElementById('duPick').value;
     if (!dietUid) { alert('اول کاربر رو پیدا و انتخاب کن'); return; }
     const g = id => document.getElementById(id).value;
-    const r = await api('admin_diet_save', { method: 'POST', body: JSON.stringify({ id: dietPlanId, user_id: dietUid, title: g('dTitle'), goal: g('dGoal'), start_date: g('dStart') || null, end_date: g('dEnd') || null, duration_days: g('dDur'), kcal_target: g('dKcal'), protein_target: g('dPro'), carbs_target: g('dCarb'), fat_target: g('dFat'), notes: g('dNotes'), days: collectDays() }) });
+    const r = await api('admin_diet_save', { method: 'POST', body: JSON.stringify({
+      id: dietPlanId, user_id: dietUid, title: g('dTitle'), goal: g('dGoal'), start_date: g('dStart') || null, end_date: g('dEnd') || null, duration_days: g('dDur'),
+      kcal_target: g('dKcal'), protein_target: g('dPro'), carbs_target: g('dCarb'), fat_target: g('dFat'),
+      notes: g('dNotes'), restrictions_text: g('dRestr'), tips_text: g('dTips'), activity_text: g('dAct'),
+      days: collectDays() }) });
     const j = await r.json();
     if (!r.ok) { alert(j.error || 'خطا'); return; }
     dietPlanId = j.id; alert('ذخیره شد ✅'); loadDietList();
   }
-  async function genPdf() {
-    if (!dietPlanId) { alert('اول ذخیره کن'); return; }
-    const det = await (await api('admin_diet_detail&id=' + dietPlanId)).json();
-    const plan = det.plan; const days = Array.isArray(det.days) ? det.days : [];
-    const uname = document.getElementById('duPick').selectedOptions[0] ? document.getElementById('duPick').selectedOptions[0].textContent : '';
-    await new Promise(r => { const i = new Image(); i.onload = r; i.onerror = r; i.src = 'img/logo.png'; });
-    const doc = document.getElementById('pdfDoc');
-    doc.innerHTML = `
-      <div style="padding:40px;font-family:Vazirmatn,sans-serif;direction:rtl;color:#1e2b1c">
-        <div style="background:#2d6a35;border-radius:22px;padding:24px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:16px">
-          <div><div style="font-size:24px;font-weight:900">DailyFitBeat | دیلی‌بیت</div>
-          <div style="opacity:.9;margin-top:6px">برنامه غذایی اختصاصی — ${plan.title}</div></div>
-          <img src="img/logo.png" alt="DailyFitBeat" style="height:70px;border-radius:18px;background:#fff;padding:6px">
-        </div>
-        <div style="display:flex;gap:14px;margin:22px 0;flex-wrap:wrap">
-          <div style="background:#f2f7f2;border-radius:14px;padding:12px 18px"><b>کاربر:</b> ${uname}</div>
-          <div style="background:#f2f7f2;border-radius:14px;padding:12px 18px"><b>هدف:</b> ${plan.goal || '—'}</div>
-          <div style="background:#f2f7f2;border-radius:14px;padding:12px 18px"><b>مدت:</b> ${plan.duration_days || '—'} روز</div>
-          <div style="background:#f2f7f2;border-radius:14px;padding:12px 18px"><b>تاریخ:</b> ${new Date().toLocaleDateString('fa-IR')}</div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
-          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.kcal_target) || '0'}</b><br><small>کالری روزانه</small></div>
-          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.protein_target)}g</b><br><small>پروتئین</small></div>
-          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.carbs_target)}g</b><br><small>کربوهیدرات</small></div>
-          <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.fat_target)}g</b><br><small>چربی</small></div>
-        </div>
-        ${days.map(d => `<div style="margin-bottom:20px">
-          <div style="background:#2d6a35;color:#fff;display:inline-block;border-radius:10px;padding:6px 16px;font-weight:800">روز ${fmt(d.day_number)}</div>
-          <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:13px">
-            ${(d.diet_plan_meals || []).map(m => `<tr style="border-bottom:1px solid #e5efe5"><td style="padding:9px;font-weight:700;width:90px">${{ breakfast: 'صبحانه', lunch: 'ناهار', snack: 'میان‌وعده', dinner: 'شام' }[m.meal_type] || m.meal_type}</td><td style="padding:9px">${m.title || (REC.find(x => x.id === m.recipe_id) || {}).name_fa || '—'}</td><td style="padding:9px;color:#557">${m.portion || ''}</td></tr>`).join('')}
-          </table>
-        </div>`).join('')}
-        ${plan.notes ? `<div style="background:#fff8e6;border-radius:14px;padding:16px;margin-top:10px"><b>📝 توضیحات و نکات:</b><br>${plan.notes}</div>` : ''}
-        <div style="margin-top:30px;border-top:2px solid #e8f4e9;padding-top:14px;display:flex;justify-content:space-between;font-size:11px;color:#77807a">
-          <span>dailyfitbeat.ir</span><span>اینستاگرام: @dailyfitbeat</span><span>خوب بخور، بهتر زندگی کن 💚</span>
-        </div>
-      </div>`;
-    await document.fonts.ready;
-    const canvas = await html2canvas(doc, { scale: 2, backgroundColor: '#fff' });
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pw = 210, ph = 297;
-    const iw = pw, ih = canvas.height * pw / canvas.width;
-    let left = ih, pos = 0;
-    pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, pos, iw, ih);
-    left -= ph;
-    while (left > 0) { pos -= ph; pdf.addPage(); pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, pos, iw, ih); left -= ph; }
-    const b64 = pdf.output('datauristring').split(',')[1];
-    const path = 'diet/plan-' + dietPlanId + '.pdf';
-    const up = await api('upload_file', { method: 'POST', body: JSON.stringify({ path, base64: b64, mime: 'application/pdf' }) });
-    if (!up.ok) { alert('آپلود PDF ناموفق'); return; }
-    const pub = await api('admin_diet_publish', { method: 'POST', body: JSON.stringify({ id: dietPlanId, pdf_path: path }) });
-    alert(pub.ok ? 'PDF ساخته و منتشر شد ✅' : 'خطا در انتشار');
-    loadDietList();
-  }
-  async function loadDietList() {
-    const uid = document.getElementById('duPick').value || null;
-    const r = await api('admin_diet_plans' + (uid ? '&uid=' + uid : '')); if (!r.ok) return;
-    const data = await r.json();
-    document.getElementById('dietList').innerHTML = (Array.isArray(data) ? data : []).map(p => `<div class="ubox" style="margin:8px 0;padding:12px">
-      <b>${esc(p.title)}</b> — <span class="pbadge" style="background:${p.status === 'published' ? '#2d6a35' : '#b26a00'}">${p.status === 'published' ? 'منتشر شده' : 'پیش‌نویس'}</span>
-      <small> — ${faDate(p.created_at)}</small><br>
-      <button class="btn small dEdit" data-id="${p.id}">ویرایش</button>
-      <button class="warn-btn dPub" data-id="${p.id}">انتشار</button>
-      <button class="del-btn dDel" data-id="${p.id}">حذف</button>
-    </div>`).join('') || '<p>هنوز برنامه‌ای ساخته نشده</p>';
-    document.querySelectorAll('.dEdit').forEach(b => b.onclick = async () => {
-      dietPlanId = +b.dataset.id;
-      const det = await (await api('admin_diet_detail&id=' + dietPlanId)).json();
-      const pl = det.plan;
-      const g = id => document.getElementById(id);
-      g('dTitle').value = pl.title; g('dGoal').value = pl.goal || ''; g('dStart').value = pl.start_date ? pl.start_date.slice(0, 10) : ''; g('dEnd').value = pl.end_date ? pl.end_date.slice(0, 10) : ''; g('dDur').value = pl.duration_days || ''; g('dKcal').value = pl.kcal_target || ''; g('dPro').value = pl.protein_target || ''; g('dCarb').value = pl.carbs_target || ''; g('dFat').value = pl.fat_target || ''; g('dNotes').value = pl.notes || '';
-      ['dStart', 'dEnd'].forEach(i => { const el = g(i); el.dispatchEvent(new Event('change')); });
-      document.getElementById('daysBox').innerHTML = ''; dayCount = 0;
-           (Array.isArray(det.days) ? det.days : []).forEach(d => { addDayBox(); const boxes = [...document.querySelectorAll('#daysBox .day-box')]; const mb = boxes[boxes.length - 1].querySelector('.meals'); (d.diet_plan_meals || []).forEach(m => addMealRow(mb, m)); });
-      document.getElementById('dietForm').style.display = 'grid';
-    });
-    document.querySelectorAll('.dPub').forEach(b => b.onclick = async () => { await api('admin_diet_publish', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) }); loadDietList(); });
-    document.querySelectorAll('.dDel').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await api('admin_diet_delete', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) }); loadDietList(); });
-  }
+
   // ---------- تولید هوشمند (منطق مشترک با دستیار کاربر) ----------
   function initSmartGen() {
     const pane = document.getElementById('pane-diet');
@@ -485,20 +416,99 @@
       document.getElementById('daysBox').innerHTML = '';
       (j.days || []).forEach(d => {
         addDayBox();
-        const boxes = [...document.querySelectorAll('#daysBox .day-box')]; const mb = boxes[boxes.length - 1].querySelector('.meals');
-        (d.meals || []).forEach(m => addMealRow(mb, { meal_type: m.type, recipe_id: m.recipe_id, title: m.title, portion: (m.kcal ? m.kcal + ' کالری' : '') + (m.note ? ' — ' + m.note : '') }));
+        const mb = lastDayMeals();
+        (d.meals || []).forEach(m => addMealRow(mb, { meal_type: m.type, recipe_id: m.recipe_id, title: m.title, portion: (m.kcal ? m.kcal + ' کالری' : '') + (m.protein != null ? ' | ' + m.protein + 'g پروتئین' : '') + (m.note ? ' — ' + m.note : '') }));
       });
-      const notes = [];
-      if (j.constraints && j.constraints.length) notes.push('محدودیت‌ها و اهداف: ' + j.constraints.join(' | '));
-      if (j.activity) {
-        notes.push('پیشنهاد فعالیت: ' + (j.activity.items || []).join('، ') + (j.activity.note ? ' — ' + j.activity.note : ''));
-        notes.push(j.activity.disclaimer);
-      }
-      document.getElementById('dNotes').value = notes.join('\n');
+      document.getElementById('dRestr').value = (j.constraints || []).join('\n');
+      document.getElementById('dTips').value = (j.tips || []).join('\n');
+      document.getElementById('dAct').value = j.activity ? [...(j.activity.items || []), j.activity.note, j.activity.disclaimer].filter(Boolean).join('\n') : '';
       document.getElementById('dietForm').style.display = 'grid';
       document.getElementById('sgMsg').textContent = 'برنامه آماده شد — می‌تونی ویرایش کنی و بعد ذخیره / PDF بگیری.';
     };
   }
+
+  // ---------- PDF چندبخشی تمیز ----------
+  async function genPdf() {
+    if (!dietPlanId) { alert('اول ذخیره کن'); return; }
+    const det = await (await api('admin_diet_detail&id=' + dietPlanId)).json();
+    const plan = det.plan; const days = Array.isArray(det.days) ? det.days : [];
+    const uname = document.getElementById('duPick').selectedOptions[0] ? document.getElementById('duPick').selectedOptions[0].textContent : '';
+    await new Promise(r => { const i = new Image(); i.onload = r; i.onerror = r; i.src = 'img/logo.png'; });
+    const doc = document.getElementById('pdfDoc');
+    const wrap = inner => `<div style="padding:24px;font-family:Vazirmatn,sans-serif;direction:rtl;color:#1e2b1c">${inner}</div>`;
+    const secs = [];
+    secs.push(wrap(`<div style="background:#2d6a35;border-radius:22px;padding:24px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:16px">
+      <div><div style="font-size:24px;font-weight:900">DailyFitBeat | دیلی‌بیت</div><div style="opacity:.9;margin-top:6px">برنامه غذایی اختصاصی — ${plan.title}</div></div>
+      <img src="img/logo.png" style="height:70px;border-radius:18px;background:#fff;padding:6px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+        <div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>کاربر:</b> ${uname}</div>
+        <div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>هدف:</b> ${plan.goal || '—'}</div>
+        <div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>مدت:</b> ${plan.duration_days || '—'} روز</div>
+        <div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>تاریخ:</b> ${new Date().toLocaleDateString('fa-IR')}</div>
+      </div>`));
+    secs.push(wrap(`<div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.kcal_target) || '0'}</b><br><small>کالری روزانه</small></div>
+      <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.protein_target)}g</b><br><small>پروتئین</small></div>
+      <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.carbs_target)}g</b><br><small>کربوهیدرات</small></div>
+      <div style="flex:1;min-width:120px;background:#e8f4e9;border-radius:14px;padding:14px;text-align:center"><b style="font-size:20px;color:#2d6a35">${fmt(plan.fat_target)}g</b><br><small>چربی</small></div>
+    </div>`));
+    if (plan.restrictions_text) secs.push(wrap(`<div style="background:#fff8e6;border-radius:14px;padding:14px"><b>⚙️ محدودیت‌ها و ممنوعات:</b><br>${plan.restrictions_text.split('\n').map(x => '• ' + x).join('<br>')}</div>`));
+    if (plan.tips_text) secs.push(wrap(`<div style="background:#fff8e6;border-radius:14px;padding:14px"><b>💡 نکات مهم:</b><br>${plan.tips_text.split('\n').map(x => '• ' + x).join('<br>')}</div>`));
+    if (plan.notes) secs.push(wrap(`<div style="background:#fff8e6;border-radius:14px;padding:14px"><b>📝 توضیحات:</b><br>${plan.notes}</div>`));
+    days.forEach(d => secs.push(wrap(`<div style="background:#2d6a35;color:#fff;display:inline-block;border-radius:10px;padding:6px 16px;font-weight:800">روز ${fmt(d.day_number)}</div>
+      <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:13px">
+        ${(d.diet_plan_meals || []).map(m => `<tr style="border-bottom:1px solid #e5efe5"><td style="padding:8px;font-weight:700;width:110px">${MFA[m.meal_type] || m.meal_type}</td><td style="padding:8px">${m.title || (REC.find(x => x.id === m.recipe_id) || {}).name_fa || '—'}</td><td style="padding:8px;color:#557">${m.portion || ''}</td></tr>`).join('')}
+      </table>`));
+    if (plan.activity_text) secs.push(wrap(`<div style="background:#e8f4e9;border-radius:14px;padding:16px"><b>🏃 پیشنهاد فعالیت:</b><br>${plan.activity_text.split('\n').map(x => '• ' + x).join('<br>')}</div>`));
+    secs.push(wrap(`<div style="border-top:2px solid #e8f4e9;padding-top:12px;display:flex;justify-content:space-between;font-size:11px;color:#77807a"><span>dailyfitbeat.ir</span><span>اینستاگرام: @dailyfitbeat</span><span>خوب بخور، بهتر زندگی کن 💚</span></div>`));
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    let y = 10;
+    for (const sec of secs) {
+      doc.innerHTML = sec;
+      await document.fonts.ready;
+      const canvas = await html2canvas(doc.firstElementChild, { scale: 2, backgroundColor: '#fff' });
+      let w = 200, h = canvas.height * w / canvas.width;
+      if (h > 277) { const s2 = 277 / h; w *= s2; h *= s2; }
+      if (y + h > 287) { pdf.addPage(); y = 10; }
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', (210 - w) / 2, y, w, h);
+      y += h + 6;
+    }
+    const b64 = pdf.output('datauristring').split(',')[1];
+    const path = 'diet/plan-' + dietPlanId + '.pdf';
+    const up = await api('upload_file', { method: 'POST', body: JSON.stringify({ path, base64: b64, mime: 'application/pdf' }) });
+    if (!up.ok) { alert('آپلود PDF ناموفق'); return; }
+    const pub = await api('admin_diet_publish', { method: 'POST', body: JSON.stringify({ id: dietPlanId, pdf_path: path }) });
+    alert(pub.ok ? 'PDF ساخته و منتشر شد ✅' : 'خطا در انتشار');
+    loadDietList();
+  }
+  async function loadDietList() {
+    const uid = document.getElementById('duPick').value || null;
+    const r = await api('admin_diet_plans' + (uid ? '&uid=' + uid : '')); if (!r.ok) return;
+    const data = await r.json();
+    document.getElementById('dietList').innerHTML = (Array.isArray(data) ? data : []).map(p => `<div class="ubox" style="margin:8px 0;padding:12px">
+      <b>${esc(p.title)}</b> — <span class="pbadge" style="background:${p.status === 'published' ? '#2d6a35' : '#b26a00'}">${p.status === 'published' ? 'منتشر شده' : 'پیش‌نویس'}</span>
+      <small> — ${faDate(p.created_at)}</small><br>
+      <button class="btn small dEdit" data-id="${p.id}">ویرایش</button>
+      <button class="warn-btn dPub" data-id="${p.id}">انتشار</button>
+      <button class="del-btn dDel" data-id="${p.id}">حذف</button>
+    </div>`).join('') || '<p>هنوز برنامه‌ای ساخته نشده</p>';
+    document.querySelectorAll('.dEdit').forEach(b => b.onclick = async () => {
+      dietPlanId = +b.dataset.id;
+      const det = await (await api('admin_diet_detail&id=' + dietPlanId)).json();
+      const pl = det.plan;
+      const g = id => document.getElementById(id);
+      g('dTitle').value = pl.title; g('dGoal').value = pl.goal || ''; g('dStart').value = pl.start_date ? pl.start_date.slice(0, 10) : ''; g('dEnd').value = pl.end_date ? pl.end_date.slice(0, 10) : ''; g('dDur').value = pl.duration_days || ''; g('dKcal').value = pl.kcal_target || ''; g('dPro').value = pl.protein_target || ''; g('dCarb').value = pl.carbs_target || ''; g('dFat').value = pl.fat_target || '';
+      g('dNotes').value = pl.notes || ''; g('dRestr').value = pl.restrictions_text || ''; g('dTips').value = pl.tips_text || ''; g('dAct').value = pl.activity_text || '';
+      ['dStart', 'dEnd'].forEach(i => { const el = g(i); el.dispatchEvent(new Event('change')); });
+      document.getElementById('daysBox').innerHTML = ''; dayCount = 0;
+      (Array.isArray(det.days) ? det.days : []).forEach(d => { addDayBox(); const mb = lastDayMeals(); (d.diet_plan_meals || []).forEach(m => addMealRow(mb, m)); });
+      document.getElementById('dietForm').style.display = 'grid';
+    });
+    document.querySelectorAll('.dPub').forEach(b => b.onclick = async () => { await api('admin_diet_publish', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) }); loadDietList(); });
+    document.querySelectorAll('.dDel').forEach(b => b.onclick = async () => { if (!confirm('حذف؟')) return; await api('admin_diet_delete', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) }); loadDietList(); });
+  }
+
   function bindAll() {
     document.getElementById('csvBtn').onclick = exportCSV;
     document.getElementById('filterSt').onchange = () => loadOrders(1);
@@ -517,7 +527,7 @@
       if (!r.ok) alert('خطا'); loadCoupons();
     };
     document.getElementById('dqBtn').onclick = pickUsers;
-        initSmartGen();
+    initSmartGen();
     document.getElementById('dNew').onclick = () => { dietPlanId = null; dayCount = 0; document.getElementById('daysBox').innerHTML = ''; document.getElementById('dietForm').style.display = 'grid'; addDayBox(); };
     document.getElementById('dAddDay').onclick = addDayBox;
     document.getElementById('dSave').onclick = saveDiet;
