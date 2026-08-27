@@ -422,7 +422,7 @@
       g('dTitle').value = pl.title; g('dGoal').value = pl.goal || ''; g('dStart').value = pl.start_date ? pl.start_date.slice(0, 10) : ''; g('dEnd').value = pl.end_date ? pl.end_date.slice(0, 10) : ''; g('dDur').value = pl.duration_days || ''; g('dKcal').value = pl.kcal_target || ''; g('dPro').value = pl.protein_target || ''; g('dCarb').value = pl.carbs_target || ''; g('dFat').value = pl.fat_target || ''; g('dNotes').value = pl.notes || '';
       ['dStart', 'dEnd'].forEach(i => { const el = g(i); el.dispatchEvent(new Event('change')); });
       document.getElementById('daysBox').innerHTML = ''; dayCount = 0;
-      (Array.isArray(det.days) ? det.days : []).forEach(d => { addDayBox(); const mb = document.querySelectorAll('#daysBox .day-box').slice(-1)[0].querySelector('.meals'); (d.diet_plan_meals || []).forEach(m => addMealRow(mb, m)); });
+           (Array.isArray(det.days) ? det.days : []).forEach(d => { addDayBox(); const boxes = [...document.querySelectorAll('#daysBox .day-box')]; const mb = boxes[boxes.length - 1].querySelector('.meals'); (d.diet_plan_meals || []).forEach(m => addMealRow(mb, m)); });
       document.getElementById('dietForm').style.display = 'grid';
     });
     document.querySelectorAll('.dPub').forEach(b => b.onclick = async () => { await api('admin_diet_publish', { method: 'POST', body: JSON.stringify({ id: +b.dataset.id }) }); loadDietList(); });
@@ -485,7 +485,7 @@
       document.getElementById('daysBox').innerHTML = '';
       (j.days || []).forEach(d => {
         addDayBox();
-        const mb = document.querySelectorAll('#daysBox .day-box').slice(-1)[0].querySelector('.meals');
+        const boxes = [...document.querySelectorAll('#daysBox .day-box')]; const mb = boxes[boxes.length - 1].querySelector('.meals');
         (d.meals || []).forEach(m => addMealRow(mb, { meal_type: m.type, recipe_id: m.recipe_id, title: m.title, portion: (m.kcal ? m.kcal + ' کالری' : '') + (m.note ? ' — ' + m.note : '') }));
       });
       const notes = [];
