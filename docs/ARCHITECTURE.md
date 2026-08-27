@@ -60,4 +60,9 @@ Supabase (DB/Auth/Storage) • Vercel (هاست/serverless) • GitHub Actions (
 - Grounding سبک: لیست کوتاه رسپی‌های واقعی از rpc/match_recipes به عنوان context؛ RAG کامل بعداً.
 - پروفایل تغذیه: جدول جدا nutrition_profiles (RLS: کاربر فقط خودش؛ ادمین فقط خواندن)؛ فقط با include_profile به مدل داده می‌شه.
 - امنیت: اعتبارسنجی طول پیام، sanitize آرایه‌ها/رشته‌ها، عدم افشای secret در خطاها، ثبت مصرف فقط پس از پاسخ موفق.
-
+## ۱۳. برنامه هوشمند (فاز ۳.۳)
+- صفحه mealplan.html + mealplan.js؛ endpoint: /api/mealplan (POST تولید/ذخیره، GET لیست، DELETE حذف — همگی مالکیت کاربر).
+- تولید: کاتالوگ رسپی واقعی (match_recipes در صورت داشتن مواد، وگرنه ۶۰ رسپی) → مدل فقط JSON با slugهای مجاز → اعتبارسنجی و تکمیل سروری.
+- کووتا: همان جدول ai_usage و همان سقف‌ها؛ هر تولید برنامه = یک درخواست AI.
+- ذخیره: جدول meal_plans (jsonb days) با RLS self-only.
+- /api/ai و پروفایل و بقیه اجزا دست‌نخورده‌اند.
