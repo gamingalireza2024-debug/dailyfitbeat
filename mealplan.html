@@ -20,42 +20,48 @@ html,body{overflow-x:hidden}
 #mpGo{margin-top:14px;width:100%}
 .chip-usage{display:block;text-align:center;background:#e8f4e9;color:#2d6a35;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800;margin:10px auto 0;width:max-content;max-width:100%}
 .day-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06)}
-.day-card h4{display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px}
+.day-card h4{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;flex-wrap:wrap;gap:6px}
+.day-macros{font-size:11px;color:#2d6a35;background:#e8f4e9;border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:8px}
 .meal-line{display:flex;gap:8px;align-items:baseline;padding:8px 0;border-top:1px dashed #e5efe5;font-size:13px;flex-wrap:wrap}
-.meal-line b{color:#2d6a35;min-width:64px}
+.meal-line b{color:#2d6a35;min-width:88px}
 .meal-line a{color:#1e2b1c;font-weight:700;text-decoration:none}
 .meal-line small{color:#77807a}
 .mp-empty{color:#98a298;text-align:center;font-size:12px;padding:14px}
-.hist-item{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#fff;border-radius:14px;padding:10px 14px;margin:8px 0;box-shadow:0 3px 10px rgba(0,0,0,.05);font-size:12px}
+.info-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06);font-size:12.5px;line-height:2}
+.info-card h4{font-size:14px;margin-bottom:8px}
+.info-card li{list-style:none;padding:2px 0}
 @media(max-width:600px){.mp-row{flex-direction:column}.mp-row label{width:100%;justify-content:center}}
 </style>
 </head>
 <body data-page="mealplan">
 <header id="hdr"></header>
 <section><div class="container mp-wrap">
-  <div class="mp-hero"><h1>برنامه غذایی هوشمند</h1><p>از رسپی‌های واقعی DailyFitBeat، متناسب با هدف و پروفایل تو.</p></div>
+  <div class="mp-hero"><h1>برنامه غذایی هوشمند</h1><p>کاملاً شخصی، از رسپی‌های واقعی DailyFitBeat.</p></div>
   <div class="mp-box">
     <div class="mp-row">
       <select id="mpDays"><option value="1">۱ روز</option><option value="3">۳ روز</option><option value="7" selected>۷ روز</option></select>
       <label><input type="checkbox" id="mB" checked> صبحانه</label>
+      <label><input type="checkbox" id="mSA" checked> میان‌وعده صبح</label>
       <label><input type="checkbox" id="mL" checked> ناهار</label>
-      <label><input type="checkbox" id="mS"> میان‌وعده</label>
+      <label><input type="checkbox" id="mSP" checked> میان‌وعده عصر</label>
       <label><input type="checkbox" id="mD" checked> شام</label>
     </div>
     <div class="mp-row" style="margin-top:10px">
       <input id="mpIng" placeholder="مواد یخچالت (اختیاری): مرغ، قارچ، نان…" style="flex:1;min-width:220px">
-      <label><input type="checkbox" id="mpProf"> استفاده از پروفایل تغذیه من</label>
-      <label><input type="checkbox" id="mpSave" checked> ذخیره در سابقه من</label>
+      <label><input type="checkbox" id="mpProf" checked> استفاده از پروفایل تغذیه من</label>
     </div>
     <button class="btn" id="mpGo">✨ ساخت برنامه</button>
     <span class="chip-usage" id="mpUsage">…</span>
   </div>
   <div id="mpOut"></div>
-  <div class="mp-box"><h3 style="font-size:14px;margin-bottom:8px">سابقه برنامه‌های من</h3><div id="mpHist"></div></div>
 </div></section>
+
+<div id="pdfDoc" style="position:fixed;inset-inline-start:-2000px;top:0;width:794px;background:#fff"></div>
 <footer id="ftr"></footer>
 <script src="site.js"></script>
 <script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="mealplan.js"></script>
 </body>
 </html>
