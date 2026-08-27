@@ -4,7 +4,7 @@ const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const h = { apikey: ANON, Authorization: "Bearer " + ANON };
 const svc = { apikey: ANON, Authorization: "Bearer " + SERVICE };
 const ALLOWED_STATUSES = ["new","pending","payment_submitted","under_review","paid","processing","delivered","sent","rejected","cancelled","refunded"];
-
+import { generatePlan as pbGenerate } from "../lib/planbuilder.js";
 async function sendTelegram(text) {
   const TG = process.env.TG_TOKEN, CH = process.env.TG_CHAT;
   if (!TG || !CH) return false;
@@ -489,7 +489,21 @@ export default async function handler(req, res) {
     await audit(user.email, "DIET_DELETE", "diet_plan", id, {});
     res.status(200).json({ ok: true }); return;
   }
-
+  if (t === "admin_mealgen" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const b = req.body || {};
+    if (!b.uid) { res.status(400).json({ error: "uid required" }); return; }
+    let profile = null;
+    if (b.use_profile) {
+      const np = await sbGet("/rest/v1/nutrition_profiles?id=eq." + b.uid + "&select=*");
+      profile = (Array.isArray(np) && np[0]) || null;
+    }
+    profile = Object.assign({}, profile || {}, b.overrides || {});
+    const r = await pbGenerate({ days: b.days, meals: b.meals, profile, have: b.have, forbidden: b.forbidden });
+    if (r.error) { res.status(r.status || 502).json({ error: r.error }); return; }
+    res.status(200).json({ days: r.days, activity: r.activity, constraints: r.constraints }); return;
+  }
   if (t === "admin_stats") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
