@@ -17,6 +17,7 @@ html,body{overflow-x:hidden}
 .ai-top{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:10px 0}
 .chip-usage{background:#e8f4e9;color:#2d6a35;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:800}
 .ai-tog{font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center;background:#fff;border-radius:999px;padding:7px 14px;box-shadow:0 3px 10px rgba(0,0,0,.06);cursor:pointer}
+.ai-tog input{accent-color:#2d6a35;width:15px;height:15px;cursor:pointer}
 .btn-ghost-sm{border:0;background:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.06)}
 #chat{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:14px;background:rgba(255,255,255,.65);backdrop-filter:blur(8px);border-radius:22px;box-shadow:0 8px 26px rgba(30,43,28,.08);min-height:300px}
 .bub{max-width:82%;padding:12px 16px;border-radius:18px;font-size:13.5px;line-height:2;white-space:pre-wrap;word-break:break-word}
@@ -35,7 +36,6 @@ html,body{overflow-x:hidden}
 #msg:focus{outline:2px solid #2d6a35;border-color:#2d6a35}
 #send{border:0;background:#2d6a35;color:#fff;border-radius:16px;padding:0 22px;font:inherit;font-weight:800;cursor:pointer}
 #send:disabled{opacity:.5;cursor:default}
-/* مودال اختصاصی — تحت تأثیر CSS سراسری modal نیست */
 .aimodal{position:fixed;inset:0;background:rgba(20,30,20,.45);display:none;align-items:center;justify-content:center;z-index:80;padding:14px}
 .aimodal.open{display:flex}
 .aimodal-box{background:#fff;border-radius:22px;padding:22px;max-width:560px;width:100%;max-height:86dvh;overflow:auto}
@@ -44,6 +44,9 @@ html,body{overflow-x:hidden}
 .pf-grid label{font-size:11px;font-weight:700;color:#557;display:block;margin-bottom:3px}
 .pf-grid input,.pf-grid select{width:100%;padding:9px;border-radius:10px;border:1px solid #ccc;font:inherit;font-size:13px}
 .pf-full{grid-column:1/-1}
+.pf-msg{display:none;border-radius:12px;padding:10px 14px;font-size:12px;margin-top:10px}
+.pf-msg.ok{display:block;background:#e8f4e9;color:#2d6a35}
+.pf-msg.err{display:block;background:#fdeaea;color:#c22}
 @media(max-width:600px){.pf-grid{grid-template-columns:1fr}.bub{max-width:92%}.ai-wrap{padding:10px}}
 </style>
 </head>
@@ -56,7 +59,7 @@ html,body{overflow-x:hidden}
     <p>بگو چی داری، چی می‌خوای یا امروز چه هدفی داری.</p>
   </div>
   <div class="ai-top">
-    <span class="chip-usage" id="usageChip">…</span>
+    <span class="chip-usage" id="usageChip">در حال دریافت سهمیه…</span>
     <label class="ai-tog"><input type="checkbox" id="useProf"> استفاده از پروفایل تغذیه من</label>
     <button class="btn-ghost-sm" id="profBtn">پروفایل تغذیه</button>
   </div>
@@ -78,17 +81,18 @@ html,body{overflow-x:hidden}
   <div class="pf-grid">
     <div><label>هدف</label><select id="pfGoal"><option value="">—</option><option value="کاهش وزن">کاهش وزن</option><option value="افزایش وزن">افزایش وزن</option><option value="حفظ وزن">حفظ وزن</option><option value="تغذیه سالم">تغذیه سالم</option></select></div>
     <div><label>سطح فعالیت</label><select id="pfAct"><option value="">—</option><option value="sedentary">کم‌تحرک</option><option value="light">سبک</option><option value="moderate">متوسط</option><option value="active">فعال</option></select></div>
-    <div><label>قد (سانتی‌متر)</label><input id="pfH" type="number"></div>
-    <div><label>وزن (کیلوگرم)</label><input id="pfW" type="number"></div>
-    <div><label>کالری هدف</label><input id="pfKcal" type="number"></div>
-    <div><label>پروتئین (g)</label><input id="pfPro" type="number"></div>
-    <div><label>کربوهیدرات (g)</label><input id="pfCarb" type="number"></div>
-    <div><label>چربی (g)</label><input id="pfFat" type="number"></div>
+    <div><label>قد (سانتی‌متر)</label><input id="pfH" type="text" inputmode="numeric"></div>
+    <div><label>وزن (کیلوگرم)</label><input id="pfW" type="text" inputmode="numeric"></div>
+    <div><label>کالری هدف</label><input id="pfKcal" type="text" inputmode="numeric"></div>
+    <div><label>پروتئین (g)</label><input id="pfPro" type="text" inputmode="numeric"></div>
+    <div><label>کربوهیدرات (g)</label><input id="pfCarb" type="text" inputmode="numeric"></div>
+    <div><label>چربی (g)</label><input id="pfFat" type="text" inputmode="numeric"></div>
     <div class="pf-full"><label>غذاهای مورد علاقه (با ویرگول)</label><input id="pfLike"></div>
     <div class="pf-full"><label>غذاهای نامطلوب (با ویرگول)</label><input id="pfDislike"></div>
     <div class="pf-full"><label>حساسیت‌ها (با ویرگول)</label><input id="pfAllergy"></div>
     <div class="pf-full"><label>محدودیت غذایی (با ویرگول؛ مثلاً گیاهخواری، بدون گلوتن)</label><input id="pfRestr"></div>
   </div>
+  <div id="pfMsg" class="pf-msg"></div>
   <div style="display:flex;gap:8px;margin-top:16px">
     <button class="btn" id="pfSave" style="flex:1">ذخیره پروفایل</button>
     <button class="btn ghost" id="pfClose" style="flex:1">بستن</button>
