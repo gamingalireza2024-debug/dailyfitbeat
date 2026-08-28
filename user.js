@@ -75,7 +75,7 @@
 
     var name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || (user.email || '').split('@')[0];
     var ava = $('uAva'); if (ava) ava.textContent = String(name || 'D').charAt(0).toUpperCase();
-    var wel = $('uWelcome'); if (wel) wel.textContent = 'سلام ' + name + '، امروز هم به قدم به سبک زندگی سالم نزدیک‌تر.';
+    var wel = $('uWelcome'); if (wel) wel.textContent = 'سلام ' + name + '، خوش آمدی.';
 
     await safe('profile', async function () {
       var d = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
@@ -120,15 +120,28 @@
       if (vs) vs.innerHTML = '<div class="free"><h4>پلان رایگان</h4><ul><li>مشاهده همه رسپی‌ها</li><li>برنامه غذایی پایه (پلنر)</li><li>یخچال‌یاب (Ingredient Finder)</li><li>ذخیره تا ۱۰ رسپی</li><li>۵ پاسخ دستیار AI در ماه</li></ul></div><div class="pro"><h4>PRO</h4><ul><li>ذخیره نامحدود رسپی</li><li>لیست خرید هوشمند</li><li>برنامه غذایی اختصاصی از ادمین</li><li>PDF حرفه‌ای رژیم</li><li>۱۰۰ پاسخ دستیار AI در ماه</li></ul>' + (ent.pro ? '' : '<a class="btn" href="pro.html" style="margin-top:12px">ارتقا به PRO</a>') + '</div>';
     });
 
+    await safe('ai usage', async function () {
+      var el = $('uAi');
+      if (!el) return;
+      var t = await tok();
+      if (!t) { el.innerHTML = '<div class="u-empty">نیاز به ورود</div>'; return; }
+      var r = await fetch('/api/ai', { headers: { 'X-Supabase-Auth': t, Authorization: 'Bearer ' + t } });
+      if (!r.ok) { el.innerHTML = '<div class="u-empty">—</div>'; return; }
+      var j = await r.json();
+      el.innerHTML = '<div class="big">' + faN(j.used) + ' از ' + faN(j.limit) + '</div><p style="font-size:12px;color:#667;margin-top:6px">پاسخ ' + (j.pro ? 'PRO' : 'رایگان') + ' این ماه استفاده شده</p>';
+    });
+
     await safe('products', function () {
       var el = $('uProducts');
       if (!el) return;
       var prods = ent.products || [];
       el.innerHTML = prods.length ? prods.map(function (p) {
         var fp = (p.products && p.products.file_path) || p.file_path || '';
-        return '<div><b>' + esc(p.products ? p.products.title_fa : (p.title_fa || 'محصول')) + '</b><br><small>خرید: ' + faDate(p.granted_at) + (p.expires_at ? ' — تا ' + faDate(p.expires_at) : '') + '</small><br><a class="dl-btn" data-e="' + esc(p.id) + '" data-path="' + esc(fp) + '" href="#">دانلود</a></div>';
+        return '<div class="u-item"><b>' + esc(p.products ? p.products.title_fa : (p.title_fa || 'محصول')) + '</b><br><small>خرید: ' + faDate(p.granted_at) + (p.expires_at ? ' — تا ' + faDate(p.expires_at) : '') + '</small><br><a class="dl-btn" data-e="' + esc(p.id) + '" data-path="' + esc(fp) + '" href="#">دانلود</a></div>';
       }).join('') : '<div class="u-empty">هنوز محصولی نخریدی — <a href="market.html">فیت مارکت</a></div>';
       el.querySelectorAll('.dl-btn').forEach(function (a) {
+        if (a.dataset.boundDl) return;
+        a.dataset.boundDl = '1';
         a.onclick = async function (e) {
           e.preventDefault();
           var ok = false;
@@ -149,9 +162,11 @@
       var diets = r.ok ? await r.json() : [];
       if (!Array.isArray(diets)) diets = [];
       el.innerHTML = diets.length ? diets.map(function (d) {
-        return '<div><b>' + esc(d.title || 'برنامه غذایی') + '</b> — ' + esc(d.status === 'published' ? 'منتشر شده' : 'پیش‌نویس') + '<br><small>هدف: ' + esc(d.goal || '—') + ' | کالری: ' + faN(d.kcal_target || 0) + '</small><br>' + (d.pdf_path ? '<a class="dl-btn dl-pdf" data-d="' + esc(d.id) + '" data-path="' + esc(d.pdf_path) + '" href="#">دانلود PDF</a>' : '<small>در انتظار PDF</small>') + '</div>';
+        return '<div class="u-item"><b>' + esc(d.title || 'برنامه غذایی') + '</b> — ' + esc(d.status === 'published' ? 'منتشر شده' : 'پیش‌نویس') + '<br><small>هدف: ' + esc(d.goal || '—') + ' | کالری: ' + faN(d.kcal_target || 0) + '</small><br>' + (d.pdf_path ? '<a class="dl-btn dl-pdf" data-d="' + esc(d.id) + '" data-path="' + esc(d.pdf_path) + '" href="#">دانلود PDF</a>' : '<small>در انتظار PDF</small>') + '</div>';
       }).join('') : '<div class="u-empty">هنوز برنامه غذایی نداری. با PRO، ادمین برات برنامه اختصاصی می‌سازد.</div>';
       el.querySelectorAll('.dl-pdf').forEach(function (a) {
+        if (a.dataset.boundPdf) return;
+        a.dataset.boundPdf = '1';
         a.onclick = function (e) {
           e.preventDefault();
           openPdf(['/api/dietpdf?id=' + encodeURIComponent(a.dataset.d), '/api/db?t=file_url&path=' + encodeURIComponent(a.dataset.path)]);
@@ -166,7 +181,7 @@
       var o = r.ok ? await r.json() : [];
       if (!Array.isArray(o)) o = [];
       el.innerHTML = o.length ? o.map(function (x) {
-        return '<div>#' + esc(x.id) + ' — ' + esc(x.product || 'سفارش') + ' <small>(' + esc(x.status || '') + ')</small> <small>' + faDate(x.created_at) + '</small></div>';
+        return '<div class="u-item">#' + esc(x.id) + ' — ' + esc(x.product || 'سفارش') + ' <small>(' + esc(x.status || '') + ')</small> <small>' + faDate(x.created_at) + '</small></div>';
       }).join('') : '<div class="u-empty">هنوز سفارشی نداری</div>';
     });
 
@@ -180,7 +195,7 @@
         var all = await (await fetch('/api/db?t=all')).json();
         el.innerHTML = f.map(function (x) {
           var rec = (Array.isArray(all) ? all : []).find(function (a) { return a.slug === x.recipe_slug; });
-          return rec ? '<div><a href="recipe.html?slug=' + esc(rec.slug) + '">' + esc(rec.name_fa) + '</a></div>' : '';
+          return rec ? '<div class="u-item"><a href="recipe.html?slug=' + esc(rec.slug) + '">' + esc(rec.name_fa) + '</a></div>' : '';
         }).join('') || '<div class="u-empty">هنوز رسپی ذخیره نکردی</div>';
       } else el.innerHTML = '<div class="u-empty">هنوز رسپی ذخیره نکردی</div>';
     });
@@ -192,7 +207,7 @@
       var n = r.ok ? await r.json() : [];
       if (!Array.isArray(n)) n = [];
       el.innerHTML = n.length ? n.map(function (x) {
-        return '<div><b>' + esc(x.title || 'اعلان') + '</b><br><small>' + esc(x.body || '') + '</small><br><small style="color:#98a298">' + faDate(x.created_at) + '</small></div>';
+        return '<div class="u-item"><b>' + esc(x.title || 'اعلان') + '</b><br><small>' + esc(x.body || '') + '</small><br><small style="color:#98a298">' + faDate(x.created_at) + '</small></div>';
       }).join('') : '<div class="u-empty">اعلانی نداری</div>';
     });
 
@@ -205,25 +220,17 @@
         var items = Array.isArray(cur) && cur[0] && cur[0].items ? cur[0].items : [];
         el.innerHTML = '<textarea id="slItems" style="width:100%;height:110px;border-radius:12px;border:1px solid #ccc;padding:10px;font:inherit;font-size:13px" placeholder="هر خط یک قلم خرید...">' + esc((items || []).join('\n')) + '</textarea><button class="btn small" id="slSave" style="margin-top:8px">ذخیره لیست</button>';
         var sv2 = $('slSave');
-        if (sv2) sv2.onclick = async function () {
-          var arr = $('slItems').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-          await api('save_list', { method: 'POST', body: JSON.stringify({ items: arr }) });
-          alert('ذخیره شد');
-        };
+        if (sv2 && !sv2.dataset.bound) {
+          sv2.dataset.bound = '1';
+          sv2.onclick = async function () {
+            var arr = $('slItems').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+            await api('save_list', { method: 'POST', body: JSON.stringify({ items: arr }) });
+            alert('ذخیره شد');
+          };
+        }
       } else {
         el.innerHTML = '<div class="u-empty">لیست خرید هوشمند مخصوص PRO است.<br><a class="btn small" href="pro.html" style="margin-top:8px">ارتقا به PRO</a></div>';
       }
-    });
-
-    await safe('ai usage', async function () {
-      var el = $('uAi');
-      if (!el) return;
-      var t = await tok();
-      if (!t) { el.textContent = '—'; return; }
-      var r = await fetch('/api/ai', { headers: { 'X-Supabase-Auth': t, Authorization: 'Bearer ' + t } });
-      if (!r.ok) { el.textContent = '—'; return; }
-      var j = await r.json();
-      el.innerHTML = '<div class="big" style="font-size:16px">' + faN(j.used) + ' از ' + faN(j.limit) + '</div><p style="font-size:12px;color:#667;margin-top:6px">پاسخ ' + (j.pro ? 'PRO' : 'رایگان') + ' این ماه استفاده شده</p>';
     });
   }
 
