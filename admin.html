@@ -51,20 +51,20 @@
 </head>
 <body data-page="admin">
 <header id="hdr"></header>
-<div class="page-head"><div class="container"><h1>👑 پنل مدیریت</h1><p id="adminStat">در حال بررسی دسترسی...</p></div></div>
+<div class="page-head"><div class="container"><h1>پنل مدیریت</h1><p id="adminStat">در حال بررسی دسترسی...</p></div></div>
 
 <section id="adminBody" style="display:none"><div class="container admin-layout">
 <aside class="aside">
-  <button class="on" data-t="dash">📊 داشبورد</button>
-  <button data-t="orders">📦 سفارش‌ها</button>
-  <button data-t="payments">💳 پرداخت‌ها</button>
-  <button data-t="recipes">🍳 رسپی‌ها</button>
-  <button data-t="prods">🛍️ محصولات</button>
-  <button data-t="plans">💎 پلان‌های PRO</button>
-  <button data-t="users">👥 کاربران</button>
-  <button data-t="coupons">🎟️ کوپن‌ها</button>
-  <button data-t="diet">🥗 برنامه‌های غذایی</button>
-  <button data-t="audit">🧾 گزارش رویدادها</button>
+  <button class="on" data-t="dash">داشبورد</button>
+  <button data-t="orders">سفارش‌ها</button>
+  <button data-t="payments">پرداخت‌ها</button>
+  <button data-t="recipes">رسپی‌ها</button>
+  <button data-t="prods">محصولات</button>
+  <button data-t="plans">پلان‌های PRO</button>
+  <button data-t="users">کاربران</button>
+  <button data-t="coupons">کوپن‌ها</button>
+  <button data-t="diet">برنامه‌های غذایی</button>
+  <button data-t="audit">گزارش رویدادها</button>
 </aside>
 <main style="min-width:0">
   <div class="apane" id="pane-dash" style="display:block">
@@ -74,7 +74,7 @@
   </div>
 
   <div class="apane" id="pane-orders">
-    <div class="add-form"><button class="btn" id="csvBtn">📥 خروجی اکسل</button>
+    <div class="add-form"><button class="btn" id="csvBtn">خروجی اکسل</button>
       <select id="filterSt"><option value="all">همه</option><option value="new">جدید</option><option value="pending">در انتظار</option><option value="payment_submitted">واریز ثبت شده</option><option value="paid">پرداخت شده</option><option value="delivered">تحویل شده</option><option value="sent">ارسال شده</option><option value="rejected">رد شده</option><option value="cancelled">لغو شده</option></select>
     </div>
     <table class="admin-tbl"><thead><tr><th>کد</th><th>تاریخ</th><th>نام</th><th>موبایل</th><th>محصول</th><th>مبلغ</th><th>روش</th><th>وضعیت</th><th>تغییر وضعیت</th><th>حذف</th></tr></thead><tbody id="ordersBody"></tbody></table>
@@ -87,7 +87,7 @@
   </div>
 
   <div class="apane" id="pane-recipes">
-    <button class="btn" id="rNew">➕ رسپی جدید</button>
+    <button class="btn" id="rNew">رسپی جدید</button>
     <div id="recForm" class="rec-form" style="display:none">
       <input id="rSlug" placeholder="slug انگلیسی"><input id="rNameFa" placeholder="نام فارسی"><input id="rNameEn" placeholder="نام انگلیسی">
       <select id="rCat"><option value="iranian">ایرانی</option><option value="main">غذای اصلی</option><option value="salad">سالاد</option><option value="sandwich">ساندویچ</option><option value="breakfast">صبحانه</option><option value="soup">سوپ</option></select>
@@ -99,7 +99,7 @@
       <textarea id="rIngs" placeholder="مواد (نام:مقدار هر خط)"></textarea>
       <textarea id="rSteps" placeholder="مراحل (هر خط)"></textarea>
       <textarea id="rTips" placeholder="نکات (هر خط)"></textarea>
-      <button class="btn full" id="rSave">💾 ذخیره رسپی</button>
+      <button class="btn full" id="rSave">ذخیره رسپی</button>
     </div>
     <table class="admin-tbl"><thead><tr><th>رسپی</th><th>دسته</th><th>کشور</th><th>کالری</th><th>ویرایش</th><th>حذف</th></tr></thead><tbody id="recBody"></tbody></table>
   </div>
@@ -110,7 +110,7 @@
       <input id="aTitle" placeholder="نام محصول"><input id="aDesc" placeholder="توضیح"><input id="aPrice" type="text" placeholder="قیمت (ریال)"><input id="aOld" type="text" placeholder="قیمت قدیم"><input id="aOff" type="number" placeholder="تخفیف٪">
       <select id="aType"><option value="DIGITAL_PRODUCT">محصول دیجیتال</option><option value="SERVICE">خدمت</option><option value="SUBSCRIPTION">اشتراک</option><option value="BUNDLE">باندل</option></select>
       <input id="aDays" type="number" placeholder="مدت دسترسی(روز)"><input id="aImg" class="imgin" placeholder="تصویر">
-      <span><input type="file" id="aFile" accept=".pdf,.zip,.rar,.jpg,.jpeg,.png,.webp,.mp4,.mp3"><span class="hint">PDF/ZIP/RAR/JPG/PNG/WEBP/MP4/MP3 — تا ۱MB</span></span>
+      <span><input type="file" id="aFile" accept=".pdf,.zip,.rar,.jpg,.jpeg,.png,.webp,.mp4,.mp3"><span class="hint">PDF/ZIP/RAR/JPG/PNG/WEBP/MP4/MP3 — تا ۱۵MB</span></span>
       <button class="btn" id="aAdd">افزودن</button>
     </div>
   </div>
@@ -136,7 +136,7 @@
     <div class="add-form">
       <input id="dq" placeholder="ایمیل کاربر را بنویس"><button class="btn" id="dqBtn">پیدا کن</button>
       <label>کاربر انتخاب‌شده: <select id="duPick"></select></label>
-      <button class="btn" id="dNew">➕ برنامه جدید</button>
+      <button class="btn" id="dNew">برنامه جدید</button>
     </div>
     <div id="dietList"></div>
     <div id="dietForm" style="display:none" class="rec-form">
@@ -147,9 +147,9 @@
       <textarea id="dTips" class="full" placeholder="نکات مهم شخصی‌سازی‌شده"></textarea>
       <textarea id="dAct" class="full" placeholder="فعالیت بدنی پیشنهادی"></textarea>
       <div id="daysBox" class="full"></div>
-      <button class="btn" id="dAddDay">➕ روز جدید</button>
-      <button class="btn full" id="dSave">💾 ذخیره</button>
-      <button class="warn-btn full" id="dPdf">📄 ساخت PDF و انتشار</button>
+      <button class="btn" id="dAddDay">روز جدید</button>
+      <button class="btn full" id="dSave">ذخیره</button>
+      <button class="warn-btn full" id="dPdf">ساخت PDF و انتشار</button>
     </div>
   </div>
 
