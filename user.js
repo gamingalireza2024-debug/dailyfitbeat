@@ -24,11 +24,26 @@
     var s = await getSessionSafe();
     return s && s.access_token ? s.access_token : null;
   }
-  async function api(t, opts) {
-    var token = await tok();
+  async function raw(url, opts) {
+    var t = await tok();
     var headers = { 'Content-Type': 'application/json' };
-    if (token) { headers.Authorization = 'Bearer ' + token; headers['X-Supabase-Auth'] = token; }
-    return fetch('/api/db?t=' + t, Object.assign({ headers: headers }, opts || {}));
+    if (t) { headers.Authorization = 'Bearer ' + t; headers['X-Supabase-Auth'] = t; }
+    return fetch(url, Object.assign({ headers: headers }, opts || {}));
+  }
+  async function api(t, opts) { return raw('/api/db?t=' + t, opts); }
+
+  async function openPdf(urls) {
+    for (var i = 0; i < urls.length; i++) {
+      if (!urls[i]) continue;
+      try {
+        var r = await raw(urls[i]);
+        var j = {};
+        try { j = await r.json(); } catch (e) {}
+        if (r.ok && j.url) { window.open(j.url, '_blank'); return true; }
+      } catch (e) {}
+    }
+    alert('خطا در دانلود PDF. اگر مشکل ادامه داشت، پشتیبانی اطلاع بده.');
+    return false;
   }
 
   function showLogin() {
@@ -48,7 +63,8 @@
       if (authReady) return null;
       await new Promise(function (r) { setTimeout(r, 150); });
     }
-    return (await getSessionSafe()) ? (await getSessionSafe()).user : null;
+    var s2 = await getSessionSafe();
+    return s2 ? s2.user : null;
   }
 
   async function main(user) {
@@ -109,15 +125,19 @@
       if (!el) return;
       var prods = ent.products || [];
       el.innerHTML = prods.length ? prods.map(function (p) {
-        return '<div><b>' + esc(p.products ? p.products.title_fa : (p.title_fa || 'محصول')) + '</b><br><small>خرید: ' + faDate(p.granted_at) + (p.expires_at ? ' — تا ' + faDate(p.expires_at) : '') + '</small><br><a class="dl-btn" data-e="' + esc(p.id) + '" href="#">دانلود</a></div>';
+        var fp = (p.products && p.products.file_path) || p.file_path || '';
+        return '<div><b>' + esc(p.products ? p.products.title_fa : (p.title_fa || 'محصول')) + '</b><br><small>خرید: ' + faDate(p.granted_at) + (p.expires_at ? ' — تا ' + faDate(p.expires_at) : '') + '</small><br><a class="dl-btn" data-e="' + esc(p.id) + '" data-path="' + esc(fp) + '" href="#">دانلود</a></div>';
       }).join('') : '<div class="u-empty">هنوز محصولی نخریدی — <a href="market.html">فیت مارکت</a></div>';
       el.querySelectorAll('.dl-btn').forEach(function (a) {
         a.onclick = async function (e) {
           e.preventDefault();
+          var ok = false;
           var r = await api('download', { method: 'POST', body: JSON.stringify({ entitlement_id: +a.dataset.e }) });
-          var j = await r.json();
-          if (r.ok && j.url) window.open(j.url, '_blank');
-          else alert(j.error === 'entitlement expired' ? 'دسترسی منقضی شده' : 'خطا در دانلود');
+          var j = {};
+          try { j = await r.json(); } catch (err) {}
+          if (r.ok && j.url) { window.open(j.url, '_blank'); ok = true; }
+          if (!ok && a.dataset.path) ok = await openPdf(['/api/db?t=file_url&path=' + encodeURIComponent(a.dataset.path)]);
+          if (!ok) alert(j.error === 'entitlement expired' ? 'دسترسی این محصول منقضی شده.' : 'خطا در دانلود فایل.');
         };
       });
     });
@@ -129,8 +149,14 @@
       var diets = r.ok ? await r.json() : [];
       if (!Array.isArray(diets)) diets = [];
       el.innerHTML = diets.length ? diets.map(function (d) {
-        return '<div><b>' + esc(d.title || 'برنامه غذایی') + '</b> — ' + esc(d.status === 'published' ? 'منتشر شده' : 'پیش‌نویس') + '<br><small>هدف: ' + esc(d.goal || '—') + ' | کالری: ' + faN(d.kcal_target || 0) + '</small><br>' + (d.pdf_path ? '<a class="dl-btn" href="/api/db?t=file_url&path=' + encodeURIComponent(d.pdf_path) + '" target="_blank" rel="noopener">دانلود PDF</a>' : '<small>در انتظار PDF</small>') + '</div>';
+        return '<div><b>' + esc(d.title || 'برنامه غذایی') + '</b> — ' + esc(d.status === 'published' ? 'منتشر شده' : 'پیش‌نویس') + '<br><small>هدف: ' + esc(d.goal || '—') + ' | کالری: ' + faN(d.kcal_target || 0) + '</small><br>' + (d.pdf_path ? '<a class="dl-btn dl-pdf" data-d="' + esc(d.id) + '" data-path="' + esc(d.pdf_path) + '" href="#">دانلود PDF</a>' : '<small>در انتظار PDF</small>') + '</div>';
       }).join('') : '<div class="u-empty">هنوز برنامه غذایی نداری. با PRO، ادمین برات برنامه اختصاصی می‌سازد.</div>';
+      el.querySelectorAll('.dl-pdf').forEach(function (a) {
+        a.onclick = function (e) {
+          e.preventDefault();
+          openPdf(['/api/dietpdf?id=' + encodeURIComponent(a.dataset.d), '/api/db?t=file_url&path=' + encodeURIComponent(a.dataset.path)]);
+        };
+      });
     });
 
     await safe('orders', async function () {
