@@ -1,5 +1,5 @@
 document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="glass.css">');
-document.head.insertAdjacentHTML('beforeend', '<style id="dfb-nav-fix">@media(max-width:900px){#hdr nav{display:none!important}#hdr .burger{display:flex!important}#hdr .mnav{display:none}#hdr .mnav.open{display:flex}}@media(min-width:901px){#hdr .mnav{display:none!important}#hdr .burger{display:none!important}}</style>');
+document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="design.css">');
 var $ = function (s) { return document.querySelector(s); };
 var lang = 'fa';
 try { lang = localStorage.getItem('dfb-lang') || 'fa'; } catch (e) {}
@@ -9,7 +9,7 @@ var SB_URL = "https://hvqchqqlfcjxsohxywbd.supabase.co";
 var ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cWNocXFsZmNqeHNvaHh5d2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTI3ODYsImV4cCI6MjEwMjk4ODc4Nn0.yJursP15upa_-nE8P41l4uUssITBK319dzfaa2tbJ1k";
 var sb = null, USER = null, ADMIN_EMAILS = [];
 var rial = function (n) { return (Number(n) || 0).toLocaleString('fa-IR') + ' ریال'; };
-var FALL = { iranian: 'img/iranian.jpg', salad: 'img/salad.jpg', sandwich: 'img/sandwich.jpg', breakfast: 'img/breakfast.jpg', soup: 'img/soup.jpg', sauce: 'img/soup.jpg', main: 'img/hero.jpg' };
+var FALL = { iranian: 'img/cat-iranian.jpg', salad: 'img/cat-salad.jpg', sandwich: 'img/cat-sandwich.jpg', breakfast: 'img/cat-breakfast.jpg', soup: 'img/cat-soup.jpg', sauce: 'img/cat-soup.jpg', main: 'img/cat-main.jpg' };
 var diff = function (t) { return t <= 20 ? 'آسان' : t <= 60 ? 'متوسط' : 'مفصل'; };
 var ADJ = { 'ایران': 'ایرانی', 'گیلان': 'گیلانی', 'ژاپن': 'ژاپنی', 'تایلند': 'تایلندی', 'اسپانیا': 'اسپانیایی', 'مراکش': 'مراکشی', 'فرانسه': 'فرانسوی', 'ایتالیا': 'ایتالیایی', 'چین': 'چینی', 'هند': 'هندی', 'ترکیه': 'ترکی', 'مکزیک': 'مکزیکی', 'انگلستان': 'انگلیسی', 'یونان': 'یونانی', 'کره': 'کره‌ای', 'لبنان': 'لبنانی' };
 var countryFa = function (reg) { return 'غذای ' + (ADJ[reg] || reg || 'ایرانی'); };
@@ -166,7 +166,7 @@ function hay(r) {
   return [r.name_fa, r.name_en, r.region, countryFa(r.region), r.desc_fa, r.category, (r.tags || []).join(' ')].map(norm).join(' | ');
 }
 function card(r, big) {
-  return '<a class="card' + (big ? ' big' : '') + '" href="recipe.html?slug=' + r.slug + '"><div class="c-img"><img src="' + (r.image || FALL[r.category] || 'img/hero.jpg') + '" loading="lazy" decoding="async"></div><div class="c-body"><h3>' + r.name_fa + '</h3><div class="c-meta"><span>پخت: ' + r.time_min + ' دقیقه</span><span>' + r.kcal + ' کالری</span><span>پروتئین ' + r.protein + 'g</span></div><div class="c-tags"><i>' + diff(r.time_min) + '</i><i>' + countryFa(r.region) + '</i></div></div></a>';
+  return '<a class="card' + (big ? ' big' : '') + '" href="recipe.html?slug=' + r.slug + '"><div class="c-img"><img src="' + (r.image || FALL[r.category] || 'img/cat-main.jpg') + '" loading="lazy" decoding="async"></div><div class="c-body"><h3>' + r.name_fa + '</h3><div class="c-meta"><span>پخت: ' + r.time_min + ' دقیقه</span><span>' + r.kcal + ' کالری</span><span>پروتئین ' + r.protein + 'g</span></div><div class="c-tags"><i>' + diff(r.time_min) + '</i><i>' + countryFa(r.region) + '</i></div></div></a>';
 }
 function initSearch() {
   var inp = document.getElementById('searchInput'), box = document.getElementById('searchRes');
@@ -232,11 +232,11 @@ function renderRecipes() {
 function renderTiles() {
   var el = document.getElementById('tiles');
   if (!el || !ALL.length) return;
-  var cats = [['iranian', 'خورشتی و ایرانی', 'img/iranian.jpg'], ['salad', 'سالادها', 'img/salad.jpg'], ['sandwich', 'ساندویچ‌ها', 'img/sandwich.jpg'], ['breakfast', 'صبحانه‌ها', 'img/breakfast.jpg'], ['soup', 'سوپ‌ها', 'img/soup.jpg']];
+  var cats = [['iranian', 'خورشتی و ایرانی', 'img/cat-iranian.jpg'], ['salad', 'سالادها', 'img/cat-salad.jpg'], ['sandwich', 'ساندویچ‌ها', 'img/cat-sandwich.jpg'], ['breakfast', 'صبحانه‌ها', 'img/cat-breakfast.jpg'], ['soup', 'سوپ‌ها', 'img/cat-soup.jpg']];
   var regions = {};
   ALL.forEach(function (r) { var g = r.region || 'ایران'; regions[g] = (regions[g] || 0) + 1; });
   var regList = Object.keys(regions).filter(function (k) { return k !== 'ایران' && regions[k] > 0; }).sort(function (a, b) { return regions[b] - regions[a]; }).slice(0, 10);
-  var html = '<button class="tile' + (curCat === 'all' && curRegion === 'all' ? ' on' : '') + '" data-cat="all" data-region="all"><img src="img/hero-home.jpg" alt=""><b>همه</b><span>' + ALL.length.toLocaleString('fa-IR') + '</span></button>';
+  var html = '<button class="tile' + (curCat === 'all' && curRegion === 'all' ? ' on' : '') + '" data-cat="all" data-region="all"><img src="img/hero-salmon.jpg" alt=""><b>همه</b><span>' + ALL.length.toLocaleString('fa-IR') + '</span></button>';
   cats.forEach(function (c) {
     var n = ALL.filter(function (r) { return r.category === c[0]; }).length;
     if (!n) return;
@@ -244,7 +244,7 @@ function renderTiles() {
   });
   regList.forEach(function (k) {
     var first = ALL.find(function (r) { return (r.region || '') === k && r.image; });
-    html += '<button class="tile' + (curRegion === k ? ' on' : '') + '" data-cat="all" data-region="' + k + '"><img src="' + (first ? first.image : 'img/hero-home.jpg') + '" alt=""><b>' + (ADJ[k] ? 'غذای ' + ADJ[k] : k) + '</b><span>' + regions[k].toLocaleString('fa-IR') + '</span></button>';
+    html += '<button class="tile' + (curRegion === k ? ' on' : '') + '" data-cat="all" data-region="' + k + '"><img src="' + (first ? first.image : 'img/cat-main.jpg') + '" alt=""><b>' + (ADJ[k] ? 'غذای ' + ADJ[k] : k) + '</b><span>' + regions[k].toLocaleString('fa-IR') + '</span></button>';
   });
   el.innerHTML = html;
   el.querySelectorAll('.tile').forEach(function (t) {
@@ -288,22 +288,22 @@ async function initDetail() {
       favOn = !d.error && !!d.data;
     } catch (e) {}
   }
-  var fatC = (r.fat != null && r.fat > 20) ? '#d33' : '#2d6a35';
-  var sugC = (r.sugar != null && r.sugar > 10) ? '#e9b949' : '#2d6a35';
+  var fatC = (r.fat != null && r.fat > 20) ? '#d33' : 'var(--accent,#f97316)';
+  var sugC = (r.sugar != null && r.sugar > 10) ? '#e9b949' : 'var(--accent,#f97316)';
   var nut = function (val, label, w, color) { return '<div class="nut"><b>' + val + '</b><span>' + label + '</span><i class="nb" style="--w:' + Math.min(100, w) + '%;--c:' + color + '"></i></div>'; };
   var nutritionBars = '<div class="nut-row">' +
-    nut(r.kcal || 0, 'انرژی (کالری)', (r.kcal / 2000) * 100, '#2d6a35') +
-    nut((r.protein || 0) + 'g', 'پروتئین', (r.protein / 50) * 100, '#2d6a35') +
-    (r.carbs != null ? nut(r.carbs + 'g', 'کربوهیدرات', (r.carbs / 100) * 100, '#2d6a35') : '') +
+    nut(r.kcal || 0, 'انرژی (کالری)', (r.kcal / 2000) * 100, 'var(--accent,#f97316)') +
+    nut((r.protein || 0) + 'g', 'پروتئین', (r.protein / 50) * 100, 'var(--accent,#f97316)') +
+    (r.carbs != null ? nut(r.carbs + 'g', 'کربوهیدرات', (r.carbs / 100) * 100, 'var(--accent,#f97316)') : '') +
     (r.fat != null ? nut(r.fat + 'g', 'چربی', (r.fat / 70) * 100, fatC) : '') +
     (r.sugar != null ? nut(r.sugar + 'g', 'قند', (r.sugar / 50) * 100, sugC) : '') +
-    (r.fiber != null ? nut(r.fiber + 'g', 'فیبر', (r.fiber / 30) * 100, '#2d6a35') : '') +
+    (r.fiber != null ? nut(r.fiber + 'g', 'فیبر', (r.fiber / 30) * 100, 'var(--accent,#f97316)') : '') +
     '</div>';
   var stepsHtml = Array.isArray(r.steps) && r.steps.length ? '<div class="steps-section"><h3>مراحل پخت</h3><ol class="steps-list">' + r.steps.map(function (s, i) { return '<li><span class="step-num">' + (i + 1) + '</span><p>' + s + '</p></li>'; }).join('') + '</ol></div>' : '';
   var tipsHtml = Array.isArray(r.tips) && r.tips.length ? '<div class="tips-section"><h3>نکات پخت</h3><ul class="tips-list">' + r.tips.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul></div>' : '';
   var subsHtml = Array.isArray(r.substitutions) && r.substitutions.length ? '<div class="subs-section"><h3>جایگزین‌ها</h3><div class="subs-grid">' + r.substitutions.map(function (s) { return '<div class="sub-card"><b>' + s.from + '</b><span>→</span><b>' + s.to + '</b></div>'; }).join('') + '</div></div>' : '';
-  var videoHtml = r.video_url ? '<div class="video-section"><h3>ویدیوی پخت</h3><a href="' + r.video_url + '" target="_blank" rel="noopener" class="video-card"><div class="video-thumb"><img src="' + (r.image || FALL[r.category] || 'img/hero.jpg') + '" alt="' + r.name_fa + '"><span class="play-btn">▶</span></div><p>تماشای ویدیو در اینستاگرام</p></a></div>' : '';
-  el.innerHTML = '<div class="container rd-wrap"><div class="rd-img"><img src="' + (r.image || FALL[r.category] || 'img/hero.jpg') + '" alt="' + r.name_fa + '" fetchpriority="high" decoding="async"><button id="favBtn" class="heart' + (favOn ? ' on' : '') + '">♥</button></div><div class="rd-info"><span class="rd-region">' + countryFa(r.region) + '</span><h1>' + r.name_fa + '</h1><p class="rd-en">' + (r.name_en || '') + '</p><p class="rd-desc">' + (r.desc_fa || '') + '</p><div class="rd-stats"><div><b>' + r.time_min + '</b><span>زمان پخت (دقیقه)</span></div><div><b>' + diff(r.time_min) + '</b><span>سطح دشواری</span></div></div>' + nutritionBars + '<h3>مواد لازم</h3><ul class="ing-list">' + ings.map(function (i) { return '<li>' + i.fa + '<span>' + i.q + '</span></li>'; }).join('') + '</ul>' + stepsHtml + tipsHtml + subsHtml + videoHtml + '<div class="f-cta"><a class="btn" href="planner.html">افزودن به برنامه</a><a class="btn ghost" href="recipes.html">همه رسپی‌ها</a></div></div></div>';
+  var videoHtml = r.video_url ? '<div class="video-section"><h3>ویدیوی پخت</h3><a href="' + r.video_url + '" target="_blank" rel="noopener" class="video-card"><div class="video-thumb"><img src="' + (r.image || FALL[r.category] || 'img/cat-main.jpg') + '" alt="' + r.name_fa + '"><span class="play-btn">▶</span></div><p>تماشای ویدیو در اینستاگرام</p></a></div>' : '';
+  el.innerHTML = '<div class="container rd-wrap"><div class="rd-img"><img src="' + (r.image || FALL[r.category] || 'img/cat-main.jpg') + '" alt="' + r.name_fa + '" fetchpriority="high" decoding="async"><button id="favBtn" class="heart' + (favOn ? ' on' : '') + '">♥</button></div><div class="rd-info"><span class="rd-region">' + countryFa(r.region) + '</span><h1>' + r.name_fa + '</h1><p class="rd-en">' + (r.name_en || '') + '</p><p class="rd-desc">' + (r.desc_fa || '') + '</p><div class="rd-stats"><div><b>' + r.time_min + '</b><span>زمان پخت (دقیقه)</span></div><div><b>' + diff(r.time_min) + '</b><span>سطح دشواری</span></div></div>' + nutritionBars + '<h3>مواد لازم</h3><ul class="ing-list">' + ings.map(function (i) { return '<li>' + i.fa + '<span>' + i.q + '</span></li>'; }).join('') + '</ul>' + stepsHtml + tipsHtml + subsHtml + videoHtml + '<div class="f-cta"><a class="btn" href="planner.html">افزودن به برنامه</a><a class="btn ghost" href="recipes.html">همه رسپی‌ها</a></div></div></div>';
   document.getElementById('favBtn').onclick = async function () {
     if (!USER) { alert('برای ذخیره علاقه‌مندی، اول با گوگل وارد شو'); doLogin(); return; }
     if (favOn) {
@@ -342,7 +342,7 @@ async function initMarket() {
   var data = await (await fetch('/api/db?t=products')).json();
   if (!Array.isArray(data)) return;
   grid.innerHTML = data.map(function (p) {
-    return '<div class="pcard"><div class="p-img"><img src="' + (p.image || 'img/hero-store.jpg') + '" alt="' + p.title_fa + '"><span class="p-rate">★ ' + Number(p.rating).toLocaleString('fa-IR') + '</span>' + (p.off_percent ? '<span class="p-badge" style="background:#d33">' + Number(p.off_percent).toLocaleString('fa-IR') + '٪ تخفیف</span>' : (p.badge ? '<span class="p-badge">' + p.badge + '</span>' : '')) + '</div><div class="p-body"><h4>' + p.title_fa + '</h4><p>' + (p.desc_fa || '') + '</p><div class="p-price">' + rial(p.price_rial) + (p.old_price_rial ? '<s>' + rial(p.old_price_rial) + '</s>' : '') + '</div><button class="btn p-cart" data-id="' + p.id + '" data-t="' + p.title_fa + '">خرید</button></div></div>';
+    return '<div class="pcard"><div class="p-img"><img src="' + (p.image || 'img/prod-fallback.jpg') + '" alt="' + p.title_fa + '"><span class="p-rate">★ ' + Number(p.rating).toLocaleString('fa-IR') + '</span>' + (p.off_percent ? '<span class="p-badge" style="background:#d33">' + Number(p.off_percent).toLocaleString('fa-IR') + '٪ تخفیف</span>' : (p.badge ? '<span class="p-badge">' + p.badge + '</span>' : '')) + '</div><div class="p-body"><h4>' + p.title_fa + '</h4><p>' + (p.desc_fa || '') + '</p><div class="p-price">' + rial(p.price_rial) + (p.old_price_rial ? '<s>' + rial(p.old_price_rial) + '</s>' : '') + '</div><button class="btn p-cart" data-id="' + p.id + '" data-t="' + p.title_fa + '">خرید</button></div></div>';
   }).join('');
   var sel = document.getElementById('oProduct');
   if (sel) sel.innerHTML = data.map(function (p) { return '<option>' + p.title_fa + '</option>'; }).join('');
