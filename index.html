@@ -11,10 +11,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="design.css">
 <style>
-/* fix active nav pill from old css */
 #hdr nav a.on{background:transparent!important;color:var(--accent)!important;border-bottom:2px solid var(--accent)!important;border-radius:0!important}
-
-/* ---------- HERO FULL-BLEED ---------- */
 .hm-hero{width:100%;margin-top:0}
 .hm-hero-grid{display:grid;grid-template-columns:1fr 1.1fr;min-height:620px;width:100%}
 .hm-hero-txt{display:flex;flex-direction:column;justify-content:center;padding:60px 5vw 60px 40px;background:#fff}
@@ -26,8 +23,8 @@
 .hm-btn{display:inline-block;border-radius:14px;padding:14px 30px;font:inherit;font-size:14px;font-weight:800;text-decoration:none;cursor:pointer;border:0;transition:.2s}
 .hm-btn.solid{background:var(--accent);color:#fff;box-shadow:0 12px 26px rgba(249,115,22,.28)}
 .hm-btn.glass{background:var(--glass);color:var(--ink);border:1px solid var(--glass-br);backdrop-filter:blur(12px);box-shadow:var(--shadow)}
-.hm-hero-img{position:relative;height:100%;min-height:420px}
-.hm-hero-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.hm-hero-img{position:relative;height:100%;min-height:420px;background:#f3f4f6}
+.hm-hero-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 60%;display:block}
 .hm-quick{position:absolute;top:50%;left:26px;transform:translateY(-50%);background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-br);border-radius:18px;box-shadow:var(--shadow);padding:10px;width:210px}
 .hm-quick a{display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:12px;text-decoration:none;color:var(--ink)}
 .hm-quick a:hover{background:rgba(255,255,255,.7)}
@@ -35,8 +32,6 @@
 .hm-quick .qi svg{width:17px;height:17px;stroke:var(--accent)}
 .hm-quick b{display:block;font-size:12.5px;font-weight:800}
 .hm-quick small{display:block;color:var(--ink3);font-size:10.5px;margin-top:2px}
-
-/* ---------- CAROUSEL (Instagram style) ---------- */
 .hm-car{margin:56px 0 10px;position:relative}
 .hm-wrap{max-width:1240px;margin:0 auto;padding:0 20px}
 .hm-car-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
@@ -50,7 +45,7 @@
 .hm-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;scrollbar-width:none}
 .hm-track::-webkit-scrollbar{display:none}
 .hm-post{flex:0 0 250px;scroll-snap-align:start;border-radius:18px;overflow:hidden;position:relative;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);text-decoration:none;color:var(--ink)}
-.hm-post img{width:100%;height:250px;object-fit:cover;display:block}
+.hm-post img.ph{width:100%;height:250px;object-fit:cover;display:block;background:#f3f4f6}
 .hm-post .badge{position:absolute;top:52px;inset-inline-start:10px;background:var(--accent);color:#fff;border-radius:999px;padding:4px 12px;font-size:10.5px;font-weight:700;z-index:2}
 .ig-head{display:flex;gap:8px;align-items:center;padding:10px 12px}
 .ig-ava{width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid var(--accent);flex:0 0 auto;background:#fff}
@@ -60,19 +55,15 @@
 .ig-act svg{width:17px;height:17px;stroke:var(--ink);fill:none;stroke-width:2}
 .ig-act .save{margin-right:auto}
 .hm-post .cap{padding:6px 12px 12px;font-size:12px;font-weight:700;line-height:1.9;color:var(--ink)}
-
-/* ---------- SERVICES ---------- */
 .hm-serv{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:56px 0}
 .hm-serv-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
-.hm-serv-card img{width:100%;height:230px;object-fit:cover;display:block}
+.hm-serv-card img{width:100%;height:230px;object-fit:cover;display:block;background:#f3f4f6}
 .hm-serv-body{padding:22px}
 .hm-serv-body h3{margin:0 0 10px;font-size:17px;font-weight:900}
 .hm-serv-body p{color:var(--ink2);font-size:12.5px;line-height:2;margin:0 0 16px}
 .hm-link{color:var(--accent);font-size:13px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .hm-link svg{width:14px;height:14px;stroke:var(--accent)}
-
-/* ---------- FINDER stuck to footer ---------- */
-.hm-find-sec{margin:0 0 0;padding:0 0 0}
+.hm-find-sec{margin:0;padding:0}
 .hm-find{background:var(--card);border:1px solid var(--line);border-bottom:0;border-radius:var(--r) var(--r) 0 0;box-shadow:none;padding:26px;margin:0}
 .hm-find h3{margin:0 0 6px;font-size:17px;font-weight:900}
 .hm-find p{color:var(--ink2);font-size:12.5px;margin:0 0 16px}
@@ -84,8 +75,6 @@
 #goBtn{background:var(--accent);color:#fff}
 #ingAdd{background:var(--glass);border:1px solid var(--glass-br)!important;color:var(--ink)}
 #results{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:18px}
-
-/* ---------- RESPONSIVE ---------- */
 @media(max-width:1000px){
   .hm-hero-grid{grid-template-columns:1fr;min-height:0}
   .hm-hero-txt{padding:40px 20px 26px;order:2}
@@ -100,7 +89,6 @@
 <body data-page="home">
 <header id="hdr"></header>
 
-<!-- HERO FULL-BLEED -->
 <section class="hm-hero">
   <div class="hm-hero-grid">
     <div class="hm-hero-txt">
@@ -113,7 +101,7 @@
       </div>
     </div>
     <div class="hm-hero-img">
-      <img src="img/hero-salmon.jpg" alt="غذای سالم">
+      <img src="img/hero-salmon.jpg" alt="غذای سالم" onerror="this.onerror=null;this.src='img/svc-diet.jpg';">
       <div class="hm-quick">
         <a href="planner.html"><span class="qi"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M4 10h16M6 10v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><span><b>برنامه غذایی</b><small>متناسب با هدف شما</small></span></a>
         <a href="mealplan.html"><span class="qi"><svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path d="M6 7v10M18 7v10M6 12h12M3 9v6M21 9v6"/></svg></span><span><b>برنامه هوشمند</b><small>تمرین در خانه و باشگاه</small></span></a>
@@ -124,7 +112,6 @@
   </div>
 </section>
 
-<!-- INSTAGRAM CAROUSEL -->
 <section class="hm-car">
   <div class="hm-wrap">
     <div class="hm-car-head">
@@ -140,58 +127,58 @@
     <div class="hm-track" id="carTrack">
 
       <a class="hm-post" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener">
-        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt=""></span><b>dailyfitbeat.ir</b></div>
-        <img src="img/insta-protein.jpg" alt="تمرین"><span class="badge">۵ حرکت</span>
+        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt="" onerror="this.onerror=null;this.src='img/logo.png';"></span><b>dailyfitbeat.ir</b></div>
+        <img class="ph" src="img/insta-protein.jpg" alt="تمرین" onerror="this.onerror=null;this.src='img/insta-workout.jpg';">
+        <span class="badge">۵ حرکت</span>
         <div class="ig-act"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10Z"/></svg><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 1 0-3 6.2L21 19l-.8-2.7A7.9 7.9 0 0 0 21 12Z"/></svg><svg class="save" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></div>
         <div class="cap">برای عضله‌سازی در خانه</div>
       </a>
 
       <a class="hm-post" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener">
-        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt=""></span><b>dailyfitbeat.ir</b></div>
-        <img src="img/insta-salad.jpg" alt="سالاد">
+        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt="" onerror="this.onerror=null;this.src='img/logo.png';"></span><b>dailyfitbeat.ir</b></div>
+        <img class="ph" src="img/insta-salad.jpg" alt="سالاد" onerror="this.onerror=null;this.src='img/hero-salmon.jpg';">
         <div class="ig-act"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10Z"/></svg><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 1 0-3 6.2L21 19l-.8-2.7A7.9 7.9 0 0 0 21 12Z"/></svg><svg class="save" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></div>
         <div class="cap">سالاد کینوا و آووکادو</div>
       </a>
 
       <a class="hm-post" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener">
-        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt=""></span><b>dailyfitbeat.ir</b></div>
-        <img src="img/insta-pancake.jpg" alt="پنکیک">
+        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt="" onerror="this.onerror=null;this.src='img/logo.png';"></span><b>dailyfitbeat.ir</b></div>
+        <img class="ph" src="img/insta-pancake.jpg" alt="پنکیک" onerror="this.onerror=null;this.src='img/cat-breakfast.jpg';">
         <div class="ig-act"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10Z"/></svg><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 1 0-3 6.2L21 19l-.8-2.7A7.9 7.9 0 0 0 21 12Z"/></svg><svg class="save" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></div>
         <div class="cap">پنکیک جو دوسر بدون شکر</div>
       </a>
 
       <a class="hm-post" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener">
-        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt=""></span><b>dailyfitbeat.ir</b></div>
-        <img src="img/insta-smoothie.jpg" alt="اسموتی">
+        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt="" onerror="this.onerror=null;this.src='img/logo.png';"></span><b>dailyfitbeat.ir</b></div>
+        <img class="ph" src="img/insta-smoothie.jpg" alt="اسموتی" onerror="this.onerror=null;this.src='img/cat-soup.jpg';">
         <div class="ig-act"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10Z"/></svg><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 1 0-3 6.2L21 19l-.8-2.7A7.9 7.9 0 0 0 21 12Z"/></svg><svg class="save" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></div>
         <div class="cap">اسموتی سبز انرژی‌زا و سالم</div>
       </a>
 
       <a class="hm-post" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener">
-        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt=""></span><b>dailyfitbeat.ir</b></div>
-        <img src="img/insta-mealprep.jpg" alt="میل‌پرپ">
+        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt="" onerror="this.onerror=null;this.src='img/logo.png';"></span><b>dailyfitbeat.ir</b></div>
+        <img class="ph" src="img/insta-mealprep.jpg" alt="میل‌پرپ" onerror="this.onerror=null;this.src='img/cat-main.jpg';">
         <div class="ig-act"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10Z"/></svg><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 1 0-3 6.2L21 19l-.8-2.7A7.9 7.9 0 0 0 21 12Z"/></svg><svg class="save" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></div>
         <div class="cap">غذای آماده هفته</div>
       </a>
 
       <a class="hm-post" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener">
-        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt=""></span><b>dailyfitbeat.ir</b></div>
-        <img src="img/insta-workout.jpg" alt="تمرین">
+        <div class="ig-head"><span class="ig-ava"><img src="img/favicon.png" alt="" onerror="this.onerror=null;this.src='img/logo.png';"></span><b>dailyfitbeat.ir</b></div>
+        <img class="ph" src="img/insta-workout.jpg" alt="تمرین" onerror="this.onerror=null;this.src='img/insta-protein.jpg';">
         <div class="ig-act"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10Z"/></svg><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 1 0-3 6.2L21 19l-.8-2.7A7.9 7.9 0 0 0 21 12Z"/></svg><svg class="save" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></div>
         <div class="cap">بهترین زمان مصرف پروتئین</div>
       </a>
 
     </div>
-    <div class="hm-dots" style="display:flex;gap:6px;justify-content:center;margin:6px 0 0"><i style="width:7px;height:7px;border-radius:50%;background:#d1d5db"></i><i style="width:7px;height:7px;border-radius:50%;background:#d1d5db"></i><i style="width:7px;height:7px;border-radius:50%;background:#d1d5db"></i><i style="width:7px;height:7px;border-radius:50%;background:#d1d5db"></i><i style="width:18px;height:7px;border-radius:99px;background:var(--accent)"></i></div>
+    <div style="display:flex;gap:6px;justify-content:center;margin:6px 0 0"><i style="width:7px;height:7px;border-radius:50%;background:#d1d5db"></i><i style="width:7px;height:7px;border-radius:50%;background:#d1d5db"></i><i style="width:7px;height:7px;border-radius:50%;background:#d1d5db"></i><i style="width:7px;height:7px;border-radius:50%;background:#d1d5db"></i><i style="width:18px;height:7px;border-radius:99px;background:var(--accent)"></i></div>
   </div>
 </section>
 
-<!-- THREE SERVICES -->
 <section>
   <div class="hm-wrap">
     <div class="hm-serv">
       <div class="hm-serv-card">
-        <img src="img/svc-market.jpg" alt="فیت مارکت">
+        <img src="img/svc-market.jpg" alt="فیت مارکت" onerror="this.onerror=null;this.src='img/prod-fallback.jpg';">
         <div class="hm-serv-body">
           <h3>فیت مارکت</h3>
           <p>تکمیل‌کننده اصل و مواد غذایی سالم با بهترین قیمت.</p>
@@ -199,7 +186,7 @@
         </div>
       </div>
       <div class="hm-serv-card">
-        <img src="img/svc-ai.jpg" alt="دستیار تغذیه AI">
+        <img src="img/svc-ai.jpg" alt="دستیار تغذیه AI" onerror="this.onerror=null;this.src='img/hero-salmon.jpg';">
         <div class="hm-serv-body">
           <h3>دستیار تغذیه AI</h3>
           <p>سوال بپرسید، مواد غذایی پیشنهاد بگیرید و رژیم خود را هوشمند مدیریت کنید.</p>
@@ -207,7 +194,7 @@
         </div>
       </div>
       <div class="hm-serv-card">
-        <img src="img/svc-diet.jpg" alt="برنامه غذایی شخصی">
+        <img src="img/svc-diet.jpg" alt="برنامه غذایی شخصی" onerror="this.onerror=null;this.src='img/cat-main.jpg';">
         <div class="hm-serv-body">
           <h3>برنامه غذایی شخصی</h3>
           <p>برنامه‌های غذایی متنوع و متناسب با هدف، سلیقه و شرایط شما.</p>
@@ -218,7 +205,6 @@
   </div>
 </section>
 
-<!-- FINDER (stuck to footer) -->
 <section class="hm-find-sec">
   <div class="hm-wrap" style="padding-bottom:0">
     <div class="hm-find">
