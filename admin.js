@@ -1,7 +1,8 @@
 (function () {
   if (document.body.dataset.page !== 'admin') return;
   var sb = null, started = false, REC = [];
-  var FA = '۰۱۲۴۵۶۷۸۹';
+  var FA = '۰۱۲۳۴۵۶۷۸۹';
+  var AR = '٠١٢٣٤٥٦٧٨٩';
   var wait = setInterval(function () {
     if (started || !window.DFB || !DFB.sb) return;
     if (DFB.isAdmin()) {
@@ -29,18 +30,26 @@
   function safe(name, fn) {
     return Promise.resolve().then(fn).catch(function (e) { console.error('admin section error (' + name + '):', e); });
   }
-  function normNum(s) {
+  // تبدیل یکجا اعداد فارسی/عربی + حذف جداکننده‌ها؛ بدون هیچ محاسبه اضافه
+  function toNum(s) {
     if (s === '' || s == null) return null;
-    var t = String(s).replace(/[۰-۹]/g, function (x) { return String(FA.indexOf(x)); }).replace(/[,،٬\s]/g, '');
+    var t = String(s)
+      .replace(/[۰-۹]/g, function (x) { return String(FA.indexOf(x)); })
+      .replace(/[٠-٩]/g, function (x) { return String(AR.indexOf(x)); })
+      .replace(/[,،٬\s]/g, '');
     if (t === '') return null;
     var n = Number(t);
     return isNaN(n) ? null : n;
   }
+  function normNum(s) { return toNum(s); }
   function bindMoney(inp) {
     if (!inp || inp.dataset.money) return;
     inp.dataset.money = '1';
     inp.addEventListener('input', function () {
-      var digits = inp.value.replace(/[۰-۹]/g, function (x) { return String(FA.indexOf(x)); }).replace(/\D/g, '');
+      var digits = inp.value
+        .replace(/[۰-۹]/g, function (x) { return String(FA.indexOf(x)); })
+        .replace(/[٠-٩]/g, function (x) { return String(AR.indexOf(x)); })
+        .replace(/\D/g, '');
       inp.value = digits ? Number(digits).toLocaleString('fa-IR') : '';
     });
   }
@@ -245,10 +254,10 @@
     if (!slug || !g('rNameFa').trim()) { alert('slug و نام لازمه'); return; }
     var obj = {
       slug: slug, name_fa: g('rNameFa').trim(), name_en: g('rNameEn').trim() || g('rNameFa').trim(),
-      category: g('rCat'), region: g('rRegion').trim() || 'ایران', time_min: +g('rTime') || 30,
-      kcal: +g('rKcal') || 0, protein: +g('rProtein') || 0,
-      carbs: g('rCarbs') === '' ? null : +g('rCarbs'), fat: g('rFat') === '' ? null : +g('rFat'),
-      fiber: g('rFiber') === '' ? null : +g('rFiber'), sugar: g('rSugar') === '' ? null : +g('rSugar'),
+      category: g('rCat'), region: g('rRegion').trim() || 'ایران', time_min: toNum(g('rTime')) || 30,
+      kcal: toNum(g('rKcal')) || 0, protein: toNum(g('rProtein')) || 0,
+      carbs: toNum(g('rCarbs')), fat: toNum(g('rFat')),
+      fiber: toNum(g('rFiber')), sugar: toNum(g('rSugar')),
       image: g('rImage').trim() || null, video_url: g('rVideo').trim() || null, desc_fa: g('rDesc').trim(),
       tags: g('rTags').split(',').map(function (s) { return s.trim(); }).filter(Boolean),
       keys: g('rKeys').split(',').map(function (s) { return s.trim(); }).filter(Boolean),
@@ -286,8 +295,8 @@
         document.querySelectorAll('#prodBody2 [data-id="' + id + '"][data-f]').forEach(function (i) {
           if (i.dataset.f === 'active') upd.active = i.checked;
           else if (i.dataset.f === 'type') upd.type = i.value;
-          else if (i.dataset.f === 'price_rial' || i.dataset.f === 'old_price_rial') upd[i.dataset.f] = normNum(i.value);
-          else upd[i.dataset.f] = i.value === '' ? null : +i.value;
+          else if (i.dataset.f === 'price_rial' || i.dataset.f === 'old_price_rial') upd[i.dataset.f] = toNum(i.value);
+          else upd[i.dataset.f] = i.value === '' ? null : toNum(i.value);
         });
         var file = document.querySelector('.pFile[data-id="' + id + '"]').files[0];
         if (file) {
@@ -313,12 +322,12 @@
   }
   async function addProd() {
     var t = document.getElementById('aTitle').value.trim();
-    var pr = normNum(document.getElementById('aPrice').value);
+    var pr = toNum(document.getElementById('aPrice').value);
     if (!t || !pr) { alert('نام و قیمت لازمه'); return; }
     var ins = await sb.from('products').insert({
       title_fa: t, desc_fa: document.getElementById('aDesc').value.trim(), price_rial: pr,
-      old_price_rial: normNum(document.getElementById('aOld').value), off_percent: +document.getElementById('aOff').value || 0,
-      rating: 4.8, type: document.getElementById('aType').value, access_days: +document.getElementById('aDays').value || null,
+      old_price_rial: toNum(document.getElementById('aOld').value), off_percent: toNum(document.getElementById('aOff').value) || 0,
+      rating: 4.8, type: document.getElementById('aType').value, access_days: toNum(document.getElementById('aDays').value),
       image: document.getElementById('aImg').value || null
     }).select().single();
     if (ins.error) { alert(ins.error.message); return; }
@@ -353,8 +362,7 @@
         document.querySelectorAll('#plansBody2 [data-id="' + id + '"][data-f]').forEach(function (i) {
           if (i.dataset.f === 'features') upd.features = i.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
           else if (i.dataset.f === 'title_fa' || i.dataset.f === 'period') upd[i.dataset.f] = i.value;
-          else if (i.dataset.f === 'price_rial' || i.dataset.f === 'old_price_rial') upd[i.dataset.f] = normNum(i.value);
-          else upd[i.dataset.f] = i.value === '' ? null : +i.value;
+          else upd[i.dataset.f] = toNum(i.value);
         });
         await sb.from('plans').update(upd).eq('id', id);
         alert('ذخیره شد');
@@ -506,15 +514,16 @@
   }
   async function saveDiet() {
     var dietUid = document.getElementById('duPick').value;
-    if (!dietUid) { alert('اول کاربر رو پیدا و انتخاب کن'); return; }
-    function g(id) { return document.getElementById(id); }
+    if (!dietUid) { alert('خطا: کاربر انتخاب نشده است. اول کاربر را پیدا و انتخاب کن.'); return; }
+    var title = gv('dTitle').trim();
+    if (!title) { alert('خطا: عنوان برنامه خالی است. یک عنوان برای برنامه وارد کن.'); return; }
     var r = await api('admin_diet_save', {
       method: 'POST',
       body: JSON.stringify({
-        id: dietPlanId, user_id: dietUid, title: g('dTitle').value, goal: g('dGoal').value,
-        start_date: g('dStart').value || null, end_date: g('dEnd').value || null, duration_days: g('dDur').value,
-        kcal_target: g('dKcal').value, protein_target: g('dPro').value, carbs_target: g('dCarb').value, fat_target: g('dFat').value,
-        notes: g('dNotes').value,
+        id: dietPlanId, user_id: dietUid, title: title, goal: gv('dGoal'),
+        start_date: gv('dStart') || null, end_date: gv('dEnd') || null, duration_days: toNum(gv('dDur')),
+        kcal_target: toNum(gv('dKcal')), protein_target: toNum(gv('dPro')), carbs_target: toNum(gv('dCarb')), fat_target: toNum(gv('dFat')),
+        notes: gv('dNotes'),
         restrictions_text: (document.getElementById('dRestr') || { value: '' }).value,
         tips_text: (document.getElementById('dTips') || { value: '' }).value,
         activity_text: (document.getElementById('dAct') || { value: '' }).value,
@@ -522,9 +531,9 @@
       })
     });
     var j = await r.json();
-    if (!r.ok) { alert(j.error || 'خطا'); return; }
+    if (!r.ok) { alert(j.error || 'خطا در ذخیره برنامه'); return; }
     dietPlanId = j.id;
-    alert('ذخیره شد');
+    alert('برنامه ذخیره شد');
     loadDietList();
   }
 
@@ -562,12 +571,12 @@
       var r = await api('admin_mealgen', {
         method: 'POST',
         body: JSON.stringify({
-          uid: uid, days: +document.getElementById('sgDays').value, meals: meals,
+          uid: uid, days: toNum(gv('sgDays')) || 7, meals: meals,
           use_profile: document.getElementById('sgProf').checked,
           forbidden: split(gv('sgForbidden')),
           overrides: {
-            calorie_target: +gv('sgKcal') || null, protein_target: +gv('sgPro') || null,
-            carbs_target: +gv('sgCarb') || null, fat_target: +gv('sgFat') || null,
+            calorie_target: toNum(gv('sgKcal')), protein_target: toNum(gv('sgPro')),
+            carbs_target: toNum(gv('sgCarb')), fat_target: toNum(gv('sgFat')),
             activity_level: gv('sgAct') || null, food_preferences: likes.length ? likes : undefined
           }
         })
@@ -590,6 +599,7 @@
           });
         });
       });
+      if (!gv('dTitle').trim()) sv('dTitle', 'برنامه هوشمند ' + (toNum(gv('sgDays')) || 7) + ' روزه');
       sv('dRestr', (j.constraints || []).join('\n'));
       sv('dTips', (j.tips || []).join('\n'));
       sv('dAct', j.activity ? [].concat(j.activity.items || [], [j.activity.note, j.activity.disclaimer]).filter(Boolean).join('\n') : '');
@@ -708,9 +718,9 @@
     document.getElementById('aAdd').onclick = addProd;
     document.getElementById('pAdd').onclick = async function () {
       var t = document.getElementById('pTitle').value.trim();
-      var pr = normNum(document.getElementById('pPrice').value);
+      var pr = toNum(document.getElementById('pPrice').value);
       if (!t || !pr) { alert('نام و قیمت لازمه'); return; }
-      await sb.from('plans').insert({ key: 'plan-' + Date.now(), title_fa: t, period: document.getElementById('pPeriod').value || 'ماهانه', days: +document.getElementById('pDays').value || 30, price_rial: pr, old_price_rial: normNum(document.getElementById('pOld').value), features: [] });
+      await sb.from('plans').insert({ key: 'plan-' + Date.now(), title_fa: t, period: document.getElementById('pPeriod').value || 'ماهانه', days: toNum(document.getElementById('pDays').value) || 30, price_rial: pr, old_price_rial: toNum(document.getElementById('pOld').value), features: [] });
       loadPlans();
     };
     document.getElementById('uqBtn').onclick = function () { loadUsers(gv('uq'), 1); };
@@ -719,7 +729,7 @@
         method: 'POST',
         body: JSON.stringify({
           code: document.getElementById('cCode').value, type: document.getElementById('cType').value,
-          value: +document.getElementById('cValue').value, usage_limit: +document.getElementById('cLimit').value || null,
+          value: toNum(document.getElementById('cValue').value), usage_limit: toNum(document.getElementById('cLimit').value),
           end_date: document.getElementById('cEnd').value || null, pro_only: document.getElementById('cPro').checked
         })
       });
