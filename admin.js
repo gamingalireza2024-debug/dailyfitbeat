@@ -12,6 +12,11 @@
   const rialFa = n => (Number(n) || 0).toLocaleString('fa-IR') + ' ریال';
   const fmt = n => (Number(n) || 0).toLocaleString('fa-IR');
   const faDate = d => d ? new Date(d).toLocaleDateString('fa-IR') : '—';
+  // تنها تعریف safe در کل فایل
+  const safe = (name, fn) =>
+    Promise.resolve()
+      .then(fn)
+      .catch(e => console.error('admin section error (' + name + '):', e));
   function normNum(s) {
     if (s === '' || s == null) return null;
     const t = String(s).replace(/[۰-۹]/g, x => '۰۱۲۳۴۵۶۷۸۹'.indexOf(x)).replace(/[,،٬\s]/g, '');
@@ -22,7 +27,7 @@
     if (!inp || inp.dataset.money) return;
     inp.dataset.money = '1';
     inp.addEventListener('input', () => {
-      const digits = inp.value.replace(/[۰-۹]/g, x => '۰۱۲۳۴۵۶۷۸۹'.indexOf(x)).replace(/\D/g, '');
+      const digits = inp.value.replace(/[۰-۹]/g, x => '۰۱۳۴۵۶۷۸۹'.indexOf(x)).replace(/\D/g, '');
       inp.value = digits ? Number(digits).toLocaleString('fa-IR') : '';
     });
   }
@@ -58,8 +63,6 @@
       document.querySelectorAll('.aside button').forEach(x => x.classList.remove('on'));
       b.classList.add('on');
       document.querySelectorAll('.apane').forEach(p => p.style.display = (p.id === 'pane-' + b.dataset.t) ? 'block' : 'none');
-      const safe = fn => Promise.resolve().then(fn).catch(e => console.log('admin section error:', e));
-      const safe = (name, fn) => Promise.resolve().then(fn).catch(e => console.error('admin section error (' + name + '):', e));
       if (b.dataset.t === 'dash') safe('dash', loadDash);
       if (b.dataset.t === 'payments') safe('payments', () => loadPayments(1));
       if (b.dataset.t === 'users') safe('users', () => loadUsers(document.getElementById('uq').value, 1));
@@ -68,9 +71,8 @@
       if (b.dataset.t === 'diet') safe('diet', () => { pickUsers(); loadDietList(); });
       if (b.dataset.t === 'orders') safe('orders', () => loadOrders(1));
     });
-    await refreshREC().catch(() => {});
-    const safe = fn => Promise.resolve().then(fn).catch(e => console.log('admin init section error:', e));
-    await safe(loadDash); await safe(() => loadOrders(1)); await safe(loadProds); await safe(loadPlans); await safe(loadRecipes);
+    await refreshREC().catch(e => console.error('recipes load error:', e));
+    await safe('dash', loadDash); await safe('orders', () => loadOrders(1)); await safe('prods', loadProds); await safe('plans', loadPlans); await safe('recipes', loadRecipes);
     bindJalali('dStart'); bindJalali('dEnd'); bindJalali('cEnd');
     ['aPrice', 'aOld', 'pPrice', 'pOld'].forEach(id => bindMoney(document.getElementById(id)));
     bindAll();
@@ -164,9 +166,9 @@
     const exists = REC.find(x => x.slug === slug);
     const res = exists ? await sb.from('recipes').update(obj).eq('slug', slug) : await sb.from('recipes').insert(obj);
     if (res.error) { alert('خطا: ' + res.error.message); return; }
-    await refreshREC().catch(e => console.error('recipes load error:', e));
-    const safe = (name, fn) => Promise.resolve().then(fn).catch(e => console.error('admin section error (' + name + '):', e));
-    await safe('dash', loadDash); await safe('orders', () => loadOrders(1)); await safe('prods', loadProds); await safe('plans', loadPlans); await safe('recipes', loadRecipes);
+    await refreshREC();
+    alert('ذخیره شد ✅'); document.getElementById('recForm').style.display = 'none'; loadRecipes();
+  }
 
   async function loadProds() {
     const data = await (await fetch('/api/db?t=products')).json();
@@ -354,10 +356,14 @@
   async function saveDiet() {
     const dietUid = document.getElementById('duPick').value;
     if (!dietUid) { alert('اول کاربر رو پیدا و انتخاب کن'); return; }
+    const g = id => document.getElementById(id);
     const r = await api('admin_diet_save', { method: 'POST', body: JSON.stringify({
-      id: dietPlanId, user_id: dietUid, title: gv('dTitle'), goal: gv('dGoal'), start_date: gv('dStart') || null, end_date: gv('dEnd') || null, duration_days: gv('dDur'),
-      kcal_target: gv('dKcal'), protein_target: gv('dPro'), carbs_target: gv('dCarb'), fat_target: gv('dFat'),
-      notes: g('dNotes'), restrictions_text: (document.getElementById('dRestr') || { value: '' }).value, tips_text: (document.getElementById('dTips') || { value: '' }).value, activity_text: (document.getElementById('dAct') || { value: '' }).value,
+      id: dietPlanId, user_id: dietUid, title: g('dTitle').value, goal: g('dGoal').value, start_date: g('dStart').value || null, end_date: g('dEnd').value || null, duration_days: g('dDur').value,
+      kcal_target: g('dKcal').value, protein_target: g('dPro').value, carbs_target: g('dCarb').value, fat_target: g('dFat').value,
+      notes: g('dNotes').value,
+      restrictions_text: (document.getElementById('dRestr') || { value: '' }).value,
+      tips_text: (document.getElementById('dTips') || { value: '' }).value,
+      activity_text: (document.getElementById('dAct') || { value: '' }).value,
       days: collectDays() }) });
     const j = await r.json();
     if (!r.ok) { alert(j.error || 'خطا'); return; }
