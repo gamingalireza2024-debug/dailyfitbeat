@@ -4,66 +4,51 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PRO | DailyFitBeat</title>
-<meta name="description" content="اشتراک PRO دیلی‌بیت: ذخیره نامحدود، لیست خرید هوشمند، برنامه غذایی اختصاصی و PDF حرفه‌ای">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="image" href="img/hero-pro.jpg" fetchpriority="high">
+<meta name="description" content="اشتراک PRO دیلی‌بیت: برنامه اختصاصی، ذخیره نامحدود و لیست خرید هوشمند">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.pr-hero{min-height:52vh;background:#171310 url('img/hero-pro.jpg') center/cover;display:flex;align-items:center;padding:110px 0 50px;position:relative}
-.pr-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(to left,rgba(23,19,16,.92),rgba(23,19,16,.35))}
-.pr-hero .container{position:relative}
-.pr-hero h1{color:#fff;font-size:clamp(30px,4.4vw,50px);font-weight:900}
-.pr-hero h1 span{color:#ffd76a}
-.pr-hero p{color:#d8d2ca;margin-top:12px;max-width:520px;line-height:2}
-.plan-tog{display:flex;gap:8px;justify-content:center;margin:30px 0 10px}
-.plan-tog button{border:0;background:#fff;border-radius:999px;padding:10px 24px;font:inherit;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.07)}
+html,body{overflow-x:hidden}
+.pr-wrap{max-width:1000px;margin:0 auto;padding:20px 16px 46px}
+.pr-hero{text-align:center;padding:22px 0 8px}
+.pr-hero h1{font-size:26px;font-weight:900;color:#1e2b1c}
+.pr-hero p{color:#667066;font-size:13px;margin-top:8px}
+.plan-tog{display:flex;gap:8px;justify-content:center;margin:18px 0}
+.plan-tog button{border:0;background:#fff;border-radius:999px;padding:10px 22px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.07);color:#3c4a3c}
 .plan-tog button.on{background:#2d6a35;color:#fff}
-#planCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;max-width:900px;margin:20px auto}
-.price-card{position:relative;background:#fff;border-radius:24px;padding:28px;box-shadow:0 8px 26px rgba(30,43,28,.09);text-align:center}
-.price-card.hot{background:#1e2b1c;color:#fff;transform:scale(1.03)}
-.price-card h3{font-size:17px}
-.price-card .p{font-size:24px;font-weight:900;margin:14px 0 4px;color:#2d6a35}
-.price-card.hot .p{color:#8fd18f}
-.price-card .p small{font-size:11px;font-weight:400}
-.oldp{color:#98a298;font-size:12px}
-.price-card ul{list-style:none;margin:18px 0;text-align:right}
-.price-card li{padding:7px 0;font-size:13px;border-bottom:1px dashed rgba(128,128,128,.25)}
-.ribbon{position:absolute;top:-12px;inset-inline:0;margin:auto;width:max-content;background:#ffd76a;color:#5c4300;border-radius:999px;padding:5px 16px;font-size:11px;font-weight:900}
-.pro-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:40px 0}
-.pro-feats div{background:#fff;border-radius:18px;padding:20px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.05)}
-.pro-feats span{font-size:26px}
-.pro-feats b{display:block;margin:8px 0 4px}
-.pro-feats p{color:#667066;font-size:12px}
-@media(max-width:700px){.price-card.hot{transform:none}}
+#planCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:10px}
+.price-card{background:#fff;border-radius:22px;padding:20px;box-shadow:0 8px 22px rgba(30,43,28,.08);position:relative}
+.price-card.hot{border:2px solid #2d6a35}
+.price-card h3{margin:0 0 10px;font-size:15px}
+.price-card .p{font-size:20px;font-weight:900;color:#2d6a35}
+.price-card .oldp{color:#98a298;font-size:12px}
+.price-card ul{list-style:none;margin:12px 0;padding:0;font-size:12.5px;line-height:2.2}
+.price-card .ribbon{position:absolute;top:-12px;left:16px;background:#2d6a35;color:#fff;border-radius:999px;padding:5px 14px;font-size:11px;font-weight:700}
+.price-card a.btn{display:inline-block;background:#2d6a35;color:#fff;border:0;border-radius:14px;padding:11px 22px;font:inherit;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer}
+.pr-steps{background:#fff;border-radius:22px;padding:20px;margin-top:22px;box-shadow:0 6px 18px rgba(30,43,28,.07);font-size:12.5px;line-height:2.4}
+.pr-steps h3{margin:0 0 8px;font-size:14px}
 </style>
 </head>
 <body data-page="pro">
 <header id="hdr"></header>
-
-<div class="pr-hero"><div class="container">
-  <h1>با <span>PRO</span>،<br>تغذیه‌ات رو حرفه‌ای کن</h1>
-  <p>ذخیره نامحدود، لیست خرید هوشمند، برنامه غذایی اختصاصی با PDF برند‌دار و اولویت پشتیبانی.</p>
-</div></div>
-
-<section><div class="container">
+<section><div class="container pr-wrap">
+  <div class="pr-hero">
+    <h1>اشتراک PRO دیلی‌بیت</h1>
+    <p>برنامه اختصاصی، ذخیره نامحدود، لیست خرید هوشمند و سهمیه بیشتر دستیار AI.</p>
+  </div>
   <div class="plan-tog">
     <button class="on" data-key="monthly">ماهانه</button>
-    <button data-key="yearly">سالانه 💎</button>
+    <button data-key="yearly">سالانه</button>
   </div>
   <div id="planCards"></div>
-  <div class="pro-feats">
-    <div><span>❤️</span><b>ذخیره نامحدود</b><p>هر چند تا رسپی که خواستی نگه دار</p></div>
-    <div><span>🛒</span><b>لیست خرید هوشمند</b><p>از برنامه هفته‌ات خودکار لیست بساز</p></div>
-    <div><span>🥗</span><b>برنامه اختصاصی</b><p>ادمین برات رژیم شخصی می‌سازه</p></div>
-    <div><span>📄</span><b>PDF پریمیوم</b><p>برنامه‌ات با هویت بصری DailyFitBeat</p></div>
+  <div class="pr-steps">
+    <h3>روش خرید و فعال‌سازی</h3>
+    <p>۱. پلن موردنظر را انتخاب کن.<br>۲. کارت بانکی نمایش‌داده‌شده را واریض کن.<br>۳. کد پیگیری را ثبت کن.<br>۴. پس از تأیید ادمین، PRO به‌صورت خودکار در پنل تو فعال می‌شود.</p>
   </div>
 </div></section>
-
 <footer id="ftr"></footer>
 <script src="site.js"></script>
 <script src="app.js"></script>
-<script src="shop.js"></script>
+<script src="buy.js"></script>
 </body>
 </html>
