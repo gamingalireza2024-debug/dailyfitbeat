@@ -462,13 +462,28 @@
 
   var dietPlanId = null, dayCount = 0;
   async function pickUsers() {
-    var q = gv('dq');
+    var q = gv('dq').trim();
     var r = await api('admin_users&q=' + encodeURIComponent(q || ''));
     if (!r.ok) { alert('خطا در جستجوی کاربر'); return; }
     var j = await r.json();
-    var data = j.rows || [];
+    var data = Array.isArray(j.rows) ? j.rows : (Array.isArray(j) ? j : []);
+    if (q && !data.length) {
+      var r2 = await api('admin_users&q=');
+      if (r2.ok) {
+        var j2 = await r2.json();
+        var all = Array.isArray(j2.rows) ? j2.rows : (Array.isArray(j2) ? j2 : []);
+        var lq = q.toLowerCase();
+        data = all.filter(function (u) {
+          return (u.email || '').toLowerCase().indexOf(lq) !== -1 ||
+                 (u.name || '').toLowerCase().indexOf(lq) !== -1 ||
+                 (u.phone || '').indexOf(q) !== -1;
+        });
+      }
+    }
     var sel = document.getElementById('duPick');
-    sel.innerHTML = data.map(function (u) { return '<option value="' + u.id + '">' + esc(u.email) + '</option>'; }).join('');
+    sel.innerHTML = data.map(function (u) {
+      return '<option value="' + u.id + '">' + esc(u.email || u.name || u.id) + '</option>';
+    }).join('');
     if (q && !data.length) alert('کاربری با این مشخصات پیدا نشد. دقیقاً ایمیلی رو بنویس که کاربر باهاش وارد شده.');
     loadDietList();
   }
