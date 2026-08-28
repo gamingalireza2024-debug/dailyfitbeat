@@ -1,0 +1,57 @@
+/* DailyFitBeat Design System — Phase 6 */
+:root{
+  --accent:#f97316;
+  --accent-soft:rgba(249,115,22,.1);
+  --ink:#111827;
+  --ink2:#4b5563;
+  --ink3:#9ca3af;
+  --bg:#fafafa;
+  --card:#ffffff;
+  --line:#ececec;
+  --glass:rgba(255,255,255,.62);
+  --glass-br:rgba(255,255,255,.78);
+  --shadow:0 10px 30px rgba(17,24,39,.06);
+  --r:20px;
+}
+html,body{overflow-x:hidden}
+body{background:var(--bg);color:var(--ink)}
+
+/* ---------- HEADER ---------- */
+#hdr{background:rgba(255,255,255,.86)!important;backdrop-filter:blur(14px);border-bottom:1px solid var(--line)!important;box-shadow:none!important}
+#hdr .logo img{height:40px}
+#hdr nav a{color:var(--ink2)!important;font-size:13.5px;font-weight:500;border-bottom:2px solid transparent}
+#hdr nav a.on{color:var(--accent)!important;border-bottom-color:var(--accent)}
+#hdr .auth-chip,#hdr .lang{background:var(--glass)!important;backdrop-filter:blur(12px);border:1px solid var(--glass-br)!important;border-radius:999px!important;box-shadow:var(--shadow)!important;color:var(--ink)!important}
+#hdr .btn.small{background:var(--glass)!important;color:var(--ink)!important;border:1px solid var(--glass-br)!important;backdrop-filter:blur(12px);box-shadow:var(--shadow)!important;border-radius:999px!important}
+#hdr .burger span{background:var(--ink)!important}
+
+/* ---------- BUTTONS ---------- */
+.btn{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:14px!important;box-shadow:0 10px 24px rgba(249,115,22,.25)!important;font-weight:800!important}
+.btn:hover{filter:brightness(.96)}
+.btn.ghost{background:var(--glass)!important;color:var(--ink)!important;border:1px solid var(--glass-br)!important;backdrop-filter:blur(12px);box-shadow:var(--shadow)!important}
+
+/* ---------- CHIPS / CARDS ---------- */
+.chip.on{background:var(--accent-soft)!important;border-color:var(--accent)!important;color:var(--accent)!important}
+.card{border-radius:18px!important;border:1px solid var(--line)!important;box-shadow:var(--shadow)!important}
+.card .c-tags i{background:var(--accent-soft)!important;color:var(--accent)!important}
+
+/* ---------- PAGE HEAD ---------- */
+.page-head{background:transparent!important}
+.page-head h1{color:var(--ink)!important;font-weight:900}
+.page-head h1::after{content:"";display:block;width:44px;height:4px;border-radius:99px;background:var(--accent);margin:10px auto 0}
+
+/* ---------- FOOTER ---------- */
+#ftr{background:#111827!important;color:#d1d5db!important}
+#ftr b{color:#fff!important}
+#ftr a{color:#9ca3af!important}
+#ftr a:hover{color:var(--accent)!important}
+#ftr .f-bottom{border-top:1px solid #1f2937!important;color:#6b7280!important}
+
+/* hide old injected green CTA on home (UI only) */
+body[data-page="home"] section [style*="linear-gradient(135deg,#2d6a35"]{display:none}
+
+/* links accent (safe scope) */
+.c-body h3{color:var(--ink)}
+.rd-info h1{color:var(--ink)}
+.rd-region{background:var(--accent-soft)!important;color:var(--accent)!important}
+.heart.on{color:var(--accent)!important}
