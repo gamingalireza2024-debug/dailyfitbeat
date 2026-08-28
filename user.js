@@ -11,7 +11,6 @@
   var allRecipes = [];
 
   function $(id) { return document.getElementById(id); }
-  function qs(sel) { return document.querySelector(sel); }
   function qsa(sel) { return [].slice.call(document.querySelectorAll(sel)); }
 
   function esc(s) {
@@ -26,22 +25,10 @@
     try { return new Date(d).toLocaleDateString('fa-IR'); } catch (e) { return '—'; }
   }
   function setHTML(ids, html) {
-    ids.forEach(function (id) {
-      var el = typeof id === 'string' ? $(id) : id;
-      if (el) el.innerHTML = html;
-    });
+    ids.forEach(function (id) { var el = $(id); if (el) el.innerHTML = html; });
   }
   function setText(ids, text) {
-    ids.forEach(function (id) {
-      var el = typeof id === 'string' ? $(id) : id;
-      if (el) el.textContent = text;
-    });
-  }
-  function showBox(ids, show) {
-    ids.forEach(function (id) {
-      var el = typeof id === 'string' ? $(id) : id;
-      if (el) el.style.display = show ? '' : 'none';
-    });
+    ids.forEach(function (id) { var el = $(id); if (el) el.textContent = text; });
   }
   function safe(name, fn) {
     return Promise.resolve().then(fn).catch(function (e) {
@@ -52,48 +39,38 @@
 
   async function waitForSB() {
     for (var i = 0; i < 40; i++) {
-      if (window.DFB && DFB.sb) {
-        sb = DFB.sb;
-        return true;
-      }
+      if (window.DFB && DFB.sb) { sb = DFB.sb; return true; }
       await new Promise(function (r) { setTimeout(r, 150); });
     }
     return false;
   }
-
   async function getSessionSafe() {
     try {
       if (!sb) return null;
       var r = await sb.auth.getSession();
       return r && r.data && r.data.session ? r.data.session : null;
-    } catch (e) {
-      return null;
-    }
+    } catch (e) { return null; }
   }
-
   async function tok() {
     var s = await getSessionSafe();
     return s && s.access_token ? s.access_token : null;
   }
-
   async function headers() {
     var t = await tok();
     if (!t) return null;
     return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t, 'X-Supabase-Auth': t };
   }
-
   async function apiDb(t, opts) {
     var h = await headers();
-    var baseHeaders = { 'Content-Type': 'application/json' };
-    if (h) baseHeaders = h;
-    return fetch('/api/db?t=' + t, Object.assign({ headers: baseHeaders }, opts || {}));
+    var base = { 'Content-Type': 'application/json' };
+    if (h) base = h;
+    return fetch('/api/db?t=' + t, Object.assign({ headers: base }, opts || {}));
   }
-
   async function apiPlain(url, opts) {
     var h = await headers();
-    var baseHeaders = { 'Content-Type': 'application/json' };
-    if (h) baseHeaders = h;
-    return fetch(url, Object.assign({ headers: baseHeaders }, opts || {}));
+    var base = { 'Content-Type': 'application/json' };
+    if (h) base = h;
+    return fetch(url, Object.assign({ headers: base }, opts || {}));
   }
 
   function bindAuthWatcher() {
@@ -116,9 +93,29 @@
           renderLoggedOut();
         }
       });
-    } catch (e) {
+    } catch (e) { authReady = true; }
+    window.addEventListener('dfb:logout', function () {
+      currentUser = null;
+      mainStarted = false;
       authReady = true;
-    }
+      renderLoggedOut();
+    });
+  }
+
+  function bindLogoutButtons() {
+    var ids = ['uLogout', 'userLogout', 'dashLogout', 'logoutBtn2'];
+    ids.forEach(function (id) {
+      var el = $(id);
+      if (el && !el.dataset.boundLogout) {
+        el.dataset.boundLogout = '1';
+        el.onclick = function () { if (window.DFB && DFB.logout) DFB.logout(); };
+      }
+    });
+    qsa('[data-logout]').forEach(function (el) {
+      if (el.dataset.boundLogout) return;
+      el.dataset.boundLogout = '1';
+      el.onclick = function () { if (window.DFB && DFB.logout) DFB.logout(); };
+    });
   }
 
   async function waitAuthReady() {
@@ -137,11 +134,17 @@
     setHTML(['userStat', 'dashStat', 'dashboardStat'], '<div class="empty">برای مشاهده داشبورد، ابتدا وارد حساب کاربری شوید.</div>');
     setHTML(['aiUsage', 'aiUsageCard', 'aiStat'], '<div class="empty">مصرف هوش مصنوعی: نیاز به ورود</div>');
     setHTML(['dietPlans', 'dietList', 'mealPlans', 'mealPlanList'], '<div class="empty">برای مشاهده برنامه‌های غذایی وارد شوید.</div>');
-    setHTML(['ordersBody'], '<tr><td colspan="8">برای مشاهده سفارش‌ها وارد شوید.</td></tr>');
+    setHTML(['dietDetail', 'mealPlanDetail', 'planDetail'], '');
+    setHTML(['ordersBody', 'myOrdersBody'], '<tr><td colspan="8">برای مشاهده سفارش‌ها وارد شوید.</td></tr>');
+    setHTML(['ordersList', 'myOrders'], '<div class="empty">برای مشاهده سفارش‌ها وارد شوید.</div>');
     setHTML(['productsBody', 'myProductsBody'], '<tr><td colspan="6">برای مشاهده محصولات وارد شوید.</td></tr>');
-    setHTML(['favBody'], '<tr><td colspan="5">برای مشاهده علاقه‌مندی‌ها وارد شوید.</td></tr>');
-    setHTML(['notifBody'], '<tr><td colspan="4">برای مشاهده اعلان‌ها وارد شوید.</td></tr>');
-    setHTML(['shoppingList', 'shopList'], '<div class="empty">برای مشاهده لیست خرید وارد شوید.</div>');
+    setHTML(['productsList', 'myProducts'], '<div class="empty">برای مشاهده محصولات وارد شوید.</div>');
+    setHTML(['favBody', 'favoritesBody'], '<tr><td colspan="5">برای مشاهده علاقه‌مندی‌ها وارد شوید.</td></tr>');
+    setHTML(['favoritesList', 'favsList'], '<div class="empty">برای مشاهده علاقه‌مندی‌ها وارد شوید.</div>');
+    setHTML(['notifBody', 'notificationsBody'], '<tr><td colspan="4">برای مشاهده اعلان‌ها وارد شوید.</td></tr>');
+    setHTML(['notificationsList', 'notifList'], '<div class="empty">برای مشاهده اعلان‌ها وارد شوید.</div>');
+    setHTML(['shoppingList', 'shopList', 'shoppingBox'], '<div class="empty">برای مشاهده لیست خرید وارد شوید.</div>');
+    setHTML(['proStatus', 'proBadge', 'subStatus'], '<span class="pbadge" style="background:#777">نیاز به ورود</span>');
   }
 
   function bindTabs() {
@@ -172,31 +175,23 @@
       var pr = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
       if (!pr.error && pr.data) profile = pr.data;
     });
-
     if (profile) {
       name = profile.name || profile.full_name || profile.display_name || name;
       if (profile.email) email = profile.email;
     }
-
     await safe('pro status', async function () {
       if (!sb || !user || !user.id) return;
       var now = new Date();
       var sub = await sb.from('subscriptions').select('*').eq('user_id', user.id).eq('status', 'ACTIVE').order('end_date', { ascending: false }).limit(5);
       if (!sub.error && Array.isArray(sub.data)) {
         sub.data.forEach(function (s) {
-          if (!s.end_date || new Date(s.end_date) > now) {
-            activePro = true;
-            if (s.end_date) proUntil = s.end_date;
-          }
+          if (!s.end_date || new Date(s.end_date) > now) { activePro = true; if (s.end_date) proUntil = s.end_date; }
         });
       }
       var ent = await sb.from('entitlements').select('*').eq('user_id', user.id).eq('entitlement_type', 'PRO').eq('status', 'ACTIVE').order('expires_at', { ascending: false }).limit(5);
       if (!ent.error && Array.isArray(ent.data)) {
         ent.data.forEach(function (e) {
-          if (!e.expires_at || new Date(e.expires_at) > now) {
-            activePro = true;
-            if (e.expires_at) proUntil = e.expires_at;
-          }
+          if (!e.expires_at || new Date(e.expires_at) > now) { activePro = true; if (e.expires_at) proUntil = e.expires_at; }
         });
       }
     });
@@ -226,10 +221,7 @@
     var rows = [];
     await safe('orders api', async function () {
       var r = await apiDb('my_orders');
-      if (r.ok) {
-        var j = await r.json();
-        rows = Array.isArray(j) ? j : (j.rows || []);
-      }
+      if (r.ok) { var j = await r.json(); rows = Array.isArray(j) ? j : (j.rows || []); }
     });
     if (!rows.length) {
       await safe('orders direct', async function () {
@@ -251,10 +243,7 @@
     var rows = [];
     await safe('products api', async function () {
       var r = await apiDb('my_products');
-      if (r.ok) {
-        var j = await r.json();
-        rows = Array.isArray(j) ? j : (j.rows || []);
-      }
+      if (r.ok) { var j = await r.json(); rows = Array.isArray(j) ? j : (j.rows || []); }
     });
     if (!rows.length) {
       await safe('products direct', async function () {
@@ -273,19 +262,20 @@
     setHTML(['productsBody', 'myProductsBody'], body);
     setHTML(['productsList', 'myProducts'], rows.length ? '<div class="ubox">' + rows.map(function (e) {
       var p = e.products || e.product || e;
-      var title = p.title_fa || p.title || e.title || 'محصول';
-      return '<p>' + esc(title) + ' — تا ' + faDate(e.expires_at) + '</p>';
+      return '<p>' + esc(p.title_fa || p.title || e.title || 'محصول') + ' — تا ' + faDate(e.expires_at) + '</p>';
     }).join('') + '</div>' : '<div class="empty">محصول فعالی نداری.</div>');
+  }
+
+  function mealFa(t) {
+    var m = { breakfast: 'صبحانه', snack_am: 'میان‌وعده صبح', lunch: 'ناهار', snack_pm: 'میان‌وعده عصر', dinner: 'شام', snack: 'میان‌وعده' };
+    return m[t] || t || 'وعده';
   }
 
   async function loadDietPlans(user) {
     var rows = [];
     await safe('diet plans api', async function () {
       var r = await apiDb('my_diet_plans');
-      if (r.ok) {
-        var j = await r.json();
-        rows = Array.isArray(j) ? j : (j.rows || []);
-      }
+      if (r.ok) { var j = await r.json(); rows = Array.isArray(j) ? j : (j.rows || []); }
     });
     if (!rows.length) {
       await safe('diet plans direct', async function () {
@@ -347,72 +337,10 @@
     setHTML(['dietDetail', 'mealPlanDetail', 'planDetail'], html);
   }
 
-  function mealFa(t) {
-    var m = { breakfast: 'صبحانه', snack_am: 'میان‌وعده صبح', lunch: 'ناهار', snack_pm: 'میان‌وعده عصر', dinner: 'شام', snack: 'میان‌وعده' };
-    return m[t] || t || 'وعده';
-  }
-
-  async function loadFavorites(user) {
-    var rows = [];
-    await safe('favorites api', async function () {
-      var r = await apiDb('favorites');
-      if (r.ok) {
-        var j = await r.json();
-        rows = Array.isArray(j) ? j : (j.rows || []);
-      }
-    });
-    if (!rows.length) {
-      await safe('favorites direct', async function () {
-        if (!sb || !user || !user.id) return;
-        var r = await sb.from('favorites').select('*,recipes(*)').eq('user_id', user.id).order('created_at', { ascending: false });
-        if (!r.error && Array.isArray(r.data)) rows = r.data;
-      });
-    }
-    var body = rows.map(function (f) {
-      var r = f.recipes || f.recipe || f;
-      var title = r.name_fa || r.title || f.title || 'رسپی';
-      var slug = r.slug || f.slug || '';
-      return '<tr><td>' + esc(title) + '</td><td>' + faDate(f.created_at) + '</td><td>' + (slug ? '<a class="btn small" href="recipe.html?slug=' + esc(slug) + '">مشاهده</a>' : '—') + '</td></tr>';
-    }).join('') || '<tr><td colspan="5">هنوز علاقه‌مندی ثبت نشده است.</td></tr>';
-    setHTML(['favBody', 'favoritesBody'], body);
-    setHTML(['favoritesList', 'favsList'], rows.length ? '<div class="ubox">' + rows.slice(0, 10).map(function (f) {
-      var r = f.recipes || f.recipe || f;
-      return '<p>' + esc(r.name_fa || r.title || f.title || 'رسپی') + '</p>';
-    }).join('') + '</div>' : '<div class="empty">هنوز علاقه‌مندی ثبت نشده است.</div>');
-  }
-
-  async function loadNotifications(user) {
-    var rows = [];
-    await safe('notifications api', async function () {
-      var r = await apiDb('notifications');
-      if (r.ok) {
-        var j = await r.json();
-        rows = Array.isArray(j) ? j : (j.rows || []);
-      }
-    });
-    if (!rows.length) {
-      await safe('notifications direct', async function () {
-        if (!sb || !user || !user.id) return;
-        var r = await sb.from('notifications').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
-        if (!r.error && Array.isArray(r.data)) rows = r.data;
-      });
-    }
-    var body = rows.map(function (n) {
-      return '<tr><td>' + esc(n.title || 'اعلان') + '</td><td>' + esc(n.body || n.message || '') + '</td><td>' + faDate(n.created_at) + '</td></tr>';
-    }).join('') || '<tr><td colspan="4">اعلانی نداری.</td></tr>';
-    setHTML(['notifBody', 'notificationsBody'], body);
-    setHTML(['notificationsList', 'notifList'], rows.length ? '<div class="ubox">' + rows.slice(0, 8).map(function (n) {
-      return '<p><b>' + esc(n.title || 'اعلان') + '</b><br><small>' + esc(n.body || n.message || '') + '</small></p>';
-    }).join('') + '</div>' : '<div class="empty">اعلانی نداری.</div>');
-  }
-
   async function loadAllRecipes() {
     await safe('all recipes', async function () {
       var r = await fetch('/api/db?t=all');
-      if (r.ok) {
-        var j = await r.json();
-        allRecipes = Array.isArray(j) ? j : [];
-      }
+      if (r.ok) { var j = await r.json(); allRecipes = Array.isArray(j) ? j : []; }
     });
   }
 
@@ -440,10 +368,7 @@
 
   async function loadShopping() {
     var latest = lastDietPlans && lastDietPlans.length ? lastDietPlans[0] : null;
-    if (latest && latest.id) {
-      await loadDietDetail(latest.id);
-      return;
-    }
+    if (latest && latest.id) { await loadDietDetail(latest.id); return; }
     renderShopping([]);
   }
 
@@ -454,15 +379,61 @@
     setHTML(['shoppingList', 'shopList', 'shoppingBox'], html);
   }
 
-  async function main(user) {
-    if (!user || !user.id) {
-      renderLoggedOut();
-      return;
+  async function loadFavorites(user) {
+    var rows = [];
+    await safe('favorites api', async function () {
+      var r = await apiDb('favorites');
+      if (r.ok) { var j = await r.json(); rows = Array.isArray(j) ? j : (j.rows || []); }
+    });
+    if (!rows.length) {
+      await safe('favorites direct', async function () {
+        if (!sb || !user || !user.id) return;
+        var r = await sb.from('favorites').select('*,recipes(*)').eq('user_id', user.id).order('created_at', { ascending: false });
+        if (!r.error && Array.isArray(r.data)) rows = r.data;
+      });
     }
+    var body = rows.map(function (f) {
+      var r = f.recipes || f.recipe || f;
+      var title = r.name_fa || r.title || f.title || 'رسپی';
+      var slug = r.slug || f.slug || '';
+      return '<tr><td>' + esc(title) + '</td><td>' + faDate(f.created_at) + '</td><td>' + (slug ? '<a class="btn small" href="recipe.html?slug=' + esc(slug) + '">مشاهده</a>' : '—') + '</td></tr>';
+    }).join('') || '<tr><td colspan="5">هنوز علاقه‌مندی ثبت نشده است.</td></tr>';
+    setHTML(['favBody', 'favoritesBody'], body);
+    setHTML(['favoritesList', 'favsList'], rows.length ? '<div class="ubox">' + rows.slice(0, 10).map(function (f) {
+      var r = f.recipes || f.recipe || f;
+      return '<p>' + esc(r.name_fa || r.title || f.title || 'رسپی') + '</p>';
+    }).join('') + '</div>' : '<div class="empty">هنوز علاقه‌مندی ثبت نشده است.</div>');
+  }
+
+  async function loadNotifications(user) {
+    var rows = [];
+    await safe('notifications api', async function () {
+      var r = await apiDb('notifications');
+      if (r.ok) { var j = await r.json(); rows = Array.isArray(j) ? j : (j.rows || []); }
+    });
+    if (!rows.length) {
+      await safe('notifications direct', async function () {
+        if (!sb || !user || !user.id) return;
+        var r = await sb.from('notifications').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
+        if (!r.error && Array.isArray(r.data)) rows = r.data;
+      });
+    }
+    var body = rows.map(function (n) {
+      return '<tr><td>' + esc(n.title || 'اعلان') + '</td><td>' + esc(n.body || n.message || '') + '</td><td>' + faDate(n.created_at) + '</td></tr>';
+    }).join('') || '<tr><td colspan="4">اعلانی نداری.</td></tr>';
+    setHTML(['notifBody', 'notificationsBody'], body);
+    setHTML(['notificationsList', 'notifList'], rows.length ? '<div class="ubox">' + rows.slice(0, 8).map(function (n) {
+      return '<p><b>' + esc(n.title || 'اعلان') + '</b><br><small>' + esc(n.body || n.message || '') + '</small></p>';
+    }).join('') + '</div>' : '<div class="empty">اعلانی نداری.</div>');
+  }
+
+  async function main(user) {
+    if (!user || !user.id) { renderLoggedOut(); return; }
     if (mainStarted && currentUser && currentUser.id === user.id) return;
     mainStarted = true;
     currentUser = user;
     bindTabs();
+    bindLogoutButtons();
 
     await safe('profile/pro', function () { return loadProfileAndPro(user); });
     await Promise.all([
@@ -480,15 +451,10 @@
   async function boot() {
     if (booted) return;
     booted = true;
-
     var ok = await waitForSB();
-    if (!ok) {
-      renderLoggedOut();
-      return;
-    }
-
+    if (!ok) { renderLoggedOut(); return; }
     bindAuthWatcher();
-
+    bindLogoutButtons();
     var sess = await waitAuthReady();
     if (sess && sess.user) {
       authReady = true;
