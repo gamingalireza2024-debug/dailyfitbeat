@@ -1,5 +1,17 @@
 (async function () {
   if (document.body.dataset.page !== 'planner') return;
+  var FA = '۰۱۲۳۴۵۶۷۸۹';
+  var AR = '٠١٢٣٤٥٦٧٨٩';
+  function toNum(s) {
+    if (s === '' || s == null) return null;
+    var t = String(s)
+      .replace(/[۰-۹]/g, function (x) { return String(FA.indexOf(x)); })
+      .replace(/[٠-٩]/g, function (x) { return String(AR.indexOf(x)); })
+      .replace(/[,،٬\s]/g, '');
+    if (t === '') return null;
+    var n = Number(t);
+    return isNaN(n) ? null : n;
+  }
   var esc = function (s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -140,7 +152,7 @@
           days: 7,
           meals: ['breakfast', 'snack_am', 'lunch', 'snack_pm', 'dinner'],
           include_profile: document.getElementById('plProf').checked,
-          calorie_target: +document.getElementById('plKcal').value || null,
+          calorie_target: toNum(document.getElementById('plKcal').value),
           have: have.length ? have : undefined,
           save: false
         })
@@ -169,7 +181,7 @@
     var doc = document.getElementById('pdfDoc');
     var wrap = function (inner) { return '<div style="padding:24px;font-family:Vazirmatn,sans-serif;direction:rtl;color:#1e2b1c">' + inner + '</div>'; };
     var secs = [];
-    secs.push(wrap('<div style="background:#2d6a35;border-radius:22px;padding:24px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:16px"><div><div style="font-size:24px;font-weight:900">DailyFitBeat | دیلی‌بیت</div><div style="opacity:.9;margin-top:6px">برنامه غذایی هفتگی — ۵ وعده در روز</div></div><img src="img/logo.png" style="height:70px;border-radius:18px;background:#fff;padding:6px"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>کالری هدف:</b> ' + faN(+document.getElementById('plKcal').value || 2000) + '</div><div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>تاریخ:</b> ' + new Date().toLocaleDateString('fa-IR') + '</div></div>'));
+    secs.push(wrap('<div style="background:#2d6a35;border-radius:22px;padding:24px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:16px"><div><div style="font-size:24px;font-weight:900">DailyFitBeat | دیلی‌بیت</div><div style="opacity:.9;margin-top:6px">برنامه غذایی هفتگی — ۵ وعده در روز</div></div><img src="img/logo.png" style="height:70px;border-radius:18px;background:#fff;padding:6px"></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>کالری هدف:</b> ' + faN(toNum(document.getElementById('plKcal').value) || 2000) + '</div><div style="background:#f2f7f2;border-radius:14px;padding:10px 16px"><b>تاریخ:</b> ' + new Date().toLocaleDateString('fa-IR') + '</div></div>'));
     if (plan.constraints && plan.constraints.length) {
       secs.push(wrap('<div style="background:#fff8e6;border-radius:14px;padding:14px"><b>محدودیت‌ها و اهداف:</b><br>' + plan.constraints.map(function (c) { return '• ' + esc(c); }).join('<br>') + '</div>'));
     }
