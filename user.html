@@ -5,71 +5,119 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>پنل کاربری | DailyFitBeat</title>
 <meta name="robots" content="noindex, nofollow">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.u-hero{background:linear-gradient(135deg,#2d6a35,#1e4a26);border-radius:26px;color:#fff;padding:34px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin:20px 0}
-.u-ava{width:74px;height:74px;border-radius:50%;background:#fff;color:#2d6a35;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.u-hero h2{font-size:24px}
-.u-hero p{opacity:.9;font-size:13px;margin-top:6px}
-.u-pro-badge{background:#ffd76a;color:#5c4300;border-radius:999px;padding:7px 16px;font-weight:800;font-size:12px}
-.u-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
-.u-card{background:#fff;border-radius:20px;padding:22px;box-shadow:0 6px 20px rgba(30,43,28,.07)}
-.u-card h3{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+html,body{overflow-x:hidden}
+.u-hero{background:linear-gradient(135deg,#2d6a35,#1e4a26);border-radius:0 0 26px 26px;color:#fff;padding:34px 20px 26px;margin-bottom:22px}
+.u-hero-in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.u-ava{width:64px;height:64px;border-radius:50%;background:#fff;color:#2d6a35;font-size:26px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.u-hero h2{font-size:18px;font-weight:800;margin:0 0 6px}
+.u-hero p{opacity:.92;font-size:12.5px;margin:0}
+.u-probadge{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 14px;font-size:11px;font-weight:700;margin-top:8px}
+.u-wrap{max-width:1100px;margin:0 auto;padding:0 16px 46px}
+.u-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.u-card{background:#fff;border-radius:22px;padding:18px;box-shadow:0 6px 18px rgba(30,43,28,.07)}
+.u-card h3{font-size:14px;font-weight:800;margin:0 0 12px;color:#1e2b1c}
 .u-card .big{font-size:22px;font-weight:900;color:#2d6a35}
-.u-list{max-height:220px;overflow:auto;font-size:13px}
-.u-list div{padding:9px 4px;border-bottom:1px dashed #e5e5e5}
-.u-empty{color:#98a298;font-size:12px;text-align:center;padding:18px 0}
-.vs{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:20px;overflow:hidden;margin:22px 0;box-shadow:0 8px 26px rgba(30,43,28,.10)}
-.vs>div{padding:24px}
-.vs .free{background:#fff}
-.vs .pro{background:#1e2b1c;color:#fff}
-.vs h4{margin-bottom:12px}
-.vs li{list-style:none;padding:6px 0;font-size:13px}
-.vs .pro li:before{content:"✔ ";color:#8fd18f}
-.vs .free li:before{content:"✔ ";color:#2d6a35}
-@media(max-width:700px){.vs{grid-template-columns:1fr}}
-.dl-btn{display:inline-block;margin:4px 0 0;padding:8px 14px;border-radius:10px;background:#2d6a35;color:#fff;font-size:12px;text-decoration:none}
+.u-empty{color:#98a298;font-size:12px;line-height:2}
+.u-card div.u-item{border-bottom:1px dashed #e5efe5;padding:8px 0;font-size:12.5px}
+.u-card div.u-item:last-child{border-bottom:0}
+.u-card a{color:#2d6a35;font-weight:700;text-decoration:none}
+.dl-btn{display:inline-block;border:1.5px solid #2d6a35;color:#2d6a35;background:#fff;border-radius:12px;padding:7px 16px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;margin-top:6px}
+.u-pro-badge{background:#2d6a35;color:#fff;border-radius:999px;padding:5px 14px;font-size:11px;font-weight:700}
+.u-login{max-width:420px;margin:40px auto;background:#fff;border-radius:22px;padding:26px;text-align:center;box-shadow:0 8px 24px rgba(30,43,28,.1)}
+.u-vs{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.u-vs .free,.u-vs .pro{background:#f7faf7;border-radius:16px;padding:14px;font-size:12px}
+.u-vs .pro{background:#e8f4e9}
+.u-vs h4{margin:0 0 8px;font-size:13px}
+.u-vs ul{margin:0;padding:0;list-style:none;line-height:2.1}
+.u-prof p{margin:4px 0;font-size:12.5px}
+@media(max-width:700px){.u-vs{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-page="user">
 <header id="hdr"></header>
 
-<section><div class="container">
-  <p id="userStat" hidden></p>
-  <div id="userBody" style="display:none">
-    <div class="u-hero">
+<section id="uLogin" class="u-login" style="display:none">
+  <h2>ورود به پنل کاربری</h2>
+  <p style="color:#667066;font-size:12.5px;margin:10px 0 18px">برای مشاهده داشبورد، سفارش‌ها و برنامه‌های غذایی وارد شو.</p>
+  <button id="uLoginBtn" class="btn">ورود با گوگل</button>
+</section>
+
+<section id="userBody" style="display:none">
+  <div class="u-hero">
+    <div class="u-hero-in">
       <div class="u-ava" id="uAva">D</div>
-      <div style="flex:1">
-        <h2 id="uWelcome">سلام!</h2>
-        <p>امروز هم یه قدم به سبک زندگی سالم نزدیک‌تر 🌿</p>
+      <div style="flex:1;min-width:220px">
+        <h2 id="uWelcome">خوش آمدی</h2>
+        <p>امروز هم یک قدم به سبک زندگی سالم نزدیک‌تر.</p>
+        <span class="u-probadge" id="uProBadge">پلان رایگان</span>
       </div>
-      <span id="uProBadge"></span>
     </div>
+  </div>
 
+  <div class="u-wrap">
     <div class="u-grid">
-      <div class="u-card"><h3>💎 وضعیت اشتراک</h3><div id="uProCard"></div></div>
-      <div class="u-card"><h3>🥗 برنامه غذایی من</h3><div id="uDiets" class="u-list"></div></div>
-      <div class="u-card"><h3>🎁 محصولات من</h3><div id="uProducts" class="u-list"></div></div>
-      <div class="u-card"><h3>📦 سفارش‌های من</h3><div id="myOrders" class="u-list"></div></div>
-      <div class="u-card"><h3>❤️ رسپی‌های ذخیره‌شده</h3><div id="myFavs" class="u-list"></div></div>
-      <div class="u-card"><h3>🔔 اعلان‌ها</h3><div id="uNotifs" class="u-list"></div></div>
-      <div class="u-card"><h3>🛒 لیست خرید هوشمند <span class="u-pro-badge" style="background:#e8f4e9;color:#2d6a35">PRO</span></h3><div id="uList"></div></div>
-      <div class="u-card"><h3>👤 پروفایل</h3>
-        <p style="font-size:13px">نام: <b id="uName"></b><br>ایمیل: <b id="uEmail"></b><br>موبایل: <b id="uPhone"></b></p>
-        <button class="btn ghost small" id="phEdit" style="margin-top:8px">ویرایش موبایل</button>
+
+      <div class="u-card">
+        <h3>وضعیت اشتراک</h3>
+        <div id="uProCard"><div class="u-empty">در حال دریافت…</div></div>
       </div>
+
+      <div class="u-card">
+        <h3>مصرف هوش مصنوعی</h3>
+        <div id="uAi"><div class="u-empty">در حال دریافت…</div></div>
+      </div>
+
+      <div class="u-card">
+        <h3>برنامه غذایی من</h3>
+        <div id="uDiets"><div class="u-empty">در حال دریافت…</div></div>
+      </div>
+
+      <div class="u-card">
+        <h3>محصولات من</h3>
+        <div id="uProducts"><div class="u-empty">در حال دریافت…</div></div>
+      </div>
+
+      <div class="u-card">
+        <h3>سفارش‌های من</h3>
+        <div id="myOrders"><div class="u-empty">در حال دریافت…</div></div>
+      </div>
+
+      <div class="u-card">
+        <h3>رسپی‌های ذخیره‌شده</h3>
+        <div id="myFavs"><div class="u-empty">در حال دریافت…</div></div>
+      </div>
+
+      <div class="u-card">
+        <h3>اعلان‌ها</h3>
+        <div id="uNotifs"><div class="u-empty">در حال دریافت…</div></div>
+      </div>
+
+      <div class="u-card">
+        <h3>لیست خرید هوشمند</h3>
+        <div id="uList"><div class="u-empty">در حال دریافت…</div></div>
+      </div>
+
+      <div class="u-card u-prof">
+        <h3>پروفایل</h3>
+        <p>نام: <b id="uName">—</b></p>
+        <p>ایمیل: <b id="uEmail">—</b></p>
+        <p>موبایل: <b id="uPhone">—</b></p>
+        <button class="dl-btn" id="phEdit">ویرایش موبایل</button>
+      </div>
+
+      <div class="u-card u-vs-wrap" style="grid-column:1/-1">
+        <h3>مقایسه پلان‌ها</h3>
+        <div class="u-vs" id="uVs"></div>
+      </div>
+
     </div>
-
-    <div class="vs" id="uVs"></div>
   </div>
-  <div id="uLogin" style="display:none;text-align:center;padding:60px 0">
-    <h2>وارد حسابت شو 👋</h2>
-    <p style="color:#777;margin:10px 0 20px">برای دیدن داشبورد، برنامه غذایی و خریدها</p>
-    <button class="btn big" id="uLoginBtn">ورود با گوگل</button>
-  </div>
-</div></section>
+</section>
 
+<span id="userStat" style="display:none"></span>
 <footer id="ftr"></footer>
 <script src="site.js"></script>
 <script src="app.js"></script>
