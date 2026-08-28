@@ -11,7 +11,8 @@
   function faN(n) { return (Number(n) || 0).toLocaleString('fa-IR'); }
   function faDate(d) { if (!d) return '—'; try { return new Date(d).toLocaleDateString('fa-IR'); } catch (e) { return '—'; } }
   function safe(name, fn) {
-    return Promise.resolve().then(fn).catch(function (e) { console.error('user section error (' + name + '):', e); return null; });
+    return Promise.resolve().then(fn).catch(function (e) { console.error('user section error (' + name + '):', e); return null; }
+    );
   }
   async function getSessionSafe() {
     try {
@@ -108,16 +109,16 @@
       if (ent.pro) {
         var days = ent.pro_expires ? Math.max(0, Math.ceil((new Date(ent.pro_expires) - new Date()) / 86400000)) : null;
         if (badge) badge.innerHTML = '<span class="u-pro-badge">PRO فعال</span>';
-        if (proCard) proCard.innerHTML = '<div class="big">PRO فعال است</div><p style="font-size:12px;color:#667;margin-top:8px">' + (days != null ? faN(days) + ' روز تا پایان اشتراک' : 'بدون انقضا') + '</p><a class="btn ghost small" href="pro.html" style="margin-top:10px">مدیریت اشتراک</a>';
+        if (proCard) proCard.innerHTML = '<div class="big">PRO فعال است</div><p style="font-size:12px;color:#667;margin-top:8px">' + (days != null ? faN(days) + ' روز تا پایان اشتراک' : 'بدون انقضا') + '</p><a class="btn ghost small" href="pro.html">مدیریت اشتراک</a>';
       } else {
         if (badge) badge.innerHTML = '<span class="u-pro-badge" style="background:#e8f4e9;color:#2d6a35">پلان رایگان</span>';
-        if (proCard) proCard.innerHTML = '<div class="big">FREE</div><p style="font-size:12px;color:#667;margin-top:8px">با PRO، برنامه شخصی، ذخیره نامحدود و لیست خرید هوشمند باز می‌شود.</p><a class="btn small" href="pro.html" style="margin-top:10px">ارتقا به PRO</a>';
+        if (proCard) proCard.innerHTML = '<div class="big">FREE</div><p style="font-size:12px;color:#667;margin-top:8px">با PRO، برنامه شخصی، ذخیره نامحدود و لیست خرید هوشمند باز می‌شود.</p><a class="btn small" href="pro.html">ارتقا به PRO</a>';
       }
     });
 
     await safe('vs', function () {
       var vs = $('uVs');
-      if (vs) vs.innerHTML = '<div class="free"><h4>پلان رایگان</h4><ul><li>مشاهده همه رسپی‌ها</li><li>برنامه غذایی پایه (پلنر)</li><li>یخچال‌یاب (Ingredient Finder)</li><li>ذخیره تا ۱۰ رسپی</li><li>۵ پاسخ دستیار AI در ماه</li></ul></div><div class="pro"><h4>PRO</h4><ul><li>ذخیره نامحدود رسپی</li><li>لیست خرید هوشمند</li><li>برنامه غذایی اختصاصی از ادمین</li><li>PDF حرفه‌ای رژیم</li><li>۱۰۰ پاسخ دستیار AI در ماه</li></ul>' + (ent.pro ? '' : '<a class="btn" href="pro.html" style="margin-top:12px">ارتقا به PRO</a>') + '</div>';
+      if (vs) vs.innerHTML = '<div class="vs-free"><h4>پلان رایگان</h4><ul><li>مشاهده همه رسپی‌ها</li><li>برنامه غذایی پایه (پلنر)</li><li>یخچال‌یاب (Ingredient Finder)</li><li>ذخیره تا ۱۰ رسپی</li><li>۵ پاسخ دستیار AI در ماه</li></ul></div><div class="vs-pro"><h4>PRO</h4><ul><li>ذخیره نامحدود رسپی</li><li>لیست خرید هوشمند</li><li>برنامه غذایی اختصاصی از ادمین</li><li>PDF حرفه‌ای رژیم</li><li>۱۰۰ پاسخ دستیار AI در ماه</li></ul>' + (ent.pro ? '' : '<a class="btn" href="pro.html">ارتقا به PRO</a>') + '</div>';
     });
 
     await safe('ai usage', async function () {
@@ -218,7 +219,7 @@
         var r = await api('my_list');
         var cur = r.ok ? await r.json() : [];
         var items = Array.isArray(cur) && cur[0] && cur[0].items ? cur[0].items : [];
-        el.innerHTML = '<textarea id="slItems" style="width:100%;height:110px;border-radius:12px;border:1px solid #ccc;padding:10px;font:inherit;font-size:13px" placeholder="هر خط یک قلم خرید...">' + esc((items || []).join('\n')) + '</textarea><button class="btn small" id="slSave" style="margin-top:8px">ذخیره لیست</button>';
+        el.innerHTML = '<textarea id="slItems" style="width:100%;height:110px;border-radius:12px;border:1px solid #ccc;padding:10px;font:inherit;font-size:13px" placeholder="هر خط یک قلم خرید...">' + esc((items || []).join('\n')) + '</textarea><button class="btn small" id="slSave">ذخیره لیست</button>';
         var sv2 = $('slSave');
         if (sv2 && !sv2.dataset.bound) {
           sv2.dataset.bound = '1';
@@ -229,7 +230,7 @@
           };
         }
       } else {
-        el.innerHTML = '<div class="u-empty">لیست خرید هوشمند مخصوص PRO است.<br><a class="btn small" href="pro.html" style="margin-top:8px">ارتقا به PRO</a></div>';
+        el.innerHTML = '<div class="u-empty">لیست خرید هوشمند مخصوص PRO است.<br><a class="btn small" href="pro.html">ارتقا به PRO</a></div>';
       }
     });
   }
