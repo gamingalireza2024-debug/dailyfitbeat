@@ -9,42 +9,58 @@
 <link rel="stylesheet" href="style.css">
 <style>
 html,body{overflow-x:hidden}
-.pl-wrap{max-width:860px;margin:0 auto;padding:16px}
-.pl-hero{text-align:center;padding:16px 0 6px}
-.pl-hero h1{font-size:22px;font-weight:900}
-.pl-hero p{color:#667066;font-size:13px;margin-top:6px}
-.pl-box{background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border-radius:22px;padding:18px;box-shadow:0 8px 26px rgba(30,43,28,.08);margin:14px 0}
-.pl-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
-.pl-row input{padding:9px 12px;border-radius:12px;border:1px solid #ccc;font:inherit;font-size:13px;background:#fff;width:150px}
-.pl-row label{font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center;background:#fff;border-radius:999px;padding:8px 14px;box-shadow:0 3px 10px rgba(0,0,0,.06);cursor:pointer}
-#plGo{margin-top:14px;width:100%}
-.pl-empty{color:#98a298;text-align:center;font-size:12px;padding:14px}
-.day-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06)}
-.day-card h4{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
-.meal-line{display:flex;gap:8px;align-items:baseline;padding:7px 0;border-top:1px dashed #e5efe5;font-size:13px;flex-wrap:wrap}
-.meal-line b{color:#2d6a35;min-width:88px}
+.pb-wrap{max-width:900px;margin:0 auto;padding:20px 16px 46px}
+.pb-head{text-align:center;padding:26px 0 6px}
+.pb-head h1{font-size:26px;font-weight:900;color:#1e2b1c}
+.pb-head p{color:#667066;font-size:13px;margin-top:8px}
+.pb-card{background:#fff;border-radius:24px;padding:22px;box-shadow:0 10px 30px rgba(30,43,28,.08);margin:18px 0}
+.pb-grid{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+.pb-pill{display:flex;gap:8px;align-items:center;background:#f2f7f2;border:1px solid #e2ecdf;border-radius:999px;padding:9px 16px;font-size:12.5px;font-weight:700;color:#2d3a2d;cursor:pointer;transition:background .2s}
+.pb-pill:hover{background:#e8f4e9}
+.pb-pill input{accent-color:#2d6a35;width:16px;height:16px;cursor:pointer}
+.pb-input,.pb-select{padding:10px 14px;border-radius:14px;border:1px solid #d8e2d8;font:inherit;font-size:13px;background:#fff;color:#1e2b1c}
+.pb-input:focus,.pb-select:focus{outline:2px solid #2d6a35;border-color:#2d6a35}
+.pb-cta{display:block;width:100%;margin-top:16px;border:0;background:#2d6a35;color:#fff;border-radius:16px;padding:15px;font:inherit;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(45,106,53,.25);transition:background .2s}
+.pb-cta:hover{background:#255a2d}
+.pb-cta:disabled{opacity:.55;cursor:default}
+.pb-sec{display:block;margin:12px auto 0;border:1.5px solid #2d6a35;color:#2d6a35;background:#fff;border-radius:14px;padding:11px 26px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.pb-sec:disabled{opacity:.45;cursor:default}
+.pb-empty{color:#98a298;text-align:center;font-size:12.5px;padding:16px}
+.day-card{background:#fff;border-radius:20px;padding:18px;margin:14px 0;box-shadow:0 6px 18px rgba(30,43,28,.07)}
+.day-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.day-head b{background:#2d6a35;color:#fff;border-radius:10px;padding:6px 14px;font-size:12.5px}
+.day-head small{color:#2d6a35;font-weight:800;font-size:12px}
+.meal-line{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px dashed #e5efe5;font-size:13px;flex-wrap:wrap}
+.meal-line b{color:#2d6a35;min-width:96px;font-size:12px;background:#f2f7f2;border-radius:8px;padding:3px 10px;text-align:center}
+.meal-line a{color:#1e2b1c;font-weight:700;text-decoration:none}
+.meal-line a:hover{color:#2d6a35}
 .meal-line small{color:#77807a}
-.info-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06);font-size:12.5px;line-height:2}
-.info-card h4{font-size:14px;margin-bottom:8px}
-.info-card li{list-style:none;padding:2px 0}
-.shop-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 4px 14px rgba(0,0,0,.06)}
-.shop-card ul{columns:2;font-size:12.5px;line-height:2.1}
+.info-card{background:#fff;border-radius:20px;padding:18px;margin:14px 0;box-shadow:0 6px 18px rgba(30,43,28,.07);font-size:12.5px;line-height:2.1;border-inline-start:4px solid #2d6a35}
+.info-card h4{font-size:14px;margin-bottom:6px}
+.info-card li{list-style:none}
+.info-card .warn{color:#8a6d00;background:#fff8e6;border-radius:12px;padding:10px;margin-top:8px;font-size:11px}
+.shop-card{background:#fff;border-radius:20px;padding:18px;margin:14px 0;box-shadow:0 6px 18px rgba(30,43,28,.07);border-inline-start:4px solid #b26a00}
+.shop-card h3{font-size:14px;margin-bottom:8px}
+.shop-card ul{columns:2;font-size:12.5px;line-height:2.2}
 .shop-card li{list-style:none}
-@media(max-width:600px){.shop-card ul{columns:1}.pl-row{flex-direction:column}.pl-row input{width:100%}}
+@media(max-width:600px){.pb-grid{flex-direction:column}.pb-pill{width:100%;justify-content:center}.pb-input{width:100%}.shop-card ul{columns:1}}
 </style>
 </head>
 <body data-page="planner">
 <header id="hdr"></header>
-<section><div class="container pl-wrap">
-  <div class="pl-hero"><h1>برنامه غذایی هفتگی</h1><p>۵ وعده در روز، شخصی‌سازی‌شده با پروفایل تو + لیست خرید هفتگی.</p></div>
-  <div class="pl-box">
-    <div class="pl-row">
-      <input id="plKcal" type="number" placeholder="کالری هدف روزانه" value="2000">
-      <input id="plIng" placeholder="مواد یخچالت (اختیاری)" style="flex:1;min-width:200px">
-      <label><input type="checkbox" id="plProf" checked> استفاده از پروفایل تغذیه من</label>
+<section><div class="container pb-wrap">
+  <div class="pb-head">
+    <h1>برنامه غذایی هفتگی</h1>
+    <p>۵ وعده در روز، شخصی‌سازی‌شده با پروفایل تو + لیست خرید هفتگی.</p>
+  </div>
+  <div class="pb-card">
+    <div class="pb-grid">
+      <input id="plKcal" class="pb-input" type="number" value="2000" aria-label="کالری هدف روزانه" style="width:130px">
+      <input id="plIng" class="pb-input" placeholder="مواد یخچالت (اختیاری): مرغ، قارچ، نان…" style="flex:1;min-width:220px">
+      <label class="pb-pill"><input type="checkbox" id="plProf" checked> استفاده از پروفایل تغذیه من</label>
     </div>
-    <button class="btn" id="plGo">✨ ساخت برنامه ۷ روزه</button>
-    <div style="text-align:center;margin-top:10px"><button class="btn" id="plPdf" disabled>📥 دانلود PDF برنامه</button></div>
+    <button class="pb-cta" id="plGo">ساخت برنامه ۷ روزه</button>
+    <button class="pb-sec" id="plPdf" disabled>دانلود PDF برنامه</button>
   </div>
   <div id="plOut"></div>
   <div id="plShopWrap"></div>
