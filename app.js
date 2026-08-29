@@ -1,5 +1,3 @@
-document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="glass.css">');
-document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="design.css">');
 var $ = function (s) { return document.querySelector(s); };
 var lang = 'fa';
 try { lang = localStorage.getItem('dfb-lang') || 'fa'; } catch (e) {}
@@ -133,18 +131,12 @@ async function bootAuth() {
 function injectFooter() {
   var f = document.getElementById('ftr');
   if (!f) return;
-  f.innerHTML = '<div class="container f-cols">' +
+  f.innerHTML = '<div class="f-cols">' +
     '<div><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><p>غذای سالم که واقعاً خوشمزه به نظر می‌رسه.</p></div>' +
     '<div><b>رسپی‌ها</b><a href="recipes.html">ایرانی</a><a href="recipes.html">سالادها</a><a href="recipes.html">ساندویچ‌ها</a></div>' +
-    '<div><b>محصول</b><a href="planner.html">برنامه غذایی</a><a href="index.html#finder">امروز چی داری؟</a><a href="pro.html">PRO</a></div>' +
+    '<div><b>محصول</b><a href="planner.html">برنامه غذایی</a><a href="index.html">امروز چی داری؟</a><a href="pro.html">PRO</a></div>' +
     '<div><b>فیت مارکت</b><a href="market.html">محصولات دیجیتال</a><a href="https://instagram.com/dailyfitbeat">اینستاگرام</a><a href="market.html">ثبت سفارش</a></div>' +
     '</div><div class="f-bottom">© DailyFitBeat</div>';
-}
-function injectHomeAI() {
-  if (page !== 'home') return;
-  var f = document.getElementById('ftr');
-  if (!f) return;
-  f.insertAdjacentHTML('beforebegin', '<section style="padding:44px 0"><div class="container" style="background:linear-gradient(135deg,#2d6a35,#1e4a26);border-radius:26px;color:#fff;padding:34px;text-align:center;box-shadow:0 12px 34px rgba(30,43,28,.25)"><h3 style="font-size:20px;font-weight:900">دستیار تغذیه DailyFitBeat</h3><p style="opacity:.92;font-size:13px;margin:10px auto 18px;max-width:480px;line-height:2">بگو چی داری یا چه هدفی داری؛ دستیار فقط از رسپی‌های واقعی سایت بهت پیشنهاد می‌ده.</p><a class="btn" href="ai.html" style="background:#fff;color:#2d6a35">با دستیار تغذیه صحبت کن</a></div></section>');
 }
 function toggleLang() {
   lang = lang === 'fa' ? 'en' : 'fa';
@@ -279,7 +271,6 @@ async function initDetail() {
   if (!el) return;
   if (!r) { el.innerHTML = '<p class="no-res">پیدا نشد</p>'; return; }
   document.title = r.name_fa + ' | DailyFitBeat';
-  if (window.DFB_setRecipeMeta) window.DFB_setRecipeMeta(r);
   var ings = Array.isArray(r.ingredients) ? r.ingredients : [];
   var favOn = false;
   if (sb && USER) {
@@ -288,16 +279,16 @@ async function initDetail() {
       favOn = !d.error && !!d.data;
     } catch (e) {}
   }
-  var fatC = (r.fat != null && r.fat > 20) ? '#d33' : 'var(--accent,#f97316)';
-  var sugC = (r.sugar != null && r.sugar > 10) ? '#e9b949' : 'var(--accent,#f97316)';
+  var fatC = (r.fat != null && r.fat > 20) ? '#d33' : 'var(--accent)';
+  var sugC = (r.sugar != null && r.sugar > 10) ? '#e9b949' : 'var(--accent)';
   var nut = function (val, label, w, color) { return '<div class="nut"><b>' + val + '</b><span>' + label + '</span><i class="nb" style="--w:' + Math.min(100, w) + '%;--c:' + color + '"></i></div>'; };
   var nutritionBars = '<div class="nut-row">' +
-    nut(r.kcal || 0, 'انرژی (کالری)', (r.kcal / 2000) * 100, 'var(--accent,#f97316)') +
-    nut((r.protein || 0) + 'g', 'پروتئین', (r.protein / 50) * 100, 'var(--accent,#f97316)') +
-    (r.carbs != null ? nut(r.carbs + 'g', 'کربوهیدرات', (r.carbs / 100) * 100, 'var(--accent,#f97316)') : '') +
+    nut(r.kcal || 0, 'انرژی (کالری)', (r.kcal / 2000) * 100, 'var(--accent)') +
+    nut((r.protein || 0) + 'g', 'پروتئین', (r.protein / 50) * 100, 'var(--accent)') +
+    (r.carbs != null ? nut(r.carbs + 'g', 'کربوهیدرات', (r.carbs / 100) * 100, 'var(--accent)') : '') +
     (r.fat != null ? nut(r.fat + 'g', 'چربی', (r.fat / 70) * 100, fatC) : '') +
     (r.sugar != null ? nut(r.sugar + 'g', 'قند', (r.sugar / 50) * 100, sugC) : '') +
-    (r.fiber != null ? nut(r.fiber + 'g', 'فیبر', (r.fiber / 30) * 100, 'var(--accent,#f97316)') : '') +
+    (r.fiber != null ? nut(r.fiber + 'g', 'فیبر', (r.fiber / 30) * 100, 'var(--accent)') : '') +
     '</div>';
   var stepsHtml = Array.isArray(r.steps) && r.steps.length ? '<div class="steps-section"><h3>مراحل پخت</h3><ol class="steps-list">' + r.steps.map(function (s, i) { return '<li><span class="step-num">' + (i + 1) + '</span><p>' + s + '</p></li>'; }).join('') + '</ol></div>' : '';
   var tipsHtml = Array.isArray(r.tips) && r.tips.length ? '<div class="tips-section"><h3>نکات پخت</h3><ul class="tips-list">' + r.tips.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul></div>' : '';
@@ -387,7 +378,6 @@ async function loadAll() {
 
 injectHeader();
 injectFooter();
-injectHomeAI();
 bindScroll();
 bootAuth();
 document.documentElement.lang = lang;
