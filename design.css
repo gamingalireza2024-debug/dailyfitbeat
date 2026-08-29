@@ -1,4 +1,10 @@
-/* ================= DailyFitBeat — Single Design System ================= */
+/* =========================================================
+   DailyFitBeat — Single Design System
+   معماری: TOKENS → RESET → TYPOGRAPHY → LAYOUT → HEADER →
+   BUTTONS → FORMS → CARDS → GLASS → صفحات (scoped) → FOOTER → RESPONSIVE
+   ========================================================= */
+
+/* ---------- TOKENS ---------- */
 :root{
   --accent:#f97316;
   --accent-soft:rgba(249,115,22,.10);
@@ -13,16 +19,26 @@
   --shadow:0 10px 30px rgba(17,24,39,.06);
   --r:20px;
 }
+
+/* ---------- RESET ---------- */
 *,*::before,*::after{box-sizing:border-box}
 html,body{overflow-x:hidden}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Vazirmatn',sans-serif}
 img{max-width:100%}
-a{color:var(--accent)}
-h1,h2,h3{color:var(--ink)}
-.container{max-width:1200px;margin:0 auto;padding:0 20px}
 
-/* ---------- Header (one system, all pages) ---------- */
-#hdr{max-width:1240px;margin:12px auto 0;padding:10px 18px;display:flex;align-items:center;gap:18px;background:rgba(255,255,255,.86);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);position:sticky;top:10px;z-index:50}
+/* ---------- TYPOGRAPHY ---------- */
+h1,h2,h3{color:var(--ink)}
+a{color:var(--accent)}
+
+/* ---------- LAYOUT ---------- */
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+.page-head{padding:34px 0 10px;text-align:center}
+.page-head h1{font-size:24px;font-weight:900;margin:0 0 8px}
+.page-head h1::after{content:"";display:block;width:44px;height:4px;border-radius:99px;background:var(--accent);margin:10px auto 0}
+.page-head p{color:var(--ink-soft);font-size:13px;margin:0}
+
+/* ---------- HEADER (واحد برای همه صفحات) ---------- */
+#hdr{max-width:1240px;margin:12px auto 0;padding:10px 18px;display:flex;align-items:center;gap:18px;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--glass-br);border-radius:18px;box-shadow:var(--shadow);position:sticky;top:10px;z-index:50}
 #hdr .logo{display:flex;align-items:center}
 #hdr .logo img{height:40px}
 #hdr nav{display:flex;gap:20px;margin-inline-start:auto}
@@ -40,21 +56,23 @@ h1,h2,h3{color:var(--ink)}
 #hdr .mnav a.on{color:var(--accent);background:var(--accent-soft)}
 #hdr .mnav.open{display:flex}
 
-/* ---------- Buttons ---------- */
+/* ---------- BUTTONS (یک سیستم + variantها) ---------- */
 .btn{display:inline-block;background:var(--accent);color:#fff;border:0;border-radius:14px;padding:12px 26px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;text-decoration:none;box-shadow:0 10px 24px rgba(249,115,22,.25);transition:.2s}
 .btn:hover{filter:brightness(.96)}
-.btn.ghost{background:var(--glass);color:var(--ink);border:1px solid var(--glass-br);backdrop-filter:blur(12px);box-shadow:var(--shadow)}
 .btn.small{padding:9px 18px;font-size:12px}
-.btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.ghost{background:var(--glass);color:var(--ink);border:1px solid var(--glass-br);backdrop-filter:blur(12px);box-shadow:var(--shadow)}
 
-/* ---------- Chips / badges ---------- */
-.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font:inherit;font-size:12px;cursor:pointer;color:var(--ink-soft)}
-.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:700}
-.pbadge{border-radius:99px;padding:4px 12px;font-size:11px;font-weight:700;color:#fff;background:var(--accent);display:inline-block}
-.empty{color:var(--muted);font-size:12px;line-height:2}
-.no-res{color:var(--muted);text-align:center;font-size:12.5px;padding:18px}
+/* ---------- FORMS ---------- */
+input,select,textarea{font:inherit}
+input:focus-visible,select:focus-visible,textarea:focus-visible,
+.btn:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.modal{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:center;justify-content:center;z-index:90;padding:14px}
+.modal-box{background:var(--surface);border-radius:22px;padding:24px;max-width:420px;width:100%}
+.modal-box h3{margin:0 0 8px;font-size:16px}
+.modal-box p{color:var(--ink-soft);font-size:12.5px;margin:0 0 14px}
+.modal-box input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);font-size:13px;margin-bottom:12px}
 
-/* ---------- Cards (recipe) ---------- */
+/* ---------- CARDS / COMPONENTS مشترک ---------- */
 .card{display:block;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);transition:transform .2s}
 .card:hover{transform:translateY(-3px)}
 .card .c-img img{width:100%;height:170px;object-fit:cover;display:block}
@@ -63,80 +81,17 @@ h1,h2,h3{color:var(--ink)}
 .card .c-meta{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:11px}
 .card .c-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
 .card .c-tags i{font-style:normal;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 10px;font-size:10.5px;font-weight:700}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-size:12px;cursor:pointer;color:var(--ink-soft)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:700}
+.pbadge{border-radius:99px;padding:4px 12px;font-size:11px;font-weight:700;color:#fff;background:var(--accent);display:inline-block}
+.empty{color:var(--muted);font-size:12px;line-height:2}
+.no-res{color:var(--muted);text-align:center;font-size:12.5px;padding:18px}
 
-/* ---------- Recipes page ---------- */
-.filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px 0}
-#recipeSearch,#searchInput{width:100%;max-width:420px;margin:0 auto 16px;display:block;padding:12px 16px;border-radius:14px;border:1px solid var(--line);font:inherit;font-size:13px;background:var(--surface)}
-#tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:16px 0}
-.tile{position:relative;border:0;border-radius:16px;overflow:hidden;cursor:pointer;padding:0;background:var(--surface);box-shadow:var(--shadow);font:inherit}
-.tile img{width:100%;height:110px;object-fit:cover;display:block}
-.tile b{display:block;padding:10px 8px 2px;font-size:12.5px;color:var(--ink);text-align:center}
-.tile span{display:block;padding:0 8px 12px;font-size:10.5px;color:var(--muted);text-align:center}
-.tile.on{outline:2px solid var(--accent)}
-#recipeGrid,#results,#popularCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+/* ---------- GLASS (Component Style، نه Override سراسری) ----------
+   Glass فقط از طریق متغیرهای --glass/--glass-br روی کامپوننت‌های
+   مشخص (هدر، auth-chip، btn.ghost، hm-quick، hm-car-nav، ingAdd) اعمال می‌شود. */
 
-/* ---------- Page head ---------- */
-.page-head{padding:34px 0 10px;text-align:center}
-.page-head h1{font-size:24px;font-weight:900;margin:0 0 8px}
-.page-head h1::after{content:"";display:block;width:44px;height:4px;border-radius:99px;background:var(--accent);margin:10px auto 0}
-.page-head p{color:var(--ink-soft);font-size:13px;margin:0}
-
-/* ---------- Modal ---------- */
-.modal{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:center;justify-content:center;z-index:90;padding:14px}
-.modal-box{background:var(--surface);border-radius:22px;padding:24px;max-width:420px;width:100%}
-.modal-box h3{margin:0 0 8px;font-size:16px}
-.modal-box p{color:var(--ink-soft);font-size:12.5px;margin:0 0 14px}
-.modal-box input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);font:inherit;font-size:13px;margin-bottom:12px}
-
-/* ---------- Footer ---------- */
-#ftr{background:#111827;color:#d1d5db;margin-top:60px}
-#ftr .f-cols{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:44px;padding:58px 20px 34px}
-#ftr .f-logo{height:44px}
-#ftr b{color:#fff;font-size:13px;margin-bottom:12px;display:block}
-#ftr a{display:block;color:#9ca3af;font-size:12.5px;line-height:2.4;text-decoration:none}
-#ftr a:hover{color:var(--accent)}
-#ftr p{font-size:12.5px;color:#9ca3af}
-#ftr .f-bottom{border-top:1px solid #1f2937;color:#6b7280;padding:18px 20px;font-size:11px;text-align:center}
-
-/* ---------- Recipe detail ---------- */
-.rd-wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:26px;padding:26px 0}
-.rd-img{position:relative;border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
-.rd-img img{width:100%;height:100%;min-height:320px;object-fit:cover;display:block}
-.heart{position:absolute;top:14px;inset-inline-end:14px;background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--glass-br);border-radius:50%;width:42px;height:42px;font-size:18px;color:var(--ink-soft);cursor:pointer}
-.heart.on{color:var(--accent)}
-.rd-region{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:5px 14px;font-size:11px;font-weight:700;margin-bottom:10px}
-.rd-info h1{font-size:26px;margin:0 0 4px}
-.rd-en{color:var(--muted);font-size:12px;margin:0 0 10px}
-.rd-desc{color:var(--ink-soft);font-size:13px;line-height:2}
-.rd-stats{display:flex;gap:22px;margin:16px 0}
-.rd-stats b{font-size:18px;color:var(--accent)}
-.rd-stats span{display:block;color:var(--muted);font-size:11px}
-.nut-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:14px 0}
-.nut{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
-.nut b{font-size:14px}
-.nut span{display:block;color:var(--muted);font-size:10.5px;margin:4px 0 6px}
-.nut .nb{display:block;height:5px;border-radius:99px;background:var(--line);position:relative;overflow:hidden}
-.nut .nb::after{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:var(--w,50%);background:var(--c,var(--accent));border-radius:99px}
-.ing-list{list-style:none;margin:0;padding:0}
-.ing-list li{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px}
-.ing-list li span{color:var(--muted)}
-.steps-section h3,.tips-section h3,.subs-section h3,.video-section h3{font-size:15px;margin:20px 0 10px}
-.steps-list{margin:0;padding:0;list-style:none}
-.steps-list li{display:flex;gap:12px;margin-bottom:12px}
-.step-num{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
-.steps-list p{margin:0;font-size:13px;line-height:2;color:var(--ink-soft)}
-.tips-list{margin:0;padding:0;list-style:none}
-.tips-list li{background:var(--accent-soft);border-radius:12px;padding:9px 14px;margin-bottom:8px;font-size:12.5px;color:var(--ink)}
-.subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
-.sub-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center;font-size:12px}
-.sub-card span{color:var(--accent)}
-.video-card{display:block;text-decoration:none;color:var(--ink)}
-.video-thumb{position:relative;border-radius:18px;overflow:hidden}
-.video-thumb img{width:100%;height:200px;object-fit:cover}
-.play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(17,24,39,.25);color:#fff;font-size:26px}
-.f-cta{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
-
-/* ---------- Home (scoped) ---------- */
+/* ---------- HOME (scoped) ---------- */
 body[data-page="home"]{padding-top:0}
 body[data-page="home"] #hdr{position:static;top:auto;margin:12px auto}
 body[data-page="home"] section [style*="linear-gradient(135deg,#2d6a35"]{display:none}
@@ -205,17 +160,110 @@ body[data-page="home"] .hm-find h3::before{content:"";width:22px;height:3px;bord
 body[data-page="home"] .hm-find p{color:var(--ink-soft);font-size:12.5px;margin:0 0 18px}
 body[data-page="home"] #chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 body[data-page="home"] .hm-find-row{display:flex;gap:10px;flex-wrap:wrap}
-body[data-page="home"] .hm-find-row input{flex:1;min-width:200px;padding:12px 16px;border-radius:14px;border:1px solid var(--line);font:inherit;font-size:13px;background:#fff;min-height:46px}
-body[data-page="home"] .hm-find-row button{border:0;border-radius:14px;padding:12px 24px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;min-height:46px}
+body[data-page="home"] .hm-find-row input{flex:1;min-width:200px;padding:12px 16px;border-radius:14px;border:1px solid var(--line);font-size:13px;background:#fff;min-height:46px}
+body[data-page="home"] .hm-find-row input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+body[data-page="home"] .hm-find-row button{border:0;border-radius:14px;padding:12px 24px;font-size:13px;font-weight:800;cursor:pointer;min-height:46px}
 body[data-page="home"] #goBtn{background:var(--accent);color:#fff;box-shadow:0 10px 24px rgba(249,115,22,.25)}
 body[data-page="home"] #ingAdd{background:var(--glass);border:1px solid var(--glass-br);color:var(--ink);backdrop-filter:blur(8px)}
+body[data-page="home"] #results{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:18px}
 
-/* ---------- Responsive (global) ---------- */
+/* ---------- RECIPES (scoped) ---------- */
+body[data-page="recipes"] #recipeSearch{width:100%;max-width:420px;margin:0 auto 16px;display:block;padding:12px 16px;border-radius:14px;border:1px solid var(--line);font-size:13px;background:var(--surface)}
+body[data-page="recipes"] .filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+body[data-page="recipes"] #tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:16px 0}
+body[data-page="recipes"] .tile{position:relative;border:0;border-radius:16px;overflow:hidden;cursor:pointer;padding:0;background:var(--surface);box-shadow:var(--shadow);font:inherit}
+body[data-page="recipes"] .tile img{width:100%;height:110px;object-fit:cover;display:block}
+body[data-page="recipes"] .tile b{display:block;padding:10px 8px 2px;font-size:12.5px;color:var(--ink);text-align:center}
+body[data-page="recipes"] .tile span{display:block;padding:0 8px 12px;font-size:10.5px;color:var(--muted);text-align:center}
+body[data-page="recipes"] .tile.on{outline:2px solid var(--accent)}
+body[data-page="recipes"] #recipeGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
+
+/* ---------- RECIPE (scoped) ---------- */
+body[data-page="recipe"] .rd-wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:26px;padding:26px 0}
+body[data-page="recipe"] .rd-img{position:relative;border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
+body[data-page="recipe"] .rd-img img{width:100%;height:100%;min-height:320px;object-fit:cover;display:block}
+body[data-page="recipe"] .heart{position:absolute;top:14px;inset-inline-end:14px;background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--glass-br);border-radius:50%;width:42px;height:42px;font-size:18px;color:var(--ink-soft);cursor:pointer}
+body[data-page="recipe"] .heart.on{color:var(--accent)}
+body[data-page="recipe"] .rd-region{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:5px 14px;font-size:11px;font-weight:700;margin-bottom:10px}
+body[data-page="recipe"] .rd-info h1{font-size:26px;margin:0 0 4px}
+body[data-page="recipe"] .rd-en{color:var(--muted);font-size:12px;margin:0 0 10px}
+body[data-page="recipe"] .rd-desc{color:var(--ink-soft);font-size:13px;line-height:2}
+body[data-page="recipe"] .rd-stats{display:flex;gap:22px;margin:16px 0}
+body[data-page="recipe"] .rd-stats b{font-size:18px;color:var(--accent)}
+body[data-page="recipe"] .rd-stats span{display:block;color:var(--muted);font-size:11px}
+body[data-page="recipe"] .nut-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:14px 0}
+body[data-page="recipe"] .nut{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+body[data-page="recipe"] .nut b{font-size:14px}
+body[data-page="recipe"] .nut span{display:block;color:var(--muted);font-size:10.5px;margin:4px 0 6px}
+body[data-page="recipe"] .nut .nb{display:block;height:5px;border-radius:99px;background:var(--line);position:relative;overflow:hidden}
+body[data-page="recipe"] .nut .nb::after{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:var(--w,50%);background:var(--c,var(--accent));border-radius:99px}
+body[data-page="recipe"] .ing-list{list-style:none;margin:0;padding:0}
+body[data-page="recipe"] .ing-list li{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px}
+body[data-page="recipe"] .ing-list li span{color:var(--muted)}
+body[data-page="recipe"] .steps-section h3,
+body[data-page="recipe"] .tips-section h3,
+body[data-page="recipe"] .subs-section h3,
+body[data-page="recipe"] .video-section h3{font-size:15px;margin:20px 0 10px}
+body[data-page="recipe"] .steps-list{margin:0;padding:0;list-style:none}
+body[data-page="recipe"] .steps-list li{display:flex;gap:12px;margin-bottom:12px}
+body[data-page="recipe"] .step-num{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+body[data-page="recipe"] .steps-list p{margin:0;font-size:13px;line-height:2;color:var(--ink-soft)}
+body[data-page="recipe"] .tips-list{margin:0;padding:0;list-style:none}
+body[data-page="recipe"] .tips-list li{background:var(--accent-soft);border-radius:12px;padding:9px 14px;margin-bottom:8px;font-size:12.5px;color:var(--ink)}
+body[data-page="recipe"] .subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+body[data-page="recipe"] .sub-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;gap:8px;align-items:center;font-size:12px}
+body[data-page="recipe"] .sub-card span{color:var(--accent)}
+body[data-page="recipe"] .video-card{display:block;text-decoration:none;color:var(--ink)}
+body[data-page="recipe"] .video-thumb{position:relative;border-radius:18px;overflow:hidden}
+body[data-page="recipe"] .video-thumb img{width:100%;height:200px;object-fit:cover}
+body[data-page="recipe"] .play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(17,24,39,.25);color:#fff;font-size:26px}
+body[data-page="recipe"] .f-cta{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+
+/* ---------- PLANNER ----------
+   استایل اختصاصی این صفحه در <style> داخلی planner.html نگهداری می‌شود
+   (در این فاز بدون تغییر). کامپوننت‌های مشترک (btn/chip/card/footer)
+   از همین Design System اعمال می‌شوند. */
+
+/* ---------- MEALPLAN ----------
+   استایل اختصاصی این صفحه در <style> داخلی mealplan.html نگهداری می‌شود
+   (در این فاز بدون تغییر). */
+
+/* ---------- MARKET ----------
+   استایل اختصاصی این صفحه در <style> داخلی market.html نگهداری می‌شود
+   (در این فاز بدون تغییر). */
+
+/* ---------- PRO ----------
+   استایل اختصاصی این صفحه در <style> داخلی pro.html نگهداری می‌شود
+   (در این فاز بدون تغییر). */
+
+/* ---------- AI ----------
+   استایل اختصاصی این صفحه در <style> داخلی ai.html نگهداری می‌شود
+   (در این فاز بدون تغییر). */
+
+/* ---------- USER ----------
+   استایل اختصاصی این صفحه در <style> داخلی user.html نگهداری می‌شود
+   (در این فاز بدون تغییر). */
+
+/* ---------- ADMIN ----------
+   استایل اختصاصی این صفحه در <style> داخلی admin.html نگهداری می‌شود
+   (در این فاز بدون تغییر). */
+
+/* ---------- FOOTER (واحد برای همه صفحات) ---------- */
+#ftr{background:#111827;color:#d1d5db;margin-top:60px}
+#ftr .f-cols{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:44px;padding:58px 20px 34px}
+#ftr .f-logo{height:44px}
+#ftr b{color:#fff;font-size:13px;margin-bottom:12px;display:block}
+#ftr a{display:block;color:#9ca3af;font-size:12.5px;line-height:2.4;text-decoration:none}
+#ftr a:hover{color:var(--accent)}
+#ftr p{font-size:12.5px;color:#9ca3af}
+#ftr .f-bottom{border-top:1px solid #1f2937;color:#6b7280;padding:18px 20px;font-size:11px;text-align:center}
+
+/* ---------- RESPONSIVE ---------- */
 @media(max-width:900px){
   #hdr{margin:10px 12px 0;padding:10px 14px}
   #hdr nav{display:none}
   #hdr .burger{display:flex}
-  .rd-wrap{grid-template-columns:1fr}
+  body[data-page="recipe"] .rd-wrap{grid-template-columns:1fr}
 }
 @media(max-width:1200px){
   body[data-page="home"] .hm-quick{width:170px}
