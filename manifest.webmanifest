@@ -1,0 +1,16 @@
+{
+  "name": "DailyFitBeat | دیلی‌بیت",
+  "short_name": "DailyFitBeat",
+  "description": "غذای سالم، تمرین هوشمند، نتایج پایدار",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#f97316",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": [
+    { "src": "img/favicon.png", "sizes": "64x64", "type": "image/png" },
+    { "src": "img/logo.png", "sizes": "any", "type": "image/png" }
+  ]
+}
