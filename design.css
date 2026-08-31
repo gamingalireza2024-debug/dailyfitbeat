@@ -220,7 +220,6 @@ body[data-page="recipe"] .video-thumb{position:relative;border-radius:18px;overf
 body[data-page="recipe"] .video-thumb img{width:100%;height:200px;object-fit:cover}
 body[data-page="recipe"] .play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(17,24,39,.25);color:#fff;font-size:26px}
 body[data-page="recipe"] .f-cta{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
-/* گرید «رسپی‌های مرتبط» (هر نام احتمالی کانتینر) */
 body[data-page="recipe"] #related,
 body[data-page="recipe"] #relatedGrid,
 body[data-page="recipe"] #relatedCards,
@@ -228,7 +227,7 @@ body[data-page="recipe"] .related,
 body[data-page="recipe"] .related-grid,
 body[data-page="recipe"] .rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin:16px 0}
 
-/* ---------- MARKET (بازگردانی کامپوننت‌های قدیمی) ---------- */
+/* ---------- MARKET ---------- */
 body[data-page="market"] #prodGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin:20px 0}
 .pcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
 .pcard .p-img{position:relative}
@@ -241,13 +240,21 @@ body[data-page="market"] #prodGrid{display:grid;grid-template-columns:repeat(aut
 .pcard .p-price{font-weight:900;color:var(--accent);font-size:14px;margin:8px 0}
 .pcard .p-price s{color:var(--muted);font-weight:400;font-size:11px;margin-inline-start:6px}
 .pcard .p-cart{display:block;width:100%}
-.order-box{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px;margin-top:26px;box-shadow:var(--shadow)}
-.order-box h3{margin:0 0 12px;font-size:15px}
-.order-box input,.order-box select,.order-box textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);font-size:13px;margin-bottom:10px;background:#fff}
-.order-box button{border:0;background:var(--accent);color:#fff;border-radius:14px;padding:12px 26px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
-#orderOk{display:none;background:var(--accent-soft);color:var(--ink);border-radius:14px;padding:12px;margin-top:12px;font-size:12.5px;line-height:2}
+/* فرم سفارش: کامپکت، دوستونه و تمیز */
+.order-box{max-width:820px;margin:34px auto 0;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.order-box::before{content:"";position:absolute;top:0;inset-inline:0;height:4px;background:linear-gradient(to left,var(--accent),#fbaa5c)}
+.order-box h3{margin:0 0 18px;font-size:16px;font-weight:900;display:flex;align-items:center;gap:10px}
+.order-box h3::before{content:"";width:22px;height:3px;border-radius:99px;background:var(--accent)}
+#orderForm{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.order-box input,.order-box select,.order-box textarea{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:12.5px;margin:0;transition:border-color .2s,box-shadow .2s}
+.order-box input:focus,.order-box select:focus,.order-box textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.order-box select,.order-box textarea{grid-column:1/-1}
+.order-box textarea{min-height:84px;resize:vertical}
+.order-box button{grid-column:1/-1;justify-self:start;border:0;background:var(--accent);color:#fff;border-radius:14px;padding:12px 32px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(249,115,22,.25);transition:.2s}
+.order-box button:hover{filter:brightness(.96);transform:translateY(-1px)}
+#orderOk{display:none;background:var(--accent-soft);border:1px solid rgba(249,115,22,.25);color:var(--ink);border-radius:14px;padding:12px 16px;margin-top:14px;font-size:12.5px;line-height:2}
 
-/* ---------- PRO (بازگردانی کامپوننت‌های قدیمی) ---------- */
+/* ---------- PRO ---------- */
 body[data-page="pro"] .plan-tog{display:flex;gap:8px;justify-content:center;margin:18px 0}
 body[data-page="pro"] .plan-tog button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 20px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink-soft)}
 body[data-page="pro"] .plan-tog button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -263,7 +270,7 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
 .price-card .btn{margin-top:8px}
 
 /* ---------- PLANNER / MEALPLAN / AI / USER / ADMIN ----------
-   استایل اختصاصی هر صفحه در <style> داخلی همان HTML نگهداری می‌شود (بدون تغییر در این فاز). */
+   استایل اختصاصی هر صفحه در <style> داخلی همان HTML نگهداری می‌شود. */
 
 /* ---------- FOOTER ---------- */
 #ftr{background:var(--footer-bg);color:var(--footer-ink);margin-top:60px}
@@ -305,6 +312,8 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
   #ftr .f-cols{gap:26px;padding:40px 20px 24px}
   body[data-page="market"] #prodGrid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
   body[data-page="pro"] #planCards{grid-template-columns:1fr}
+  #orderForm{grid-template-columns:1fr}
+  .order-box{padding:22px 18px;margin:26px 12px 0}
 }
 @media(max-width:390px){
   body[data-page="home"] .hm-wrap{padding:0 16px}
