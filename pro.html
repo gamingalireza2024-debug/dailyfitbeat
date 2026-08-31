@@ -19,6 +19,69 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="design.css">
+<script type="application/ld+json" id="proLD"></script>
+<script>
+/* JSON-LD پویا برای اشتراک PRO — بعد از لود کارت‌ها اجرا می‌شود */
+(function () {
+  function buildProSchema() {
+    var cards = document.querySelectorAll('#planCards .price-card');
+    if (!cards.length) return false;
+    var offers = [];
+    cards.forEach(function (c) {
+      var title = (c.querySelector('h3') || {}).textContent || '';
+      var priceEl = c.querySelector('.p');
+      if (!priceEl) return;
+      var priceText = priceEl.textContent.replace(/[^\d]/g, '') || '0';
+      var periodEl = c.querySelector('.p small');
+      var period = periodEl ? periodEl.textContent.trim().replace(/^\s*\/\s*/, '') : '';
+      var features = [];
+      c.querySelectorAll('ul li').forEach(function (li) {
+        features.push(li.textContent.replace(/^✔\s*/, '').trim());
+      });
+      var duration = 'P1M';
+      if (/سال|سالانه|year/i.test(period)) duration = 'P1Y';
+      else if (/۳|3/i.test(period)) duration = 'P3M';
+      else if (/۶|6/i.test(period)) duration = 'P6M';
+      offers.push({
+        "@type": "Offer",
+        "name": title,
+        "price": priceText,
+        "priceCurrency": "IRR",
+        "availability": "https://schema.org/InStock",
+        "eligibleDuration": duration,
+        "description": features.join(' — ')
+      });
+    });
+    var schema = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Product",
+          "@id": "https://dailyfitbeat.ir/pro.html#product",
+          "name": "اشتراک PRO دیلی‌بیت",
+          "description": "برنامه غذایی اختصاصی از ادمین، ذخیره نامحدود رسپی، لیست خرید هوشمند و سهمیه بیشتر دستیار AI.",
+          "category": "Service",
+          "serviceType": "اشتراک ماهانه/سالانه",
+          "provider": {
+            "@type": "Organization",
+            "name": "DailyFitBeat",
+            "url": "https://dailyfitbeat.ir/"
+          },
+          "image": "https://dailyfitbeat.ir/img/og.jpg",
+          "offers": offers
+        }
+      ]
+    };
+    var ld = document.getElementById('proLD');
+    if (ld) ld.textContent = JSON.stringify(schema);
+    return true;
+  }
+  var tries = 0;
+  var t = setInterval(function () {
+    if (buildProSchema() || tries++ > 60) clearInterval(t);
+  }, 250);
+})();
+</script>
 </head>
 <body data-page="pro">
 <header id="hdr"></header>
@@ -34,7 +97,7 @@
   <div id="planCards"></div>
   <div class="pr-steps">
     <h3>روش خرید و فعال‌سازی</h3>
-    <p>۱. پلن موردنظر را انتخاب کن.<br>۲. کارت بانکی نمایش‌داده‌شده را واریض کن.<br>۳. کد پیگیری را ثبت کن.<br>۴. پس از تأیید ادمین، PRO به‌صورت خودکار در پنل تو فعال می‌شود.</p>
+    <p>۱. پلن موردنظر را انتخاب کن.<br>۲. کارت بانکی نمایش‌داده‌شده را واریز کن.<br>۳. کد پیگیری را ثبت کن.<br>۴. پس از تأیید ادمین، PRO به‌صورت خودکار در پنل تو فعال می‌شود.</p>
   </div>
 </div></section>
 <footer id="ftr"></footer>
