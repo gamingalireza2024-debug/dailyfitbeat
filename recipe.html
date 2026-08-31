@@ -28,5 +28,27 @@
 <script src="site.js"></script>
 <script src="app.js"></script>
 <script src="recipe-seo.js"></script>
+  <script>
+window.DFB_setRecipeMeta = function (r) {
+  try {
+    document.title = r.name_fa + ' | DailyFitBeat';
+    var canon = document.querySelector('link[rel="canonical"]');
+    if (canon) canon.href = 'https://dailyfitbeat.ir/recipe.html?slug=' + encodeURIComponent(r.slug);
+    var ogT = document.querySelector('meta[property="og:title"]'); if (ogT) ogT.content = r.name_fa + ' | DailyFitBeat';
+    var ogD = document.querySelector('meta[property="og:description"]'); if (ogD) ogD.content = (r.desc_fa || '').slice(0, 160);
+    var ogI = document.querySelector('meta[property="og:image"]'); if (ogI && r.image) ogI.content = new URL(r.image, location.origin).href;
+    var ld = document.getElementById('recipeLD');
+    if (ld) ld.textContent = JSON.stringify({
+      "@context": "https://schema.org", "@type": "Recipe",
+      name: r.name_fa, description: r.desc_fa || '', image: r.image || '',
+      totalTime: 'PT' + (r.time_min || 30) + 'M', recipeYield: '1 سرو',
+      recipeCategory: r.category || '', recipeCuisine: r.region || 'ایران',
+      nutrition: { "@type": "NutritionInformation", calories: (r.kcal || 0) + ' kcal', proteinContent: (r.protein || 0) + ' g' },
+      recipeIngredient: (r.ingredients || []).map(function (i) { return i.fa + ' ' + i.q; }),
+      recipeInstruction: (r.steps || []).map(function (s) { return { "@type": "HowToStep", text: s }; })
+    });
+  } catch (e) {}
+};
+</script>
 </body>
 </html>
