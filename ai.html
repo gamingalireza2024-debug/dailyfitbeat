@@ -72,7 +72,23 @@
     <label class="ai-tog"><input type="checkbox" id="useProf"> استفاده از پروفایل تغذیه من</label>
     <button class="btn-ghost-sm" id="profBtn">پروفایل تغذیه</button>
   </div>
-
+<div class="dfb-mascot" id="mascot" aria-hidden="true">
+  <img id="mascotImg" src="img/mascot-idle.png" alt="">
+  <span class="m-shadow"></span>
+</div>
+<style>
+.dfb-mascot{width:140px;margin:6px auto 12px;position:relative;text-align:center}
+.dfb-mascot img{width:100%;display:block;animation:mFloat 3s ease-in-out infinite;transform-origin:bottom center}
+.dfb-mascot .m-shadow{display:block;width:70%;height:10px;margin:6px auto 0;background:rgba(17,24,39,.12);border-radius:50%;filter:blur(4px);animation:mShadow 3s ease-in-out infinite}
+.dfb-mascot.think img{animation:mThink 1.2s ease-in-out infinite}
+.dfb-mascot.happy img{animation:mHappy .9s ease-in-out 2}
+.dfb-mascot.sad img{animation:mSad .8s ease-in-out 2}
+@keyframes mFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes mShadow{0%,100%{transform:scaleX(1);opacity:.5}50%{transform:scaleX(.8);opacity:.3}}
+@keyframes mThink{0%,100%{transform:rotate(0)}30%{transform:rotate(-7deg)}70%{transform:rotate(5deg)}}
+@keyframes mHappy{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-14px) scale(1.05)}}
+@keyframes mSad{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+</style>
   <div id="chat" aria-live="polite"></div>
 
   <div id="quick">
