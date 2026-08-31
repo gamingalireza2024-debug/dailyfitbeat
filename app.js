@@ -136,7 +136,8 @@ function injectFooter() {
     '<div><b>رسپی‌ها</b><a href="recipes.html">ایرانی</a><a href="recipes.html">سالادها</a><a href="recipes.html">ساندویچ‌ها</a></div>' +
     '<div><b>محصول</b><a href="planner.html">استودیو تغذیه</a><a href="index.html">امروز چی داری؟</a><a href="pro.html">PRO</a></div>' +
     '<div><b>فیت مارکت</b><a href="market.html">محصولات دیجیتال</a><a href="https://instagram.com/dailyfitbeat">اینستاگرام</a><a href="market.html">ثبت سفارش</a></div>' +
-    '</div><div class="f-bottom">© DailyFitBeat</div>';
+    '<div><b>درباره ما</b><a href="about.html">داستان دیلی‌بیت</a><a href="privacy.html">حریم خصوصی</a><a href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener">اینستاگرام</a></div>' +
+    '</div><div class="f-bottom">© 2026 DailyFitBeat — همه حقوق محفوظ است.</div>';
 }
 function toggleLang() {
   lang = lang === 'fa' ? 'en' : 'fa';
