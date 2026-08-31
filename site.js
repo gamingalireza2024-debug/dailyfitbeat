@@ -1,3 +1,28 @@
+/* =========================================================
+   Google Analytics 4 — DailyFitBeat
+   Measurement ID: G-D7BLSNMK0S
+   فعال روی همه صفحات؛ page_view خودکار هر بار ثبت می‌شود.
+   ========================================================= */
+(function () {
+  var MID = 'G-D7BLSNMK0S';
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=' + MID;
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', MID, {
+    page_title: document.title,
+    page_location: location.href,
+    send_page_view: true
+  });
+  /* رویدادهای سفارشی پیشنهادی (اختیاری): */
+  window.dfbTrack = function (name, params) {
+    try { gtag('event', name, params || {}); } catch (e) {}
+  };
+})();
 // DailyFitBeat — پیکربندی مرکزی و متادیتا
 (function () {
   var SITE = {
