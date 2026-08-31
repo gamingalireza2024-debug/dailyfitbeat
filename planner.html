@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>برنامه غذایی هفتگی | DailyFitBeat — ۵ وعده در روز + لیست خرید</title>
-<meta name="description" content="برنامه غذایی هفتگی شخصی‌سازی‌شده با ۵ وعده در روز، لیست خرید هفتگی و خروجی PDF. متناسب با کالری هدف و پروفایل تغذیه شما.">
+<title>رژیم‌ساز هوشمند دیلی‌بیت | برنامه غذایی + لیست خرید + PDF</title>
+<meta name="description" content="رژیم‌ساز هوشمند دیلی‌بیت: برنامه غذایی شخصی با ۵ وعده در روز، محاسبه خودکار کالری، جدول ارزش غذایی، لیست خرید هفتگی و خروجی PDF.">
 <link rel="canonical" href="https://dailyfitbeat.ir/planner.html">
 <meta name="robots" content="index, follow">
 <link rel="icon" href="img/favicon.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dailyfitbeat.ir/planner.html">
-<meta property="og:title" content="برنامه غذایی هفتگی | DailyFitBeat">
-<meta property="og:description" content="۵ وعده در روز، لیست خرید هفتگی و PDF — متناسب با کالری هدف شما.">
+<meta property="og:title" content="رژیم‌ساز هوشمند دیلی‌بیت">
+<meta property="og:description" content="برنامه غذایی شخصی با ۵ وعده در روز، لیست خرید هفتگی و PDF.">
 <meta property="og:image" content="https://dailyfitbeat.ir/img/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,6 +36,8 @@
 .pl-full{grid-column:1/-1}
 .pl-check{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer}
 .pl-check input{accent-color:var(--accent);width:15px;height:15px}
+.pl-mealrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pl-usage{background:#e8f4e9;color:#2d6a35;border-radius:999px;padding:8px 16px;font-size:11.5px;font-weight:800}
 .pl-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;align-items:center}
 .pl-hint{font-size:10.5px;color:var(--muted);margin-top:4px}
 .pl-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin:14px 0}
@@ -67,11 +69,24 @@
 
 <section><div class="pl-wrap">
   <div class="pl-head">
-    <h1>برنامه غذایی هفتگی</h1>
-    <p>۵ وعده در روز، شخصی‌سازی‌شده با پروفایل تو + لیست خرید هفتگی.</p>
+    <h1>رژیم‌ساز هوشمند دیلی‌بیت</h1>
+    <p>برنامه غذایی شخصی با ۵ وعده در روز + لیست خرید هفتگی + PDF.</p>
   </div>
 
   <div class="pl-card">
+    <div class="pl-sec">تنظیمات برنامه</div>
+    <div class="pl-mealrow">
+      <select id="plDays" style="padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font:inherit;font-size:12.5px">
+        <option value="1">۱ روز</option><option value="3">۳ روز</option><option value="7" selected>۷ روز</option>
+      </select>
+      <label class="pl-check"><input type="checkbox" id="plB" checked> صبحانه</label>
+      <label class="pl-check"><input type="checkbox" id="plSA" checked> میان‌وعده صبح</label>
+      <label class="pl-check"><input type="checkbox" id="plL" checked> ناهار</label>
+      <label class="pl-check"><input type="checkbox" id="plSP" checked> میان‌وعده عصر</label>
+      <label class="pl-check"><input type="checkbox" id="plD" checked> شام</label>
+      <span class="pl-usage" id="plUsage">سهمیه: در حال دریافت…</span>
+    </div>
+
     <div class="pl-sec">اطلاعات بدن و هدف</div>
     <div class="pl-grid">
       <div class="pl-field"><label>جنسیت</label><select id="plGender"><option value="female">زن</option><option value="male">مرد</option></select></div>
@@ -93,7 +108,7 @@
     </div>
 
     <div class="pl-actions">
-      <button class="btn" id="plGo">ساخت برنامه ۷ روزه</button>
+      <button class="btn" id="plGo">ساخت برنامه</button>
       <button class="btn ghost" id="plPdf" disabled>دانلود PDF برنامه</button>
     </div>
   </div>
