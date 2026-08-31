@@ -19,6 +19,76 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="design.css">
+<script type="application/ld+json" id="marketLD"></script>
+<script>
+/* JSON-LD پویا برای محصولات فیت مارکت — بعد از رندر کارت‌ها اجرا می‌شود */
+(function () {
+  function toNum(s) {
+    if (s === '' || s == null) return null;
+    var FA = '۰۱۲۳۴۵۶۷۸۹', AR = '٠١٢٣٤٥٦٧٨٩';
+    var t = String(s).replace(/[۰-۹]/g, function (x) { return String(FA.indexOf(x)); }).replace(/[٠-٩]/g, function (x) { return String(AR.indexOf(x)); }).replace(/[,،٬\sریال]/g, '');
+    if (t === '') return null;
+    var n = Number(t);
+    return isNaN(n) ? null : n;
+  }
+  function buildMarketSchema() {
+    var cards = document.querySelectorAll('#prodGrid .pcard');
+    if (!cards.length) return false;
+    var graph = [];
+    cards.forEach(function (c, idx) {
+      var title = (c.querySelector('.p-body h4') || {}).textContent || '';
+      var desc = (c.querySelector('.p-body p') || {}).textContent || '';
+      var priceEl = c.querySelector('.p-price');
+      if (!priceEl || !title) return;
+      var price = toNum(priceEl.textContent);
+      if (price == null) return;
+      var imgEl = c.querySelector('.p-img img');
+      var img = imgEl ? (new URL(imgEl.getAttribute('src') || '', location.origin).href) : '';
+      var ratingEl = c.querySelector('.p-rate');
+      var rating = null;
+      if (ratingEl) {
+        var rt = toNum(ratingEl.textContent.replace(/[^\d\.۰-۹٠-٩]/g, ''));
+        if (rt != null && rt > 0 && rt <= 5) rating = rt;
+      }
+      var product = {
+        "@type": "Product",
+        "name": title,
+        "description": desc.slice(0, 300),
+        "image": img || "https://dailyfitbeat.ir/img/og.jpg",
+        "category": "محصولات دیجیتال تغذیه و تناسب اندام",
+        "brand": { "@type": "Brand", "name": "DailyFitBeat" },
+        "offers": {
+          "@type": "Offer",
+          "price": price,
+          "priceCurrency": "IRR",
+          "availability": "https://schema.org/InStock",
+          "url": "https://dailyfitbeat.ir/market.html",
+          "seller": { "@type": "Organization", "name": "DailyFitBeat" }
+        }
+      };
+      if (rating != null) {
+        product.aggregateRating = {
+          "@type": "AggregateRating",
+          "ratingValue": rating,
+          "bestRating": 5,
+          "worstRating": 1,
+          "ratingCount": 1
+        };
+      }
+      graph.push(product);
+    });
+    if (!graph.length) return false;
+    var schema = { "@context": "https://schema.org", "@graph": graph };
+    var ld = document.getElementById('marketLD');
+    if (ld) ld.textContent = JSON.stringify(schema);
+    return true;
+  }
+  var tries = 0;
+  var t = setInterval(function () {
+    if (buildMarketSchema() || tries++ > 80) clearInterval(t);
+  }, 250);
+})();
+</script>
 </head>
 <body data-page="market">
 <header id="hdr"></header>
