@@ -19,26 +19,90 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="design.css">
+<style>
+.pl-wrap{max-width:920px;margin:0 auto;padding:20px 16px 46px}
+.pl-head{text-align:center;padding:22px 0 8px}
+.pl-head h1{font-size:26px;font-weight:900;margin:0 0 8px}
+.pl-head p{color:var(--ink-soft);font-size:13px;margin:0}
+.pl-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:var(--shadow);position:relative;overflow:hidden;margin-top:18px}
+.pl-card::before{content:"";position:absolute;top:0;inset-inline:0;height:4px;background:linear-gradient(to left,var(--accent),#fbaa5c)}
+.pl-sec{font-size:13px;font-weight:900;color:var(--ink);margin:16px 0 10px;display:flex;align-items:center;gap:8px}
+.pl-sec::before{content:"";width:18px;height:3px;border-radius:99px;background:var(--accent)}
+.pl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.pl-field label{display:block;font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:5px}
+.pl-field input,.pl-field select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font:inherit;font-size:12.5px;transition:border-color .2s,box-shadow .2s}
+.pl-field input:focus,.pl-field select:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.pl-half{grid-column:span 2}
+.pl-full{grid-column:1/-1}
+.pl-check{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer}
+.pl-check input{accent-color:var(--accent);width:15px;height:15px}
+.pl-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;align-items:center}
+.pl-hint{font-size:10.5px;color:var(--muted);margin-top:4px}
+.pl-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin:14px 0}
+.pl-table th{background:var(--accent-soft);color:var(--ink);font-size:11.5px;padding:10px 8px}
+.pl-table td{padding:10px 8px;border-top:1px solid var(--line);font-size:12.5px;text-align:center}
+.pl-table tr.avg td{background:var(--bg);font-weight:800;color:var(--accent)}
+.day-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;margin:14px 0;box-shadow:var(--shadow)}
+.day-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.day-head b{background:var(--accent);color:#fff;border-radius:10px;padding:6px 14px;font-size:12px}
+.day-head small{color:var(--accent);font-weight:800;font-size:12px}
+.meal-line{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px dashed var(--line);font-size:13px;flex-wrap:wrap}
+.meal-line b{color:var(--accent);min-width:96px;font-size:11.5px;background:var(--accent-soft);border-radius:8px;padding:3px 10px;text-align:center}
+.meal-line a{color:var(--ink);font-weight:700;text-decoration:none}
+.meal-line small{color:var(--muted)}
+.info-card{background:var(--surface);border:1px solid var(--line);border-inline-start:4px solid var(--accent);border-radius:20px;padding:18px;margin:14px 0;box-shadow:var(--shadow);font-size:12.5px;line-height:2.1}
+.info-card h4{font-size:14px;margin:0 0 6px}
+.info-card li{list-style:none}
+.shop-card{background:var(--surface);border:1px solid var(--line);border-inline-start:4px solid #b26a00;border-radius:20px;padding:18px;margin:14px 0;box-shadow:var(--shadow)}
+.shop-card h3{font-size:14px;margin:0 0 8px}
+.shop-card ul{columns:2;font-size:12.5px;line-height:2.2}
+.shop-card li{list-style:none}
+.pl-empty{color:var(--muted);text-align:center;font-size:12.5px;padding:16px}
+@media(max-width:768px){.pl-grid{grid-template-columns:repeat(2,1fr)}.pl-half{grid-column:span 2}.shop-card ul{columns:1}}
+@media(max-width:480px){.pl-grid{grid-template-columns:1fr}.pl-half{grid-column:1/-1}}
+</style>
 </head>
 <body data-page="planner">
 <header id="hdr"></header>
-<section><div class="container pb-wrap">
-  <div class="pb-head">
+
+<section><div class="pl-wrap">
+  <div class="pl-head">
     <h1>برنامه غذایی هفتگی</h1>
     <p>۵ وعده در روز، شخصی‌سازی‌شده با پروفایل تو + لیست خرید هفتگی.</p>
   </div>
-  <div class="pb-card">
-    <div class="pb-grid">
-      <input id="plKcal" class="pb-input" type="number" value="2000" aria-label="کالری هدف روزانه" style="width:130px">
-      <input id="plIng" class="pb-input" placeholder="مواد یخچالت (اختیاری): مرغ، قارچ، نان…" style="flex:1;min-width:220px">
-      <label class="pb-pill"><input type="checkbox" id="plProf" checked> استفاده از پروفایل تغذیه من</label>
+
+  <div class="pl-card">
+    <div class="pl-sec">اطلاعات بدن و هدف</div>
+    <div class="pl-grid">
+      <div class="pl-field"><label>جنسیت</label><select id="plGender"><option value="female">زن</option><option value="male">مرد</option></select></div>
+      <div class="pl-field"><label>سن (سال)</label><input id="plAge" type="text" inputmode="numeric" placeholder="مثلاً ۳۰"></div>
+      <div class="pl-field"><label>قد (سانتی‌متر)</label><input id="plHeight" type="text" inputmode="numeric" placeholder="مثلاً ۱۷۰"></div>
+      <div class="pl-field"><label>وزن (کیلوگرم)</label><input id="plWeight" type="text" inputmode="numeric" placeholder="مثلاً ۷۰"></div>
+      <div class="pl-field pl-half"><label>سطح فعالیت</label><select id="plAct"><option value="sedentary">کم‌تحرک</option><option value="light">فعالیت سبک</option><option value="moderate" selected>فعالیت متوسط</option><option value="active">فعالیت زیاد</option></select></div>
+      <div class="pl-field pl-half"><label>هدف رژیم</label><select id="plGoal"><option value="keep" selected>حفظ وزن</option><option value="lose">کاهش وزن</option><option value="gain">افزایش وزن</option></select></div>
+      <div class="pl-field pl-half"><label>کالری هدف روزانه (کیلوکالری)</label><input id="plKcal" type="text" inputmode="numeric" value="2000"><div class="pl-hint">با دکمه «محاسبه خودکار» بر اساس قد/وزن/سن/فعالیت پر می‌شود.</div></div>
+      <div class="pl-field pl-half" style="align-self:end"><button class="btn ghost" id="plCalc" type="button">محاسبه خودکار کالری</button></div>
     </div>
-    <button class="pb-cta" id="plGo">ساخت برنامه ۷ روزه</button>
-    <button class="pb-sec" id="plPdf" disabled>دانلود PDF برنامه</button>
+
+    <div class="pl-sec">ترجیحات غذایی</div>
+    <div class="pl-grid">
+      <div class="pl-field pl-half"><label>حساسیت غذایی (اختیاری)</label><input id="plAllergy" placeholder="مثلاً بادام‌زمینی، لاکتوز"></div>
+      <div class="pl-field pl-half"><label>غذاهای نامطلوب (اختیاری)</label><input id="plDislike" placeholder="مثلاً بادمجان، جگر"></div>
+      <div class="pl-field pl-full"><label>مواد یخچالت (اختیاری)</label><input id="plIng" placeholder="مرغ، قارچ، نان…"></div>
+      <div class="pl-field pl-full"><label class="pl-check"><input type="checkbox" id="plProf" checked> استفاده از پروفایل تغذیه من</label></div>
+    </div>
+
+    <div class="pl-actions">
+      <button class="btn" id="plGo">ساخت برنامه ۷ روزه</button>
+      <button class="btn ghost" id="plPdf" disabled>دانلود PDF برنامه</button>
+    </div>
   </div>
+
   <div id="plOut"></div>
+  <div id="plMacro"></div>
   <div id="plShopWrap"></div>
 </div></section>
+
 <div id="pdfDoc" style="position:fixed;inset-inline-start:-2000px;top:0;width:794px;background:#fff"></div>
 <footer id="ftr"></footer>
 <script src="site.js"></script>
