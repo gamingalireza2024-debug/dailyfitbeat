@@ -23,9 +23,34 @@
   useProf.checked = (function () { try { return localStorage.getItem('dfb-ai-profile') === '1'; } catch (e) { return false; } })();
   useProf.onchange = function () { try { localStorage.setItem('dfb-ai-profile', useProf.checked ? '1' : '0'); } catch (e) {} };
 
-  /* ---------- Mascot: crossfade نرم + pop ظریف ---------- */
+  /* ---------- Mascot: ساخت خودکار + crossfade نرم ---------- */
   var MOOD_IMG = { idle: 'img/mascot-idle.png', think: 'img/mascot-think.png', happy: 'img/mascot-happy.png', sad: 'img/mascot-sad.png' };
   (function preload() { for (var k in MOOD_IMG) { var i = new Image(); i.src = MOOD_IMG[k]; } })();
+
+  function ensureMascot() {
+    if ($('mascot') || !chat) return;
+    if (!$('dfb-mascot-css')) {
+      var st = document.createElement('style');
+      st.id = 'dfb-mascot-css';
+      st.textContent = '.dfb-mascot{width:150px;margin:8px auto 14px;text-align:center}' +
+        '.dfb-mascot .m-body{position:relative;transition:transform .28s ease;animation:mFloat 3.4s ease-in-out infinite}' +
+        '.dfb-mascot img{width:100%;display:block}' +
+        '.dfb-mascot img.m-top{position:absolute;inset:0;opacity:0;transition:opacity .35s ease}' +
+        '.dfb-mascot img.m-top.on{opacity:1}' +
+        '.dfb-mascot.pop .m-body{transform:scale(1.06) translateY(-4px)}' +
+        '.dfb-mascot .m-shadow{display:block;width:64%;height:10px;margin:8px auto 0;background:rgba(17,24,39,.12);border-radius:50%;filter:blur(4px);animation:mShadow 3.4s ease-in-out infinite}' +
+        '@keyframes mFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}' +
+        '@keyframes mShadow{0%,100%{transform:scaleX(1);opacity:.5}50%{transform:scaleX(.85);opacity:.3}}';
+      document.head.appendChild(st);
+    }
+    var wrap = document.createElement('div');
+    wrap.className = 'dfb-mascot';
+    wrap.id = 'mascot';
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.innerHTML = '<div class="m-body"><img id="mascotImgA" src="img/mascot-idle.png" alt=""><img id="mascotImgB" class="m-top" src="img/mascot-idle.png" alt=""></div><span class="m-shadow"></span>';
+    chat.parentNode.insertBefore(wrap, chat);
+  }
+
   var moodTimer = null;
   function setMood(m, backToIdle) {
     var el = $('mascot'), B = $('mascotImgB');
@@ -254,6 +279,7 @@
   sendBtn.onclick = send;
 
   /* ---------- boot ---------- */
+  ensureMascot();
   (async function boot() {
     if (booted) return;
     booted = true;
