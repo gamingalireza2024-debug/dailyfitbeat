@@ -100,3 +100,18 @@
   setMeta(PAGES[page] || PAGES.home);
   jsonld(page);
 })();
+/* ---------- PWA: manifest + theme-color روی همه صفحات ---------- */
+(function () {
+  if (!document.querySelector('link[rel="manifest"]')) {
+    var l = document.createElement('link');
+    l.rel = 'manifest';
+    l.href = 'manifest.webmanifest';
+    document.head.appendChild(l);
+  }
+  if (!document.querySelector('meta[name="theme-color"]')) {
+    var m = document.createElement('meta');
+    m.name = 'theme-color';
+    m.content = '#f97316';
+    document.head.appendChild(m);
+  }
+})();
