@@ -1,7 +1,8 @@
 User-agent: *
 Allow: /
+Allow: /api/sitemap
 Disallow: /admin.html
 Disallow: /user.html
 Disallow: /api/
 
-Sitemap: https://dailyfitbeat.ir/sitemap.xml
+Sitemap: https://dailyfitbeat.ir/api/sitemap
