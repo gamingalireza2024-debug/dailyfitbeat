@@ -1,9 +1,7 @@
 User-agent: *
 Allow: /
-
-Disallow: /admin
-Disallow: /user
+Disallow: /admin.html
+Disallow: /user.html
 Disallow: /api/
-Disallow: /checkout
 
 Sitemap: https://dailyfitbeat.ir/sitemap.xml
