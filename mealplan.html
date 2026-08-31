@@ -2,78 +2,13 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>برنامه هوشمند | DailyFitBeat</title>
-<meta name="robots" content="noindex, nofollow">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<style>
-html,body{overflow-x:hidden}
-.pb-wrap{max-width:900px;margin:0 auto;padding:20px 16px 46px}
-.pb-head{text-align:center;padding:26px 0 6px}
-.pb-head h1{font-size:26px;font-weight:900;color:#1e2b1c}
-.pb-head p{color:#667066;font-size:13px;margin-top:8px}
-.pb-card{background:#fff;border-radius:24px;padding:22px;box-shadow:0 10px 30px rgba(30,43,28,.08);margin:18px 0}
-.pb-grid{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
-.pb-pill{display:flex;gap:8px;align-items:center;background:#f2f7f2;border:1px solid #e2ecdf;border-radius:999px;padding:9px 16px;font-size:12.5px;font-weight:700;color:#2d3a2d;cursor:pointer;transition:background .2s}
-.pb-pill:hover{background:#e8f4e9}
-.pb-pill input{accent-color:#2d6a35;width:16px;height:16px;cursor:pointer}
-.pb-input,.pb-select{padding:10px 14px;border-radius:14px;border:1px solid #d8e2d8;font:inherit;font-size:13px;background:#fff;color:#1e2b1c}
-.pb-input:focus,.pb-select:focus{outline:2px solid #2d6a35;border-color:#2d6a35}
-.pb-cta{display:block;width:100%;margin-top:16px;border:0;background:#2d6a35;color:#fff;border-radius:16px;padding:15px;font:inherit;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(45,106,53,.25);transition:background .2s}
-.pb-cta:hover{background:#255a2d}
-.pb-cta:disabled{opacity:.55;cursor:default}
-.pb-chip{display:block;width:max-content;max-width:100%;margin:14px auto 0;background:#e8f4e9;color:#2d6a35;border-radius:999px;padding:8px 18px;font-size:12px;font-weight:800}
-.pb-empty{color:#98a298;text-align:center;font-size:12.5px;padding:16px}
-.day-card{background:#fff;border-radius:20px;padding:18px;margin:14px 0;box-shadow:0 6px 18px rgba(30,43,28,.07)}
-.day-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.day-head b{background:#2d6a35;color:#fff;border-radius:10px;padding:6px 14px;font-size:12.5px}
-.day-head small{color:#2d6a35;font-weight:800;font-size:12px}
-.meal-line{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px dashed #e5efe5;font-size:13px;flex-wrap:wrap}
-.meal-line b{color:#2d6a35;min-width:96px;font-size:12px;background:#f2f7f2;border-radius:8px;padding:3px 10px;text-align:center}
-.meal-line a{color:#1e2b1c;font-weight:700;text-decoration:none}
-.meal-line a:hover{color:#2d6a35}
-.meal-line small{color:#77807a}
-.info-card{background:#fff;border-radius:20px;padding:18px;margin:14px 0;box-shadow:0 6px 18px rgba(30,43,28,.07);font-size:12.5px;line-height:2.1;border-inline-start:4px solid #2d6a35}
-.info-card h4{font-size:14px;margin-bottom:6px}
-.info-card li{list-style:none}
-.info-card .warn{color:#8a6d00;background:#fff8e6;border-radius:12px;padding:10px;margin-top:8px;font-size:11px}
-@media(max-width:600px){.pb-grid{flex-direction:column}.pb-pill{width:100%;justify-content:center}.pb-input{width:100%}}
-</style>
+<meta http-equiv="refresh" content="0; url=planner.html">
+<title>رژیم‌ساز هوشمند | DailyFitBeat</title>
+<link rel="canonical" href="https://dailyfitbeat.ir/planner.html">
+<meta name="robots" content="noindex">
+<script>location.replace('planner.html');</script>
 </head>
-<body data-page="mealplan">
-<header id="hdr"></header>
-<section><div class="container pb-wrap">
-  <div class="pb-head">
-    <h1>برنامه غذایی هوشمند</h1>
-    <p>کاملاً شخصی، از رسپی‌های واقعی DailyFitBeat.</p>
-  </div>
-  <div class="pb-card">
-    <div class="pb-grid">
-      <select id="mpDays" class="pb-select" aria-label="تعداد روز">
-        <option value="1">۱ روز</option><option value="3">۳ روز</option><option value="7" selected>۷ روز</option>
-      </select>
-      <label class="pb-pill"><input type="checkbox" id="mB" checked> صبحانه</label>
-      <label class="pb-pill"><input type="checkbox" id="mSA" checked> میان‌وعده صبح</label>
-      <label class="pb-pill"><input type="checkbox" id="mL" checked> ناهار</label>
-      <label class="pb-pill"><input type="checkbox" id="mSP" checked> میان‌وعده عصر</label>
-      <label class="pb-pill"><input type="checkbox" id="mD" checked> شام</label>
-    </div>
-    <div class="pb-grid" style="margin-top:12px">
-      <input id="mpIng" class="pb-input" placeholder="مواد یخچالت (اختیاری): مرغ، قارچ، نان…" style="flex:1;min-width:220px">
-      <label class="pb-pill"><input type="checkbox" id="mpProf" checked> استفاده از پروفایل تغذیه من</label>
-    </div>
-    <button class="pb-cta" id="mpGo">ساخت برنامه</button>
-    <span class="pb-chip" id="mpUsage">سهمیه: در حال دریافت…</span>
-  </div>
-  <div id="mpOut"></div>
-</div></section>
-<div id="pdfDoc" style="position:fixed;inset-inline-start:-2000px;top:0;width:794px;background:#fff"></div>
-<footer id="ftr"></footer>
-<script src="site.js"></script>
-<script src="app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="mealplan.js"></script>
+<body style="font-family:Vazirmatn,sans-serif;background:#fafafa;color:#111827;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
+در حال انتقال به رژیم‌ساز هوشمند… <a href="planner.html" style="color:#f97316;font-weight:700">ادامه</a>
 </body>
 </html>
