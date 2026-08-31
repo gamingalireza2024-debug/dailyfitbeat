@@ -11,7 +11,7 @@ var FALL = { iranian: 'img/cat-iranian.jpg', salad: 'img/cat-salad.jpg', sandwic
 var diff = function (t) { return t <= 20 ? 'آسان' : t <= 60 ? 'متوسط' : 'مفصل'; };
 var ADJ = { 'ایران': 'ایرانی', 'گیلان': 'گیلانی', 'ژاپن': 'ژاپنی', 'تایلند': 'تایلندی', 'اسپانیا': 'اسپانیایی', 'مراکش': 'مراکشی', 'فرانسه': 'فرانسوی', 'ایتالیا': 'ایتالیایی', 'چین': 'چینی', 'هند': 'هندی', 'ترکیه': 'ترکی', 'مکزیک': 'مکزیکی', 'انگلستان': 'انگلیسی', 'یونان': 'یونانی', 'کره': 'کره‌ای', 'لبنان': 'لبنانی' };
 var countryFa = function (reg) { return 'غذای ' + (ADJ[reg] || reg || 'ایرانی'); };
-var NAV =var NAV = [['home', 'index.html', 'خانه', 'Home'], ['recipes', 'recipes.html', 'رسپی‌ها', 'Recipes'], ['planner', 'planner.html', 'استودیو تغذیه', 'Nutrition Studio'], ['market', 'market.html', 'فیت مارکت', 'Fit Market'], ['ai', 'ai.html', 'دستیار AI', 'AI Assistant'], ['pro', 'pro.html', 'PRO', 'PRO']];
+var NAV = [['home', 'index.html', 'خانه', 'Home'], ['recipes', 'recipes.html', 'رسپی‌ها', 'Recipes'], ['planner', 'planner.html', 'استودیو تغذیه', 'Nutrition Studio'], ['market', 'market.html', 'فیت مارکت', 'Fit Market'], ['ai', 'ai.html', 'دستیار AI', 'AI Assistant'], ['pro', 'pro.html', 'PRO', 'PRO']];
 
 async function loadAdminList(token) {
   try {
@@ -134,7 +134,7 @@ function injectFooter() {
   f.innerHTML = '<div class="f-cols">' +
     '<div><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><p>غذای سالم که واقعاً خوشمزه به نظر می‌رسه.</p></div>' +
     '<div><b>رسپی‌ها</b><a href="recipes.html">ایرانی</a><a href="recipes.html">سالادها</a><a href="recipes.html">ساندویچ‌ها</a></div>' +
-    '<div><b>محصول</b><a href="planner.html">برنامه غذایی</a><a href="index.html">امروز چی داری؟</a><a href="pro.html">PRO</a></div>' +
+    '<div><b>محصول</b><a href="planner.html">استودیو تغذیه</a><a href="index.html">امروز چی داری؟</a><a href="pro.html">PRO</a></div>' +
     '<div><b>فیت مارکت</b><a href="market.html">محصولات دیجیتال</a><a href="https://instagram.com/dailyfitbeat">اینستاگرام</a><a href="market.html">ثبت سفارش</a></div>' +
     '</div><div class="f-bottom">© DailyFitBeat</div>';
 }
@@ -271,6 +271,7 @@ async function initDetail() {
   if (!el) return;
   if (!r) { el.innerHTML = '<p class="no-res">پیدا نشد</p>'; return; }
   document.title = r.name_fa + ' | DailyFitBeat';
+  if (window.DFB_setRecipeMeta) window.DFB_setRecipeMeta(r);
   var ings = Array.isArray(r.ingredients) ? r.ingredients : [];
   var favOn = false;
   if (sb && USER) {
