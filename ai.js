@@ -23,16 +23,21 @@
   useProf.checked = (function () { try { return localStorage.getItem('dfb-ai-profile') === '1'; } catch (e) { return false; } })();
   useProf.onchange = function () { try { localStorage.setItem('dfb-ai-profile', useProf.checked ? '1' : '0'); } catch (e) {} };
 
-  /* ---------- Mascot (Option B: image swap + motion) ---------- */
+  /* ---------- Mascot: crossfade نرم + pop ظریف ---------- */
   var MOOD_IMG = { idle: 'img/mascot-idle.png', think: 'img/mascot-think.png', happy: 'img/mascot-happy.png', sad: 'img/mascot-sad.png' };
   (function preload() { for (var k in MOOD_IMG) { var i = new Image(); i.src = MOOD_IMG[k]; } })();
   var moodTimer = null;
   function setMood(m, backToIdle) {
-    var el = $('mascot'), img = $('mascotImg');
-    if (!el || !img) return;
-    el.classList.remove('think', 'happy', 'sad');
-    if (m && m !== 'idle') el.classList.add(m);
-    if (MOOD_IMG[m]) img.src = MOOD_IMG[m];
+    var el = $('mascot'), B = $('mascotImgB');
+    if (!el || !B) return;
+    if (m === 'idle') {
+      B.classList.remove('on');
+    } else {
+      B.src = MOOD_IMG[m] || MOOD_IMG.idle;
+      B.classList.add('on');
+    }
+    el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+    setTimeout(function () { el.classList.remove('pop'); }, 320);
     if (moodTimer) { clearTimeout(moodTimer); moodTimer = null; }
     if (backToIdle) moodTimer = setTimeout(function () { setMood('idle'); }, 2200);
   }
