@@ -16,6 +16,8 @@
   --glass-br:rgba(255,255,255,.78);
   --shadow:0 10px 30px rgba(17,24,39,.06);
   --r:20px;
+  --footer-bg:#0f1f17;
+  --footer-ink:#b7c4bb;
 }
 
 /* ---------- RESET ---------- */
@@ -94,21 +96,21 @@ body[data-page="home"] section [style*="linear-gradient(135deg,#2d6a35"]{display
 body[data-page="home"] #ftr{margin-top:0}
 body[data-page="home"] .hm-wrap{max-width:1240px;margin:0 auto;padding:0 24px}
 
-/* Hero: ارتفاع منطقی و هماهنگ */
-body[data-page="home"] .hm-hero{width:100%}
-body[data-page="home"] .hm-hero-grid{display:grid;grid-template-columns:1fr 1.1fr;min-height:520px;height:clamp(480px,44vw,620px);width:100%}
-body[data-page="home"] .hm-hero-txt{display:flex;flex-direction:column;justify-content:center;padding:48px 4.5vw 48px 44px;background:#fff}
+/* Hero: تصویر تمام‌عرض، متن روی بخش روشن تصویر */
+body[data-page="home"] .hm-hero{width:100%;position:relative}
+body[data-page="home"] .hm-hero-grid{display:block;position:relative;height:clamp(520px,50vw,700px);width:100%}
+body[data-page="home"] .hm-hero-img{position:absolute;inset:0;height:100%;background:#f3f4f6}
+body[data-page="home"] .hm-hero-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 55%;display:block}
+body[data-page="home"] .hm-hero-txt{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;width:min(600px,52%);margin-left:auto;padding:48px 4.5vw 48px 24px;background:linear-gradient(to left,rgba(250,250,250,.94) 55%,rgba(250,250,250,.6) 82%,rgba(250,250,250,0))}
 body[data-page="home"] .hm-kicker{color:var(--accent);font-size:12.5px;font-weight:700;letter-spacing:.3px;margin-bottom:14px}
-body[data-page="home"] .hm-h1{font-size:clamp(30px,4.2vw,42px);font-weight:900;line-height:1.5;margin:0 0 16px}
+body[data-page="home"] .hm-h1{font-size:clamp(30px,4.2vw,44px);font-weight:900;line-height:1.5;margin:0 0 16px}
 body[data-page="home"] .hm-h1 span{color:var(--accent)}
-body[data-page="home"] .hm-lead{color:var(--ink-soft);font-size:14.5px;line-height:2.1;margin:0 0 28px;max-width:440px}
+body[data-page="home"] .hm-lead{color:var(--ink-soft);font-size:14.5px;line-height:2.1;margin:0 0 24px;max-width:440px}
 body[data-page="home"] .hm-cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 body[data-page="home"] .hm-btn{display:inline-block;border-radius:14px;padding:13px 28px;font:inherit;font-size:13.5px;font-weight:800;text-decoration:none;cursor:pointer;border:0;transition:.2s;min-height:46px}
 body[data-page="home"] .hm-btn.solid{background:var(--accent);color:#fff;box-shadow:0 12px 26px rgba(249,115,22,.26)}
 body[data-page="home"] .hm-btn.solid:hover{filter:brightness(.96)}
 body[data-page="home"] .hm-btn.glass{background:var(--glass);color:var(--ink);border:1px solid var(--glass-br);backdrop-filter:blur(12px);box-shadow:var(--shadow)}
-body[data-page="home"] .hm-hero-img{position:relative;height:100%;background:#f3f4f6}
-body[data-page="home"] .hm-hero-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:left 60%;display:block}
 body[data-page="home"] .hm-quick{position:absolute;top:50%;left:18px;transform:translateY(-50%);background:rgba(255,255,255,.42);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.55);border-radius:16px;box-shadow:0 8px 22px rgba(17,24,39,.08);padding:6px;width:172px}
 body[data-page="home"] .hm-quick a{display:flex;gap:9px;align-items:center;padding:8px 10px;border-radius:11px;text-decoration:none;color:var(--ink);min-height:42px}
 body[data-page="home"] .hm-quick a:hover{background:rgba(255,255,255,.7)}
@@ -117,9 +119,9 @@ body[data-page="home"] .hm-quick .qi svg{width:15px;height:15px;stroke:var(--acc
 body[data-page="home"] .hm-quick b{display:block;font-size:11.5px;font-weight:800}
 body[data-page="home"] .hm-quick small{display:block;color:var(--muted);font-size:9.5px;margin-top:1px}
 
-/* Carousel: داخل container، کارت‌های یکدست */
-body[data-page="home"] .hm-car{margin:56px 0 0}
-body[data-page="home"] .hm-car-head{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+/* Carousel */
+body[data-page="home"] .hm-car{margin:44px 0 0}
+body[data-page="home"] .hm-car-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
 body[data-page="home"] .hm-insta{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 18px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);min-height:44px}
 body[data-page="home"] .hm-insta svg{width:20px;height:20px;stroke:var(--accent)}
 body[data-page="home"] .hm-insta b{font-size:12.5px;display:block}
@@ -128,10 +130,10 @@ body[data-page="home"] .hm-car-nav{margin-right:auto;display:flex;gap:10px}
 body[data-page="home"] .hm-car-nav button{width:42px;height:42px;border-radius:50%;border:1px solid var(--glass-br);background:var(--glass);backdrop-filter:blur(10px);cursor:pointer;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center}
 body[data-page="home"] .hm-car-nav button:hover{background:#fff}
 body[data-page="home"] .hm-car-nav svg{width:16px;height:16px;stroke:var(--ink)}
-body[data-page="home"] .hm-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 0 14px;scrollbar-width:none}
+body[data-page="home"] .hm-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 0 12px;scrollbar-width:none}
 body[data-page="home"] .hm-track::-webkit-scrollbar{display:none}
-body[data-page="home"] .hm-post{flex:0 0 calc((100% - 64px)/5);scroll-snap-align:start;border-radius:20px;overflow:hidden;position:relative;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);text-decoration:none;color:var(--ink)}
-body[data-page="home"] .hm-post img.ph{width:100%;height:240px;object-fit:cover;display:block;background:#f3f4f6}
+body[data-page="home"] .hm-post{flex:0 0 calc((100% - 48px)/4);scroll-snap-align:start;border-radius:20px;overflow:hidden;position:relative;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);text-decoration:none;color:var(--ink)}
+body[data-page="home"] .hm-post img.ph{width:100%;height:250px;object-fit:cover;display:block;background:#f3f4f6}
 body[data-page="home"] .hm-post .badge{position:absolute;top:52px;inset-inline-start:10px;background:var(--accent);color:#fff;border-radius:999px;padding:4px 12px;font-size:10.5px;font-weight:700;z-index:2}
 body[data-page="home"] .ig-head{display:flex;gap:8px;align-items:center;padding:10px 12px}
 body[data-page="home"] .ig-ava{width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid var(--accent);flex:0 0 auto;background:#fff}
@@ -141,17 +143,17 @@ body[data-page="home"] .ig-act{display:flex;gap:12px;align-items:center;padding:
 body[data-page="home"] .ig-act svg{width:17px;height:17px;stroke:var(--ink);fill:none;stroke-width:2}
 body[data-page="home"] .ig-act .save{margin-right:auto}
 body[data-page="home"] .hm-post .cap{padding:6px 12px 12px;font-size:12px;font-weight:700;line-height:1.9}
-body[data-page="home"] .hm-dots{display:flex;gap:6px;justify-content:center;margin:10px 0 0}
+body[data-page="home"] .hm-dots{display:flex;gap:6px;justify-content:center;margin:8px 0 0}
 body[data-page="home"] .hm-dots i{width:7px;height:7px;border-radius:50%;background:#d1d5db}
 body[data-page="home"] .hm-dots i.on{width:18px;border-radius:99px;background:var(--accent)}
 
-/* Services: هم‌تراز و یکدست */
-body[data-page="home"] .hm-serv{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin:64px 0}
+/* Services */
+body[data-page="home"] .hm-serv{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:48px 0}
 body[data-page="home"] .hm-serv-card{background:transparent;border:0;box-shadow:none;overflow:visible;display:flex;flex-direction:column}
 body[data-page="home"] .hm-serv-card .im{border-radius:26px;overflow:hidden;box-shadow:0 16px 40px rgba(17,24,39,.10)}
-body[data-page="home"] .hm-serv-card .im img{width:100%;height:240px;object-fit:cover;display:block;background:#f3f4f6;transition:transform .5s ease}
+body[data-page="home"] .hm-serv-card .im img{width:100%;height:230px;object-fit:cover;display:block;background:#f3f4f6;transition:transform .5s ease}
 body[data-page="home"] .hm-serv-card:hover .im img{transform:scale(1.03)}
-body[data-page="home"] .hm-serv-body{padding:22px 8px 0;display:flex;flex-direction:column;flex:1}
+body[data-page="home"] .hm-serv-body{padding:20px 8px 0;display:flex;flex-direction:column;flex:1}
 body[data-page="home"] .hm-serv-body .num{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:1px}
 body[data-page="home"] .hm-serv-body h3{margin:8px 0 10px;font-size:20px;font-weight:900}
 body[data-page="home"] .hm-serv-body .div{width:36px;height:3px;border-radius:99px;background:var(--accent);margin-bottom:12px}
@@ -159,10 +161,10 @@ body[data-page="home"] .hm-serv-body p{color:var(--ink-soft);font-size:13px;line
 body[data-page="home"] .hm-link{margin-top:auto;align-self:flex-start;color:var(--accent);font-size:13px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border-bottom:1.5px solid rgba(249,115,22,.35);padding-bottom:3px}
 body[data-page="home"] .hm-link svg{width:14px;height:14px;stroke:var(--accent)}
 
-/* Finder: فقط به اندازه محتوا */
+/* Finder */
 body[data-page="home"] .hm-find-sec{margin:0;padding:0}
 body[data-page="home"] .hm-find-sec .hm-wrap{padding-bottom:0}
-body[data-page="home"] .hm-find{background:var(--surface);border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;box-shadow:none;padding:30px 32px 28px;margin:0}
+body[data-page="home"] .hm-find{background:var(--surface);border:1px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0;box-shadow:none;padding:26px 28px 24px;margin:0}
 body[data-page="home"] .hm-find h3{margin:0 0 8px;font-size:20px;font-weight:900;display:flex;align-items:center;gap:10px}
 body[data-page="home"] .hm-find h3::before{content:"";width:22px;height:3px;border-radius:99px;background:var(--accent)}
 body[data-page="home"] .hm-find p{color:var(--ink-soft);font-size:12.5px;margin:0 0 16px}
@@ -173,7 +175,7 @@ body[data-page="home"] .hm-find-row input:focus{outline:2px solid var(--accent);
 body[data-page="home"] .hm-find-row button{border:0;border-radius:14px;padding:12px 24px;font-size:13px;font-weight:800;cursor:pointer;min-height:46px}
 body[data-page="home"] #goBtn{background:var(--accent);color:#fff;box-shadow:0 10px 24px rgba(249,115,22,.25)}
 body[data-page="home"] #ingAdd{background:var(--glass);border:1px solid var(--glass-br);color:var(--ink);backdrop-filter:blur(8px)}
-body[data-page="home"] #results{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:16px}
+body[data-page="home"] #results{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:14px}
 
 /* ---------- RECIPES (scoped) ---------- */
 body[data-page="recipes"] #recipeSearch{width:100%;max-width:420px;margin:0 auto 16px;display:block;padding:12px 16px;border-radius:14px;border:1px solid var(--line);font-size:13px;background:var(--surface)}
@@ -230,15 +232,15 @@ body[data-page="recipe"] .f-cta{display:flex;gap:10px;margin-top:22px;flex-wrap:
 /* ---------- PLANNER / MEALPLAN / MARKET / PRO / AI / USER / ADMIN ----------
    استایل اختصاصی هر صفحه در <style> داخلی همان HTML نگهداری می‌شود (بدون تغییر در این فاز). */
 
-/* ---------- FOOTER ---------- */
-#ftr{background:#111827;color:#d1d5db;margin-top:60px}
+/* ---------- FOOTER (هماهنگ با برند: سبز تیره + متن خوانا) ---------- */
+#ftr{background:var(--footer-bg);color:var(--footer-ink);margin-top:60px}
 #ftr .f-cols{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:44px;padding:58px 20px 34px}
 #ftr .f-logo{height:44px}
-#ftr b{color:#fff;font-size:13px;margin-bottom:12px;display:block}
-#ftr a{display:block;color:#9ca3af;font-size:12.5px;line-height:2.4;text-decoration:none}
+#ftr b{color:#fff;font-size:14px;margin-bottom:12px;display:block}
+#ftr a{display:block;color:var(--footer-ink);font-size:13.5px;line-height:2.6;text-decoration:none}
 #ftr a:hover{color:var(--accent)}
-#ftr p{font-size:12.5px;color:#9ca3af}
-#ftr .f-bottom{border-top:1px solid #1f2937;color:#6b7280;padding:18px 20px;font-size:11px;text-align:center}
+#ftr p{font-size:13.5px;color:var(--footer-ink)}
+#ftr .f-bottom{border-top:1px solid #1d3227;color:#7d8a80;padding:18px 20px;font-size:12px;text-align:center}
 
 /* ---------- RESPONSIVE ---------- */
 @media(max-width:900px){
@@ -248,29 +250,26 @@ body[data-page="recipe"] .f-cta{display:flex;gap:10px;margin-top:22px;flex-wrap:
   body[data-page="recipe"] .rd-wrap{grid-template-columns:1fr}
 }
 @media(max-width:1200px){
-  body[data-page="home"] .hm-post{flex:0 0 calc((100% - 48px)/4)}
+  body[data-page="home"] .hm-post{flex:0 0 calc((100% - 32px)/3)}
   body[data-page="home"] .hm-quick{width:165px}
-  body[data-page="home"] .hm-serv{gap:24px}
 }
 @media(max-width:1024px){
-  body[data-page="home"] .hm-hero-grid{grid-template-columns:1fr 1fr;height:auto;min-height:0}
-  body[data-page="home"] .hm-hero-txt{padding:44px 3vw}
-  body[data-page="home"] .hm-hero-img{min-height:420px}
-  body[data-page="home"] .hm-post{flex:0 0 calc((100% - 32px)/3)}
+  body[data-page="home"] .hm-hero-grid{height:clamp(480px,46vw,640px)}
+  body[data-page="home"] .hm-hero-txt{width:55%}
 }
 @media(max-width:768px){
-  body[data-page="home"] .hm-hero-grid{grid-template-columns:1fr}
-  body[data-page="home"] .hm-hero-txt{padding:40px 22px 28px;order:2}
+  body[data-page="home"] .hm-hero-grid{height:auto}
+  body[data-page="home"] .hm-hero-img{position:relative;inset:auto;height:320px}
+  body[data-page="home"] .hm-hero-txt{width:100%;margin-left:0;padding:36px 22px 28px;background:var(--bg)}
   body[data-page="home"] .hm-lead{font-size:13.5px}
-  body[data-page="home"] .hm-hero-img{order:1;height:320px;min-height:0}
-  body[data-page="home"] .hm-quick{position:relative;top:0;left:0;transform:none;width:auto;display:flex;overflow-x:auto;margin:-44px 14px 0;z-index:2}
+  body[data-page="home"] .hm-quick{position:relative;top:0;left:0;transform:none;width:auto;display:flex;overflow-x:auto;margin:-42px 14px 0;z-index:2}
   body[data-page="home"] .hm-quick a{flex:0 0 auto}
-  body[data-page="home"] .hm-car{margin:44px 0 0}
+  body[data-page="home"] .hm-car{margin:40px 0 0}
   body[data-page="home"] .hm-post{flex:0 0 calc((100% - 16px)/2)}
   body[data-page="home"] .hm-post img.ph{height:210px}
-  body[data-page="home"] .hm-serv{grid-template-columns:1fr;gap:40px;margin:52px 0}
-  body[data-page="home"] .hm-find{padding:24px 18px}
-  #ftr .f-cols{gap:26px;padding:44px 20px 26px}
+  body[data-page="home"] .hm-serv{grid-template-columns:1fr;gap:36px;margin:44px 0}
+  body[data-page="home"] .hm-find{padding:22px 16px}
+  #ftr .f-cols{gap:26px;padding:40px 20px 24px}
 }
 @media(max-width:390px){
   body[data-page="home"] .hm-wrap{padding:0 16px}
