@@ -1,10 +1,6 @@
 (async function () {
   if (document.body.dataset.page !== 'ai') return;
 
-  var FA = '۰۱۲۳۴۵۶۷۸۹';
-  var AR = '٠١٢٣٤٥٦٧٨٩';
-  var sb = null, booted = false, sending = false, ING = [];
-
   function $(id) { return document.getElementById(id); }
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -12,21 +8,34 @@
     });
   }
   function faN(n) { return (Number(n) || 0).toLocaleString('fa-IR'); }
-  function toNum(s) {
+  function toNumSafe(s) {
     if (s === '' || s == null) return null;
-    var t = String(s)
-      .replace(/[۰-۹]/g, function (x) { return String(FA.indexOf(x)); })
-      .replace(/[٠-٩]/g, function (x) { return String(AR.indexOf(x)); })
-      .replace(/[,،٬\s]/g, '');
+    var FA = '۰۱۲۳۴۵۶۷۸۹', AR = '٠١٢٣٤٥٦٧٨٩';
+    var t = String(s).replace(/[۰-۹]/g, function (x) { return String(FA.indexOf(x)); }).replace(/[٠-٩]/g, function (x) { return String(AR.indexOf(x)); }).replace(/[,،٬\s]/g, '');
     if (t === '') return null;
     var n = Number(t);
     return isNaN(n) ? null : n;
   }
 
+  var sb = null, booted = false, sending = false, ING = [];
   var chat = $('chat'), msg = $('msg'), sendBtn = $('send'), usageChip = $('usageChip'), useProf = $('useProf'), pm = $('profModal');
+
   useProf.checked = (function () { try { return localStorage.getItem('dfb-ai-profile') === '1'; } catch (e) { return false; } })();
   useProf.onchange = function () { try { localStorage.setItem('dfb-ai-profile', useProf.checked ? '1' : '0'); } catch (e) {} };
-  pm.classList.remove('open');
+
+  /* ---------- Mascot (Option B: image swap + motion) ---------- */
+  var MOOD_IMG = { idle: 'img/mascot-idle.png', think: 'img/mascot-think.png', happy: 'img/mascot-happy.png', sad: 'img/mascot-sad.png' };
+  (function preload() { for (var k in MOOD_IMG) { var i = new Image(); i.src = MOOD_IMG[k]; } })();
+  var moodTimer = null;
+  function setMood(m, backToIdle) {
+    var el = $('mascot'), img = $('mascotImg');
+    if (!el || !img) return;
+    el.classList.remove('think', 'happy', 'sad');
+    if (m && m !== 'idle') el.classList.add(m);
+    if (MOOD_IMG[m]) img.src = MOOD_IMG[m];
+    if (moodTimer) { clearTimeout(moodTimer); moodTimer = null; }
+    if (backToIdle) moodTimer = setTimeout(function () { setMood('idle'); }, 2200);
+  }
 
   async function waitForSB() {
     for (var i = 0; i < 40; i++) {
@@ -107,6 +116,7 @@
     msg.value = '';
     addUser(text);
     typing(true);
+    setMood('think');
     var have = ING.filter(function (i) { return i.fa && text.indexOf(i.fa) !== -1; }).map(function (i) { return i.key; });
     var body = { message: text };
     if (useProf.checked) body.include_profile = true;
@@ -118,35 +128,44 @@
       typing(false);
       if (r.ok && j.reply) {
         addBot(j.reply);
+        setMood('happy', true);
         await loadUsage();
       } else if (r.status === 400) {
         addSys('<div class="bub sys">پیامت قابل پردازش نبود؛ کوتاه‌ترش کن و دوباره بفرست.</div>');
+        setMood('sad', true);
       } else if (r.status === 401) {
-        addSys('<div class="bub sys">نشست تو تمام شده.<br><button id="reLogin" style="border:0;background:#2d6a35;color:#fff;border-radius:12px;padding:8px 18px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;margin-top:8px">ورود با گوگل</button></div>');
+        addSys('<div class="bub sys">نشست تو تمام شده.<br><button id="reLogin" style="border:0;background:var(--accent,#f97316);color:#fff;border-radius:12px;padding:8px 18px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;margin-top:8px">ورود با گوگل</button></div>');
         var rb = $('reLogin');
         if (rb) rb.onclick = doOAuth;
+        setMood('sad', true);
       } else if (r.status === 403) {
         addSys('<div class="bub sys">حساب تو غیرفعال شده. با پشتیبانی تماس بگیر.</div>');
+        setMood('sad', true);
       } else if (r.status === 429 && j.error === 'quota_exceeded') {
-        addSys('<div class="bub sys">سهمیه رایگان این ماهت تمام شده.<br>با PRO دستیار تغذیه را با سقف بالاتر استفاده کن.<br><a href="pro.html" style="display:inline-block;border:0;background:#2d6a35;color:#fff;border-radius:12px;padding:8px 18px;font:inherit;font-size:12px;font-weight:800;text-decoration:none;margin-top:8px">ارتقا به PRO</a></div>');
+        addSys('<div class="bub sys">سهمیه رایگان این ماهت تمام شده.<br>با PRO دستیار تغذیه را با سقف بالاتر استفاده کن.<br><a href="pro.html" style="display:inline-block;border:0;background:var(--accent,#f97316);color:#fff;border-radius:12px;padding:8px 18px;font:inherit;font-size:12px;font-weight:800;text-decoration:none;margin-top:8px">ارتقا به PRO</a></div>');
+        setMood('sad', true);
         await loadUsage();
       } else if (r.status === 429) {
         addSys('<div class="bub sys">یک لحظه صبر کن و دوباره امتحان کن.</div>');
+        setMood('sad', true);
       } else if (r.status === 503) {
         addSys('<div class="bub sys">دستیار تغذیه فعلاً در دسترس نیست. کمی بعد دوباره امتحان کن.</div>');
+        setMood('sad', true);
       } else {
         addSys('<div class="bub sys">یه مشکل موقت پیش اومد؛ دوباره امتحان کن.</div>');
+        setMood('sad', true);
       }
     } catch (e) {
       typing(false);
       addSys('<div class="bub sys">اتصال اینترنتت رو چک کن و دوباره امتحان کن.</div>');
+      setMood('sad', true);
     }
     sending = false;
     sendBtn.disabled = false;
     msg.focus();
   }
 
-  // ---------- پروفایل ----------
+  /* ---------- Profile ---------- */
   function splitList(v) { return v.split('،').join(',').split(',').map(function (s) { return s.trim(); }).filter(Boolean); }
   function pfShow(type, text) {
     var el = $('pfMsg');
@@ -155,7 +174,6 @@
   }
   async function openProfile() {
     pm.classList.add('open');
-    pfShow('', '');
     $('pfMsg').className = 'pf-msg';
     var h = await headers();
     if (!h) { pfShow('err', 'نشست فعال نیست؛ دوباره وارد شو.'); return; }
@@ -191,12 +209,12 @@
         body: JSON.stringify({
           goal: $('pfGoal').value || null,
           activity_level: $('pfAct').value || null,
-          height_cm: toNum($('pfH').value),
-          weight_kg: toNum($('pfW').value),
-          calorie_target: toNum($('pfKcal').value),
-          protein_target: toNum($('pfPro').value),
-          carbs_target: toNum($('pfCarb').value),
-          fat_target: toNum($('pfFat').value),
+          height_cm: toNumSafe($('pfH').value),
+          weight_kg: toNumSafe($('pfW').value),
+          calorie_target: toNumSafe($('pfKcal').value),
+          protein_target: toNumSafe($('pfPro').value),
+          carbs_target: toNumSafe($('pfCarb').value),
+          fat_target: toNumSafe($('pfFat').value),
           food_preferences: splitList($('pfLike').value),
           disliked_foods: splitList($('pfDislike').value),
           allergies: splitList($('pfAllergy').value),
@@ -230,7 +248,7 @@
   });
   sendBtn.onclick = send;
 
-  // ---------- boot پایدار ----------
+  /* ---------- boot ---------- */
   (async function boot() {
     if (booted) return;
     booted = true;
