@@ -331,3 +331,36 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
   body[data-page="home"] .hm-track{gap:12px}
   body[data-page="home"] .hm-post{flex:0 0 70%}
 }
+/* =========================================================
+   MOBILE FIX — فقط انتهای design.css اضافه شود
+   ========================================================= */
+
+/* ۱) منوی همبرگری در Home: هدر باید positioned باشد تا منوی بازشو درست کار کند */
+body[data-page="home"] #hdr{position:relative;top:auto}
+#hdr{z-index:60}
+
+/* ۲) فشرده‌سازی Home در موبایل (صفحه کوتاه‌تر و موبایلی‌تر) */
+@media(max-width:768px){
+  body[data-page="home"] .hm-hero-img{height:260px}
+  body[data-page="home"] .hm-hero-txt{padding:28px 18px 22px}
+  body[data-page="home"] .hm-quick{margin:-36px 10px 0}
+  body[data-page="home"] .hm-car{margin:30px 0 0}
+  body[data-page="home"] .hm-car-head{margin-bottom:14px}
+  body[data-page="home"] .hm-serv{gap:26px;margin:34px 0}
+  body[data-page="home"] .hm-serv-card .im img{height:180px}
+  body[data-page="home"] .hm-serv-body{padding:14px 4px 0}
+  body[data-page="home"] .hm-serv-body h3{font-size:17px}
+  body[data-page="home"] .hm-serv-body p{font-size:12px}
+  body[data-page="home"] .hm-find{padding:20px 14px}
+}
+
+/* ۳) فوتر کامپکت در موبایل (دو ستونه به جای لیست دراز) */
+@media(max-width:600px){
+  #ftr .f-cols{grid-template-columns:1fr 1fr;gap:18px;padding:30px 16px 18px}
+  #ftr .f-cols > div:first-child{grid-column:1/-1}
+  #ftr .f-logo{height:36px}
+  #ftr b{font-size:12.5px;margin-bottom:8px}
+  #ftr a{font-size:12px;line-height:2.1}
+  #ftr p{font-size:12px}
+  #ftr .f-bottom{padding:12px;font-size:10.5px}
+}
