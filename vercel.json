@@ -1,4 +1,7 @@
 {
+  "redirects": [
+    { "source": "/mealplan.html", "destination": "/planner.html", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",
