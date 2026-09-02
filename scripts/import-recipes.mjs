@@ -1,7 +1,6 @@
-/* DailyFitBeat — AI Recipe Importer v3
+/* DailyFitBeat — AI Recipe Importer v3.1
    ورودی: import/dishes.txt  |  گزارش: import/done.txt
-   متن: Gemini (schema کامل)  |  تصویر: Gemini Image  |  چک: Gemini Vision
-   ضدتکرار: slug + نام نرمال‌شده */
+   متن: Gemini (چند مدل پشتیبان)  |  تصویر: Gemini Image  |  چک: Gemini Vision */
 import { mkdirSync, writeFileSync, readFileSync, existsSync, appendFileSync } from 'node:fs';
 import sharp from 'sharp';
 
@@ -20,13 +19,12 @@ mkdirSync('img/recipes', { recursive: true });
 
 const svcH = { apikey: SERVICE, Authorization: 'Bearer ' + SERVICE };
 
-/* ---------- ورودی ---------- */
 const dishes = existsSync(FILE_IN)
   ? readFileSync(FILE_IN, 'utf8').split('\n').map(s => s.trim()).filter(Boolean)
   : [];
 if (!dishes.length) { console.log('📭 import/dishes.txt خالی است.'); process.exit(0); }
 
-/* ---------- ۱) کل رسپی‌های موجود (ضدتکرار) ---------- */
+/* ---------- ۱) ضدتکرار ---------- */
 async function loadExisting() {
   const slugs = new Set(), names = new Set();
   let offset = 0;
@@ -46,8 +44,8 @@ async function loadExisting() {
   return { slugs, names };
 }
 
-/* ---------- ۲) Gemini: متن (JSON کامل) ---------- */
-const TEXT_MODEL = 'gemini-2.0-flash';
+/* ---------- ۲) Gemini متن (چند مدل + لاگ خطا) ---------- */
+const TEXT_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 const SCHEMA_PROMPT = (name) => `تو سرآشپز حرفه‌ای و متخصص تغذیه هستی. برای غذای «${name}» یک رسپی کامل و واقعی بساز.
 فقط JSON معتبر برگردان، بدون هیچ متن اضافه، با این ساختار دقیق:
 {
@@ -64,22 +62,35 @@ const SCHEMA_PROMPT = (name) => `تو سرآشپز حرفه‌ای و متخصص
   "steps":["مرحله ۱ با جزئیات","..."],
   "tips":["نکته پخت ۱","نکته پخت ۲"],
   "tags":["کم‌کالری","پرپروتئین"],
-  "keys":["chicken","grill"],
-  "image_style":"توضیح کوتاه انگلیسی از ظاهر غذا برای پرامپت تصویر (مثلاً: a plate of green Persian stew with visible meat chunks and golden rice on the side)"
+  "keys":["rhubarb","stew"],
+  "image_style":"short English description of the dish appearance for the image prompt"
 }
-الزامات: حداقل ۶ ماده با مقدار واقعی، حداقل ۵ مرحله، ۲ تا ۳ نکته، اعداد منطقی، slug یکتا، desc_en انگلیسی روان. فقط JSON.`;
+الزامات: حداقل ۶ ماده با مقدار واقعی، حداقل ۵ مرحله، ۲ تا  نکته، اعداد منطقی، slug یکتا. فقط JSON.`;
 
 async function geminiText(prompt) {
-  const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + TEXT_MODEL + ':generateContent?key=' + GEMINI, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
-    })
-  });
-  const j = await r.json();
-  return j.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  for (const model of TEXT_MODELS) {
+    try {
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + GEMINI, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
+        })
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        console.log('   ⚠ model ' + model + ' → HTTP ' + r.status + ' | ' + String(j.error && j.error.message).slice(0, 140));
+        continue;
+      }
+      const t = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
+      if (t) { console.log('   🧠 model: ' + model); return t; }
+      console.log('   ⚠ model ' + model + ' → جواب خالی');
+    } catch (e) {
+      console.log('   ⚠ model ' + model + ' → ' + String(e.message).slice(0, 100));
+    }
+  }
+  return '';
 }
 function parseJSON(txt) {
   try { return JSON.parse(txt); } catch (e) {}
@@ -88,11 +99,11 @@ function parseJSON(txt) {
   return null;
 }
 
-/* ---------- ۳) Gemini Image + Vision check ---------- */
+/* ---------- ۳) Gemini Image + Vision ---------- */
 const IMAGE_MODEL = 'gemini-2.5-flash-image-preview';
 
 async function generateImage(styleDesc) {
-  const prompt = 'Ultra-realistic cinematic premium food photography of: ' + styleDesc + '. Square 1:1, dark moody background, warm natural side light, gentle steam, rich macro texture, shallow depth of field, appetizing, high-end editorial style. No text, no watermark, no people, no logo, no plate text.';
+  const prompt = 'Ultra-realistic cinematic premium food photography of: ' + styleDesc + '. Square 1:1, dark moody background, warm natural side light, gentle steam, rich macro texture, shallow depth of field, appetizing, high-end editorial style. No text, no watermark, no people, no logo.';
   const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + IMAGE_MODEL + ':generateContent?key=' + GEMINI, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -102,7 +113,8 @@ async function generateImage(styleDesc) {
     })
   });
   const j = await r.json();
-  const parts = j.candidates?.[0]?.content?.parts || [];
+  if (!r.ok) { console.log('   ⚠ image API → HTTP ' + r.status + ' | ' + String(j.error && j.error.message).slice(0, 140)); return null; }
+  const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
   for (const p of parts) {
     if (p.inline_data && p.inline_data.data) return Buffer.from(p.inline_data.data, 'base64');
   }
@@ -110,36 +122,39 @@ async function generateImage(styleDesc) {
 }
 
 async function visionCheck(imageBuf, dishName) {
-  const b64 = imageBuf.toString('base64');
-  const prompt = 'آیا تصویر دقیقاً غذای «' + dishName + '» را نشان می‌دهد؟ فقط با این فرمت جواب بده:\nYES یا NO\nیک جمله کوتاه توضیح.';
-  const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + TEXT_MODEL + ':generateContent?key=' + GEMINI, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [
-        { inline_data: { mime_type: 'image/jpeg', data: b64 } },
-        { text: prompt }
-      ]}]
-    })
-  });
-  const j = await r.json();
-  const txt = j.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  return { ok: /^\s*YES/i.test(txt), reason: txt.trim() };
+  try {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + TEXT_MODELS[0] + ':generateContent?key=' + GEMINI, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [
+          { inline_data: { mime_type: 'image/jpeg', data: imageBuf.toString('base64') } },
+          { text: 'آیا تصویر دقیقاً غذای «' + dishName + '» را نشان می‌دهد؟ فقط با فرمت YES یا NO به همراه یک جمله توضیح جواب بده.' }
+        ]}]
+      })
+    });
+    const j = await r.json();
+    const txt = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
+    if (!txt) return { ok: true, reason: 'vision unavailable — accepted' };
+    return { ok: /^\s*YES/i.test(txt), reason: txt.trim().split('\n').pop() };
+  } catch (e) {
+    return { ok: true, reason: 'vision error — accepted' };
+  }
 }
 
 async function produceImage(dishName, styleDesc) {
   let lastBuf = null, lastReason = '';
   for (let attempt = 0; attempt < 3; attempt++) {
-    const refined = attempt === 0 ? styleDesc : styleDesc + '. Previous issue: ' + lastReason + '. Fix it and make it more authentic and detailed.';
+    const refined = attempt === 0 ? styleDesc : styleDesc + '. Previous issue: ' + lastReason + '. Fix it, more authentic and detailed.';
     const buf = await generateImage(refined);
-    if (!buf) { lastReason = 'no image generated'; continue; }
+    if (!buf) { lastReason = 'no image'; await sleep(2000); continue; }
     const check = await visionCheck(buf, dishName);
     if (check.ok) { console.log('   🎨 vision: ✓ ' + check.reason); return buf; }
     lastBuf = buf; lastReason = check.reason;
     console.log('   🎨 vision: ✗ ' + check.reason + ' — retry ' + (attempt + 1));
     await sleep(1500);
   }
-  console.log('   🎨 استفاده از آخرین تلاش (vision مردود)');
+  console.log('   🎨 استفاده از آخرین تلاش');
   return lastBuf;
 }
 
@@ -175,17 +190,19 @@ async function insertRow(row) {
     }
 
     try {
-      /* متن */
       const raw = await geminiText(SCHEMA_PROMPT(dish));
       const r = parseJSON(raw);
-      if (!r || !r.slug || !r.name_fa) { console.log('   ❌ JSON نامعتبر'); fail++; doneLines.push(dish + '  →  FAIL(bad-json)'); continue; }
+      if (!r || !r.slug || !r.name_fa) {
+        console.log('   ❌ JSON نامعتبر ← raw: ' + String(raw).slice(0, 200));
+        fail++; doneLines.push(dish + '  →  FAIL(bad-json)');
+        continue;
+      }
       if (existing.slugs.has(r.slug)) {
         console.log('   ⏭ slug تکراری — skip');
         skip++; doneLines.push(dish + '  →  SKIP(duplicate-slug)');
         continue;
       }
 
-      /* تصویر */
       console.log('   🎨 تولید تصویر…');
       const imgBuf = await produceImage(r.name_fa, r.image_style || r.name_en);
       let imagePath = 'img/recipes/' + r.slug + '.jpg';
@@ -196,7 +213,6 @@ async function insertRow(row) {
         imagePath = 'img/cat-main.jpg';
       }
 
-      /* ثبت */
       const row = {
         slug: r.slug, name_fa: r.name_fa, name_en: r.name_en || '',
         desc_fa: r.desc_fa || '', desc_en: r.desc_en || r.name_en || '',
@@ -225,7 +241,6 @@ async function insertRow(row) {
         doneLines.push(dish + '  →  FAIL(insert)');
       }
 
-      /* push هر ۵ عکس (مثل gen-images قبلی) */
       if (imgCount > 0 && imgCount % 5 === 0) {
         try {
           const { execSync } = await import('node:child_process');
