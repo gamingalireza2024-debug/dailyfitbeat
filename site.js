@@ -115,3 +115,41 @@
     document.head.appendChild(m);
   }
 })();
+/* =========================================================
+   MOBILE POLISH v3 — تزریق مطمئن بعد از همه CSSها
+   ========================================================= */
+(function () {
+  if (document.getElementById('dfb-mobile-fix')) return;
+  var st = document.createElement('style');
+  st.id = 'dfb-mobile-fix';
+  st.textContent = [
+    '#authBox{display:flex;gap:6px;align-items:center}',
+    '@media(max-width:520px){',
+    ' #hdr{gap:10px;padding:8px 12px}',
+    ' #hdr .logo img{height:34px}',
+    ' #hdr .hactions{gap:6px}',
+    ' #hdr .auth-chip{padding:7px 12px;font-size:11px}',
+    ' #hdr .lang{padding:7px 10px;font-size:11px}',
+    ' #hdr .btn.small{display:none}',
+    '}',
+    '@media(max-width:768px){',
+    ' body[data-page="home"] .hm-hero-img{height:auto}',
+    ' body[data-page="home"] .hm-hero-img img{position:relative;inset:auto;height:260px;object-position:left 60%}',
+    ' body[data-page="home"] .hm-hero-txt{padding:28px 18px 20px}',
+    ' body[data-page="home"] .hm-quick{position:static;transform:none;width:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 14px 14px;background:transparent;border:0;box-shadow:none;padding:0;backdrop-filter:none;overflow:visible}',
+    ' body[data-page="home"] .hm-quick a{background:rgba(255,255,255,.6);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.7);border-radius:14px;box-shadow:0 8px 22px rgba(17,24,39,.08);min-height:48px;flex:none}',
+    ' body[data-page="home"] .hm-car{margin:28px 0 0}',
+    ' body[data-page="home"] .hm-serv{gap:26px;margin:32px 0}',
+    ' body[data-page="home"] .hm-serv-card .im img{height:180px}',
+    ' body[data-page="home"] .hm-find{padding:20px 14px}',
+    '}',
+    '@media(max-width:600px){',
+    ' #ftr .f-cols{grid-template-columns:1fr 1fr;gap:18px;padding:30px 16px 18px}',
+    ' #ftr .f-cols > div:first-child{grid-column:1/-1}',
+    ' #ftr a{font-size:12px;line-height:2.1}',
+    ' #ftr b{font-size:12.5px;margin-bottom:8px}',
+    ' #ftr .f-bottom{padding:12px;font-size:10.5px}',
+    '}'
+  ].join('');
+  document.head.appendChild(st);
+})();
