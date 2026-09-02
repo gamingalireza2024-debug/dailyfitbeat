@@ -153,3 +153,13 @@
   ].join('');
   document.head.appendChild(st);
 })();
+/* ---------- فرم درست تصویر صفحه رسپی ---------- */
+(function () {
+  if (document.getElementById('dfb-recipe-img-fix')) return;
+  var st = document.createElement('style');
+  st.id = 'dfb-recipe-img-fix';
+  st.textContent = 'body[data-page="recipe"] .rd-img{height:520px;border-radius:22px;overflow:hidden;position:sticky;top:92px}' +
+    'body[data-page="recipe"] .rd-img img{width:100%;height:100%;object-fit:cover;display:block}' +
+    '@media(max-width:900px){body[data-page="recipe"] .rd-img{height:280px;position:static}}';
+  document.head.appendChild(st);
+})();
