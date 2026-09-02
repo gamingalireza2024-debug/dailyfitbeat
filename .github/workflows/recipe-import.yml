@@ -1,0 +1,36 @@
+name: recipe-import
+
+on:
+  push:
+    paths:
+      - "import/dishes.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install sharp
+        run: npm i sharp
+
+      - name: Run AI importer
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/import-recipes.mjs
+
+      - name: Commit results + images
+        run: |
+          git config user.name "dfb-bot"
+          git config user.email "bot@dailyfitbeat.ir"
+          git add img/recipes import/done.txt import/dishes.txt 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "chore: recipe import [skip ci]" && git push)
