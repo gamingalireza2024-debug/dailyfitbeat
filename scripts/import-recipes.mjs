@@ -1,6 +1,5 @@
-/* DailyFitBeat — AI Recipe Importer v3.1
-   ورودی: import/dishes.txt  |  گزارش: import/done.txt
-   متن: Gemini (چند مدل پشتیبان)  |  تصویر: Gemini Image  |  چک: Gemini Vision */
+/* DailyFitBeat — AI Recipe Importer v3.2
+   مدل‌ها به‌صورت پویا از API کشف می‌شوند (ضد deprecated شدن) */
 import { mkdirSync, writeFileSync, readFileSync, existsSync, appendFileSync } from 'node:fs';
 import sharp from 'sharp';
 
@@ -9,6 +8,7 @@ const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const GEMINI = process.env.GEMINI_API_KEY || '';
 const FILE_IN = 'import/dishes.txt';
 const FILE_DONE = 'import/done.txt';
+const API = 'https://generativelanguage.googleapis.com/v1beta';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const norm = s => String(s || '').toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/‌/g, ' ').replace(/\s+/g, ' ').trim();
@@ -24,7 +24,23 @@ const dishes = existsSync(FILE_IN)
   : [];
 if (!dishes.length) { console.log('📭 import/dishes.txt خالی است.'); process.exit(0); }
 
-/* ---------- ۱) ضدتکرار ---------- */
+/* ---------- کشف مدل‌ها ---------- */
+const TEXT_MODELS = ['gemini-3.6-flash', 'gemini-3-flash', 'gemini-2.5-flash'];
+let IMAGE_MODEL = null;
+
+async function pickImageModel() {
+  try {
+    const r = await fetch(API + '/models?pageSize=200&key=' + GEMINI);
+    const j = await r.json();
+    const models = j.models || [];
+    const img = models.find(m => /image/i.test(m.name) && (m.supportedGenerationMethods || []).includes('generateContent'));
+    if (img) { IMAGE_MODEL = img.name.replace(/^models\//, ''); console.log('🎛 image model: ' + IMAGE_MODEL); return; }
+  } catch (e) { console.log('⚠ model discovery: ' + e.message); }
+  IMAGE_MODEL = 'gemini-3.6-flash';
+  console.log('🎛 image model (fallback): ' + IMAGE_MODEL);
+}
+
+/* ---------- ضدتکرار ---------- */
 async function loadExisting() {
   const slugs = new Set(), names = new Set();
   let offset = 0;
@@ -44,8 +60,7 @@ async function loadExisting() {
   return { slugs, names };
 }
 
-/* ---------- ۲) Gemini متن (چند مدل + لاگ خطا) ---------- */
-const TEXT_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+/* ---------- Gemini متن ---------- */
 const SCHEMA_PROMPT = (name) => `تو سرآشپز حرفه‌ای و متخصص تغذیه هستی. برای غذای «${name}» یک رسپی کامل و واقعی بساز.
 فقط JSON معتبر برگردان، بدون هیچ متن اضافه، با این ساختار دقیق:
 {
@@ -65,12 +80,12 @@ const SCHEMA_PROMPT = (name) => `تو سرآشپز حرفه‌ای و متخصص
   "keys":["rhubarb","stew"],
   "image_style":"short English description of the dish appearance for the image prompt"
 }
-الزامات: حداقل ۶ ماده با مقدار واقعی، حداقل ۵ مرحله، ۲ تا  نکته، اعداد منطقی، slug یکتا. فقط JSON.`;
+الزامات: حداقل ۶ ماده با مقدار واقعی، حداقل ۵ مرحله، ۲ تا ۳ نکته، اعداد منطقی، slug یکتا. فقط JSON.`;
 
 async function geminiText(prompt) {
   for (const model of TEXT_MODELS) {
     try {
-      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + GEMINI, {
+      const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -99,12 +114,10 @@ function parseJSON(txt) {
   return null;
 }
 
-/* ---------- ۳) Gemini Image + Vision ---------- */
-const IMAGE_MODEL = 'gemini-2.5-flash-image-preview';
-
-async function generateImage(styleDesc) {
+/* ---------- Gemini Image + Vision ---------- */
+async function generateImage(styleDesc, model) {
   const prompt = 'Ultra-realistic cinematic premium food photography of: ' + styleDesc + '. Square 1:1, dark moody background, warm natural side light, gentle steam, rich macro texture, shallow depth of field, appetizing, high-end editorial style. No text, no watermark, no people, no logo.';
-  const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + IMAGE_MODEL + ':generateContent?key=' + GEMINI, {
+  const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -113,7 +126,7 @@ async function generateImage(styleDesc) {
     })
   });
   const j = await r.json();
-  if (!r.ok) { console.log('   ⚠ image API → HTTP ' + r.status + ' | ' + String(j.error && j.error.message).slice(0, 140)); return null; }
+  if (!r.ok) { console.log('   ⚠ image(' + model + ') → HTTP ' + r.status + ' | ' + String(j.error && j.error.message).slice(0, 140)); return null; }
   const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
   for (const p of parts) {
     if (p.inline_data && p.inline_data.data) return Buffer.from(p.inline_data.data, 'base64');
@@ -123,7 +136,7 @@ async function generateImage(styleDesc) {
 
 async function visionCheck(imageBuf, dishName) {
   try {
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + TEXT_MODELS[0] + ':generateContent?key=' + GEMINI, {
+    const r = await fetch(API + '/models/' + TEXT_MODELS[0] + ':generateContent?key=' + GEMINI, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -143,10 +156,15 @@ async function visionCheck(imageBuf, dishName) {
 }
 
 async function produceImage(dishName, styleDesc) {
+  const modelsToTry = [IMAGE_MODEL, ...TEXT_MODELS].filter((v, i, a) => a.indexOf(v) === i);
   let lastBuf = null, lastReason = '';
   for (let attempt = 0; attempt < 3; attempt++) {
     const refined = attempt === 0 ? styleDesc : styleDesc + '. Previous issue: ' + lastReason + '. Fix it, more authentic and detailed.';
-    const buf = await generateImage(refined);
+    let buf = null;
+    for (const m of modelsToTry) {
+      buf = await generateImage(refined, m);
+      if (buf) break;
+    }
     if (!buf) { lastReason = 'no image'; await sleep(2000); continue; }
     const check = await visionCheck(buf, dishName);
     if (check.ok) { console.log('   🎨 vision: ✓ ' + check.reason); return buf; }
@@ -158,11 +176,11 @@ async function produceImage(dishName, styleDesc) {
   return lastBuf;
 }
 
-/* ---------- ۴) Supabase ---------- */
+/* ---------- Supabase ---------- */
 async function insertRow(row) {
   const r = await fetch(SB_URL + '/rest/v1/recipes', {
     method: 'POST',
-    headers: Object.assign({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }, svcH),
+    headers: Object.assign({ 'Content-Type': 'application/json', Prefer: 'return-minimal' }, svcH),
     body: JSON.stringify(row)
   });
   return r.ok || r.status === 201;
@@ -172,7 +190,9 @@ async function insertRow(row) {
 (async () => {
   console.log('📖 خواندن رسپی‌های موجود…');
   const existing = await loadExisting();
-  console.log('   ' + existing.slugs.size + ' رسپی موجود یافت شد.\n');
+  console.log('   ' + existing.slugs.size + ' رسپی موجود یافت شد.');
+  await pickImageModel();
+  console.log('');
 
   const seenInRun = new Set();
   let ok = 0, skip = 0, fail = 0;
