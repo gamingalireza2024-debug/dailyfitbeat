@@ -297,7 +297,7 @@ async function insertRow(row) {
   if (imgCount > 0) {
     try {
       const { execSync } = await import('node:child_process');
-      execSync('git add img/recipes && (git diff --staged --quiet || git commit -m "chore: recipe images [skip ci]" && git push)', { stdio: 'inherit' });
+      execSync('git add img/recipes && (git diff --staged --quiet ||git commit -m "chore: recipe images [skip ci]" && (git pull --rebase origin main || true) && git push', { stdio: 'inherit' });
     } catch (e) { console.log('push warn:', String(e).slice(0, 120)); }
   }
 
