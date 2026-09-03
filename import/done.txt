@@ -19,3 +19,15 @@
 ۹. پای گوشت و سبزیجات | شیلی  →  OK(chilean-meat-and-corn-pie)
 ۱۰. خوراک گوشت با ذرت | شیلی  →  FAIL(bad-json)
 
+2026-09-03T14:50:07.902Z — 1/10
+🇨🇳 نان بخارپز چینی (بائو) | چین  →  OK(chinese-steamed-pork-baozi)
+🇧🇷 نان پنیری برزیلی | برزیل  →  FAIL(bad-json)
+🇮🇹 کورنتو با کاپوچینو | ایتالیا  →  FAIL(bad-json)
+🇪🇸 چوروس با شکلات داغ | اسپانیا  →  FAIL(bad-json)
+🇮🇱 شاکشوکا | اسرائیل  →  FAIL(bad-json)
+🇹🇭 فرنی برنج تایلندی | تایلند  →  FAIL(bad-json)
+🇵🇭 سیلوگ | فیلیپین  →  FAIL(bad-json)
+🇩🇪 صبحانه نان و پنیر آلمانی | آلمان  →  FAIL(bad-json)
+🇸🇪 پنکیک سوئدی | سوئد  →  FAIL(bad-json)
+🇨🇦 پوتین صبحانه | کانادا  →  FAIL(bad-json)
+
