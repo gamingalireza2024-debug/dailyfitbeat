@@ -1,5 +1,6 @@
-/* DailyFitBeat — AI Recipe Importer v3.4 (ضدسهمیه)
-   متن: Gemini → اگر 429: Pollinations Text | تصویر: Gemini → Pollinations | چک: Vision فشرده */
+/* DailyFitBeat — AI Recipe Importer v3.5
+   ضد 429: فاصله ۶ ثانیه بین درخواست‌های Gemini + بک‌آف ۶۰ ثانیه
+   غذاهای شکست‌خورده به dishes.txt برمی‌گردند برای تلاش بعدی */
 import { mkdirSync, writeFileSync, readFileSync, existsSync, appendFileSync } from 'node:fs';
 import sharp from 'sharp';
 
@@ -24,7 +25,7 @@ const dishes = existsSync(FILE_IN)
   : [];
 if (!dishes.length) { console.log('📭 import/dishes.txt خالی است.'); process.exit(0); }
 
-/* ---------- ۱) ضدتکرار ---------- */
+/* ---------- ضدتکرار ---------- */
 async function loadExisting() {
   const slugs = new Set(), names = new Set();
   let offset = 0;
@@ -44,11 +45,32 @@ async function loadExisting() {
   return { slugs, names };
 }
 
-/* ---------- ۲) مدل‌ها ---------- */
+/* ---------- دروازه Gemini: فاصله ۶ ثانیه + بک‌آف ۶۰ ثانیه ---------- */
 const TEXT_MODELS = ['gemini-3.6-flash', 'gemini-3-flash', 'gemini-2.5-flash'];
 let IMAGE_MODEL = null;
-let geminiImgDead = false;
-let geminiTextDead = false;
+let lastGeminiAt = 0;
+
+async function geminiFetch(model, body) {
+  for (let back = 0; back < 3; back++) {
+    const gap = Date.now() - lastGeminiAt;
+    if (gap < 6000) await sleep(6000 - gap);
+    lastGeminiAt = Date.now();
+    try {
+      const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (r.status === 429) {
+        console.log('   ⏳ 429 — صبر ۶۰ ثانیه و تلاش دوباره…');
+        await sleep(60000);
+        continue;
+      }
+      return r;
+    } catch (e) { return null; }
+  }
+  return null;
+}
 
 async function pickImageModel() {
   try {
@@ -57,72 +79,39 @@ async function pickImageModel() {
     const models = j.models || [];
     const img = models.find(m => /image/i.test(m.name) && (m.supportedGenerationMethods || []).includes('generateContent'));
     if (img) { IMAGE_MODEL = img.name.replace(/^models\//, ''); console.log('🎛 image model: ' + IMAGE_MODEL); return; }
-  } catch (e) { console.log('⚠ model discovery: ' + e.message); }
+  } catch (e) {}
   IMAGE_MODEL = 'gemini-2.5-flash-image';
   console.log('🎛 image model (fallback): ' + IMAGE_MODEL);
 }
 
-/* ---------- ۳) متن: Gemini → Pollinations ---------- */
+/* ---------- متن ---------- */
 const SCHEMA_PROMPT = (name) => `تو سرآشپز حرفه‌ای و متخصص تغذیه هستی. برای غذای «${name}» یک رسپی کامل و واقعی بساز.
 فقط JSON معتبر برگردان، بدون هیچ متن اضافه، با این ساختار دقیق:
 {
-  "name_fa":"نام فارسی",
-  "name_en":"English Name",
-  "slug":"english-kebab-case-unique",
-  "category":"iranian|main|salad|sandwich|breakfast|soup",
-  "region":"ایران یا نام کشور به فارسی",
-  "time_min":45,
-  "kcal":520,"protein":32,"carbs":40,"fat":22,"fiber":5,"sugar":3,
-  "desc_fa":"توصیف یک‌جمله‌ای جذاب فارسی برای کاربر",
-  "desc_en":"One-sentence English description for image prompt",
+  "name_fa":"نام فارسی","name_en":"English Name","slug":"english-kebab-case-unique",
+  "category":"iranian|main|salad|sandwich|breakfast|soup","region":"ایران یا نام کشور به فارسی",
+  "time_min":45,"kcal":520,"protein":32,"carbs":40,"fat":22,"fiber":5,"sugar":3,
+  "desc_fa":"توصیف یک‌جمله‌ای جذاب فارسی","desc_en":"One-sentence English description",
   "ingredients":[{"fa":"نام ماده","q":"مقدار واقعی"}],
-  "steps":["مرحله ۱ با جزئیات","..."],
-  "tips":["نکته پخت ۱","نکته پخت ۲"],
-  "tags":["کم‌کالری","پرپروتئین"],
-  "keys":["club","sandwich"],
-  "image_style":"short English description of the exact dish appearance (colors, texture, garnish, serving style) for the image prompt"
+  "steps":["مرحله ۱ با جزئیات","..."],"tips":["نکته ۱","نکته ۲"],
+  "tags":["کم‌کالری","پرپروتئین"],"keys":["panini","italy"],
+  "image_style":"short English description of the exact dish appearance (colors, texture, garnish, plating)"
 }
 الزامات: حداقل ۶ ماده با مقدار واقعی، حداقل ۵ مرحله، ۲ تا ۳ نکته، اعداد منطقی، slug یکتا. فقط JSON.`;
 
-async function polliText(prompt) {
-  try {
-    const r = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt), { signal: AbortSignal.timeout(60000) });
-    if (!r.ok) { console.log('   ⚠ pollinations-text → HTTP ' + r.status); return ''; }
-    console.log('   🌐 text via pollinations (سهمیه‌نخور)');
-    return await r.text();
-  } catch (e) { console.log('   ⚠ pollinations-text err'); return ''; }
-}
-
 async function geminiText(prompt) {
-  if (!geminiTextDead) {
-    for (const model of TEXT_MODELS) {
-      try {
-        const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
-          })
-        });
-        const j = await r.json();
-        if (r.status === 429) {
-          console.log('   ⏳ سهمیه Gemini تمام شده — متن می‌رود روی Pollinations');
-          geminiTextDead = true;
-          break;
-        }
-        if (!r.ok) {
-          console.log('   ⚠ model ' + model + ' → HTTP ' + r.status + ' | ' + String(j.error && j.error.message).slice(0, 120));
-          continue;
-        }
-        const t = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
-        if (t) { console.log('   🧠 model: ' + model); return t; }
-      } catch (e) {
-        console.log('   ⚠ model ' + model + ' → ' + String(e.message).slice(0, 80));
-      }
-    }
+  for (const model of TEXT_MODELS) {
+    const r = await geminiFetch(model, {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
+    });
+    if (!r) continue;
+    if (!r.ok) { console.log('   ⚠ ' + model + ' → HTTP ' + r.status); continue; }
+    const j = await r.json();
+    const t = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
+    if (t) { console.log('   🧠 model: ' + model); return t; }
   }
-  return await polliText(prompt);
+  return '';
 }
 function parseJSON(txt) {
   try { return JSON.parse(txt); } catch (e) {}
@@ -131,29 +120,20 @@ function parseJSON(txt) {
   return null;
 }
 
-/* ---------- ۴) تصویر + بینایی فشرده ---------- */
+/* ---------- تصویر ---------- */
 const STYLE_TPL = (d) => 'Ultra-realistic cinematic premium food photography of: ' + d + '. Square 1:1, dark moody background, warm natural side light, gentle steam, rich macro texture, shallow depth of field, appetizing, high-end editorial style. No text, no watermark, no people, no logo.';
 
 async function generateImageGemini(styleDesc) {
-  if (geminiImgDead || !IMAGE_MODEL) return null;
-  try {
-    const r = await fetch(API + '/models/' + IMAGE_MODEL + ':generateContent?key=' + GEMINI, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: STYLE_TPL(styleDesc) }] }],
-        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
-      })
-    });
-    const j = await r.json();
-    if (!r.ok) {
-      if (r.status === 429) { console.log('   ⚠ gemini-image → 429 (سهمیه) — فقط Pollinations'); geminiImgDead = true; }
-      return null;
-    }
-    const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
-    for (const p of parts) if (p.inline_data && p.inline_data.data) return Buffer.from(p.inline_data.data, 'base64');
-    return null;
-  } catch (e) { return null; }
+  if (!IMAGE_MODEL) return null;
+  const r = await geminiFetch(IMAGE_MODEL, {
+    contents: [{ parts: [{ text: STYLE_TPL(styleDesc) }] }],
+    generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+  });
+  if (!r || !r.ok) return null;
+  const j = await r.json();
+  const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
+  for (const p of parts) if (p.inline_data && p.inline_data.data) return Buffer.from(p.inline_data.data, 'base64');
+  return null;
 }
 
 async function generateImagePollinations(styleDesc) {
@@ -167,23 +147,18 @@ async function generateImagePollinations(styleDesc) {
 }
 
 async function visionCheck(imageBuf, dishName) {
-  if (geminiTextDead) return { ok: true, reason: 'quota — accepted without vision' };
   try {
     const small = await sharp(imageBuf).resize(512, 512, { fit: 'cover' }).jpeg({ quality: 60 }).toBuffer();
-    const r = await fetch(API + '/models/' + TEXT_MODELS[0] + ':generateContent?key=' + GEMINI, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [
-          { inline_data: { mime_type: 'image/jpeg', data: small.toString('base64') } },
-          { text: 'آیا تصویر دقیقاً غذای «' + dishName + '» را نشان می‌دهد؟ فقط YES یا NO با یک جمله توضیح.' }
-        ]}]
-      })
+    const r = await geminiFetch(TEXT_MODELS[0], {
+      contents: [{ parts: [
+        { inline_data: { mime_type: 'image/jpeg', data: small.toString('base64') } },
+        { text: 'آیا تصویر دقیقاً غذای «' + dishName + '» را نشان می‌دهد؟ فقط YES یا NO با یک جمله توضیح.' }
+      ]}]
     });
+    if (!r || !r.ok) return { ok: true, reason: 'vision unavailable — accepted' };
     const j = await r.json();
-    if (r.status === 429) { geminiTextDead = true; return { ok: true, reason: 'quota — accepted' }; }
     const txt = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
-    if (!txt) return { ok: true, reason: 'vision unavailable — accepted' };
+    if (!txt) return { ok: true, reason: 'vision empty — accepted' };
     return { ok: /^\s*YES/i.test(txt), reason: txt.trim().split('\n').pop() };
   } catch (e) {
     return { ok: true, reason: 'vision error — accepted' };
@@ -200,14 +175,14 @@ async function produceImage(dishName, styleDesc) {
     const check = await visionCheck(buf, dishName);
     if (check.ok) { console.log('   🎨 vision: ✓ ' + check.reason); return buf; }
     lastBuf = buf; lastReason = check.reason;
-    console.log('   🎨 vision: ✗ ' + check.reason + ' — retry ' + (attempt + 1));
+    console.log('   🎨 vision:  ' + check.reason + ' — retry ' + (attempt + 1));
     await sleep(1500);
   }
   console.log('   🎨 استفاده از آخرین تلاش');
   return lastBuf;
 }
 
-/* ---------- ۵) Supabase ---------- */
+/* ---------- Supabase ---------- */
 async function insertRow(row) {
   const r = await fetch(SB_URL + '/rest/v1/recipes', {
     method: 'POST',
@@ -228,6 +203,7 @@ async function insertRow(row) {
   const seenInRun = new Set();
   let ok = 0, skip = 0, fail = 0;
   const doneLines = [];
+  const failedDishes = [];
   let imgCount = 0;
 
   for (const dish of dishes) {
@@ -244,8 +220,9 @@ async function insertRow(row) {
       const raw = await geminiText(SCHEMA_PROMPT(dish));
       const r = parseJSON(raw);
       if (!r || !r.slug || !r.name_fa) {
-        console.log('   ❌ JSON نامعتبر ← raw: ' + String(raw).slice(0, 200));
-        fail++; doneLines.push(dish + '  →  FAIL(bad-json)');
+        console.log('   ❌ JSON نامعتبر — به اجرای بعد موکول شد');
+        fail++; failedDishes.push(dish);
+        doneLines.push(dish + '  →  RETRY-next-run');
         continue;
       }
       if (existing.slugs.has(r.slug)) {
@@ -288,8 +265,9 @@ async function insertRow(row) {
         seenInRun.add(nd);
         doneLines.push(dish + '  →  OK(' + r.slug + ')');
       } else {
-        console.log('   ❌ insert ناموفق'); fail++;
-        doneLines.push(dish + '  →  FAIL(insert)');
+        console.log('   ❌ insert ناموفق — به اجرای بعد موکول شد');
+        fail++; failedDishes.push(dish);
+        doneLines.push(dish + '  →  RETRY-next-run(insert)');
       }
 
       if (imgCount > 0 && imgCount % 5 === 0) {
@@ -299,10 +277,11 @@ async function insertRow(row) {
         } catch (e) { console.log('   push warn:', String(e).slice(0, 120)); }
       }
 
-      await sleep(4000);
+      await sleep(5000);
     } catch (e) {
-      console.log('   ❌ ' + e.message); fail++;
-      doneLines.push(dish + '  →  FAIL(' + e.message + ')');
+      console.log('   ❌ ' + e.message);
+      fail++; failedDishes.push(dish);
+      doneLines.push(dish + '  →  RETRY-next-run(' + e.message + ')');
     }
   }
 
@@ -313,8 +292,9 @@ async function insertRow(row) {
     } catch (e) { console.log('push warn:', String(e).slice(0, 120)); }
   }
 
-  appendFileSync(FILE_DONE, new Date().toISOString() + ' — ' + ok + '/' + dishes.length + '\n' + doneLines.join('\n') + '\n\n');
-  writeFileSync(FILE_IN, '');
+  /* غذاهای شکست‌خورده برای اجرای بعد می‌مانند */
+  writeFileSync(FILE_IN, failedDishes.join('\n') + (failedDishes.length ? '\n' : ''));
+  appendFileSync(FILE_DONE, new Date().toISOString() + ' — ' + ok + ' ok / ' + skip + ' skip / ' + fail + ' retry\n' + doneLines.join('\n') + '\n\n');
 
-  console.log(`\n🏁 Done: ${ok} added, ${skip} skipped, ${fail} failed`);
+  console.log(`\n🏁 Done: ${ok} added, ${skip} skipped, ${fail} queued for next run`);
 })();
