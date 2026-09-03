@@ -31,3 +31,15 @@
 🇸🇪 پنکیک سوئدی | سوئد  →  FAIL(bad-json)
 🇨🇦 پوتین صبحانه | کانادا  →  FAIL(bad-json)
 
+2026-09-03T14:54:51.417Z — 1/10
+🇺🇸 کلاب ساندویچ | آمریکا  →  OK(classic-club-sandwich)
+🇮🇹 پانینی | ایتالیا  →  FAIL(bad-json)
+🇫🇷 کروک موسیو | فرانسه  →  FAIL(bad-json)
+🇹🇷 دونر ساندویچ | ترکیه  →  FAIL(bad-json)
+🇻🇳 بان می | ویتنام  →  FAIL(bad-json)
+🇯🇵 کاتسو ساندو | ژاپن  →  FAIL(bad-json)
+🇲🇽 تورتا | مکزیک  →  FAIL(bad-json)
+🇬🇧 ساندویچ خیار و پنیر | انگلستان  →  FAIL(bad-json)
+🇮🇳 وادا پاو | هند  →  FAIL(bad-json)
+🇦🇺 چیکن ساندویچ | استرالیا  →  FAIL(bad-json)
+
