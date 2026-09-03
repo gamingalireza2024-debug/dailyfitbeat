@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       limit:
-        description: "حداکثر تعداد رسپی در هر اجرا (برای مدیریت سهمیه)"
+        description: "حداکثر تعداد رسپی در هر اجرا"
         default: "20"
 
 jobs:
@@ -20,5 +20,6 @@ jobs:
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
           LIMIT: ${{ github.event.inputs.limit }}
         run: node scripts/enrich-recipes.mjs
