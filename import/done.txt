@@ -7,3 +7,15 @@
 2026-09-02T11:08:23.392Z — 1/1
 خورشت ریواس  →  OK(persian-rhubarb-stew)
 
+2026-09-03T10:44:34.362Z — 5/10
+۱. پای گوشت آمریکای جنوبی | آرژانتین  →  OK(argentine-beef-empanadas)
+۲. خوراک لوبیا و گوشت | برزیل  →  FAIL(bad-json)
+۳. ماهی با شیر نارگیل | برزیل  →  OK(brazilian-moqueca-fish-stew)
+۴. ماهی و لیمو ترش | پرو  →  FAIL(bad-json)
+۵. گوشت کبابی ذغالی | آرژانتین  →  OK(argentinian-asado-grilled-beef)
+۶. نان ذرت شکم‌پر | کلمبیا  →  FAIL(bad-json)
+۷. گوشت گاو با سیب‌زمینی و برنج | پرو  →  FAIL(bad-json)
+۸. خوراک مرغ با سس فلفل | پرو  →  OK(pro-chicken-roasted-pepper-sauce)
+۹. پای گوشت و سبزیجات | شیلی  →  OK(chilean-meat-and-corn-pie)
+۱۰. خوراک گوشت با ذرت | شیلی  →  FAIL(bad-json)
+
