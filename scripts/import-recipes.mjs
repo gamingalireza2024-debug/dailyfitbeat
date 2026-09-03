@@ -1,7 +1,5 @@
-/* DailyFitBeat — AI Recipe Importer v3.3
-   ورودی: import/dishes.txt  |  گزارش: import/done.txt
-   متن: Gemini (چند مدل) | تصویر: اول Gemini، اگر سهمیه نبود Pollinations | چک: Gemini Vision
-   ضدتکرار: slug + نام نرمال‌شده */
+/* DailyFitBeat — AI Recipe Importer v3.4 (ضدسهمیه)
+   متن: Gemini → اگر 429: Pollinations Text | تصویر: Gemini → Pollinations | چک: Vision فشرده */
 import { mkdirSync, writeFileSync, readFileSync, existsSync, appendFileSync } from 'node:fs';
 import sharp from 'sharp';
 
@@ -50,6 +48,7 @@ async function loadExisting() {
 const TEXT_MODELS = ['gemini-3.6-flash', 'gemini-3-flash', 'gemini-2.5-flash'];
 let IMAGE_MODEL = null;
 let geminiImgDead = false;
+let geminiTextDead = false;
 
 async function pickImageModel() {
   try {
@@ -63,7 +62,7 @@ async function pickImageModel() {
   console.log('🎛 image model (fallback): ' + IMAGE_MODEL);
 }
 
-/* ---------- ۳) Gemini متن ---------- */
+/* ---------- ۳) متن: Gemini → Pollinations ---------- */
 const SCHEMA_PROMPT = (name) => `تو سرآشپز حرفه‌ای و متخصص تغذیه هستی. برای غذای «${name}» یک رسپی کامل و واقعی بساز.
 فقط JSON معتبر برگردان، بدون هیچ متن اضافه، با این ساختار دقیق:
 {
@@ -80,35 +79,50 @@ const SCHEMA_PROMPT = (name) => `تو سرآشپز حرفه‌ای و متخصص
   "steps":["مرحله ۱ با جزئیات","..."],
   "tips":["نکته پخت ۱","نکته پخت ۲"],
   "tags":["کم‌کالری","پرپروتئین"],
-  "keys":["rhubarb","stew"],
+  "keys":["club","sandwich"],
   "image_style":"short English description of the exact dish appearance (colors, texture, garnish, serving style) for the image prompt"
 }
 الزامات: حداقل ۶ ماده با مقدار واقعی، حداقل ۵ مرحله، ۲ تا ۳ نکته، اعداد منطقی، slug یکتا. فقط JSON.`;
 
+async function polliText(prompt) {
+  try {
+    const r = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt), { signal: AbortSignal.timeout(60000) });
+    if (!r.ok) { console.log('   ⚠ pollinations-text → HTTP ' + r.status); return ''; }
+    console.log('   🌐 text via pollinations (سهمیه‌نخور)');
+    return await r.text();
+  } catch (e) { console.log('   ⚠ pollinations-text err'); return ''; }
+}
+
 async function geminiText(prompt) {
-  for (const model of TEXT_MODELS) {
-    try {
-      const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
-        })
-      });
-      const j = await r.json();
-      if (!r.ok) {
-        console.log('   ⚠ model ' + model + ' → HTTP ' + r.status + ' | ' + String(j.error && j.error.message).slice(0, 140));
-        continue;
+  if (!geminiTextDead) {
+    for (const model of TEXT_MODELS) {
+      try {
+        const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
+          })
+        });
+        const j = await r.json();
+        if (r.status === 429) {
+          console.log('   ⏳ سهمیه Gemini تمام شده — متن می‌رود روی Pollinations');
+          geminiTextDead = true;
+          break;
+        }
+        if (!r.ok) {
+          console.log('   ⚠ model ' + model + ' → HTTP ' + r.status + ' | ' + String(j.error && j.error.message).slice(0, 120));
+          continue;
+        }
+        const t = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
+        if (t) { console.log('   🧠 model: ' + model); return t; }
+      } catch (e) {
+        console.log('   ⚠ model ' + model + ' → ' + String(e.message).slice(0, 80));
       }
-      const t = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
-      if (t) { console.log('   🧠 model: ' + model); return t; }
-      console.log('   ⚠ model ' + model + ' → جواب خالی');
-    } catch (e) {
-      console.log('   ⚠ model ' + model + ' → ' + String(e.message).slice(0, 100));
     }
   }
-  return '';
+  return await polliText(prompt);
 }
 function parseJSON(txt) {
   try { return JSON.parse(txt); } catch (e) {}
@@ -117,7 +131,7 @@ function parseJSON(txt) {
   return null;
 }
 
-/* ---------- ۴) تصویر: اول Gemini، وگرنه Pollinations + کنترل بینایی ---------- */
+/* ---------- ۴) تصویر + بینایی فشرده ---------- */
 const STYLE_TPL = (d) => 'Ultra-realistic cinematic premium food photography of: ' + d + '. Square 1:1, dark moody background, warm natural side light, gentle steam, rich macro texture, shallow depth of field, appetizing, high-end editorial style. No text, no watermark, no people, no logo.';
 
 async function generateImageGemini(styleDesc) {
@@ -133,8 +147,7 @@ async function generateImageGemini(styleDesc) {
     });
     const j = await r.json();
     if (!r.ok) {
-      console.log('   ⚠ gemini-image → HTTP ' + r.status + (r.status === 429 ? ' (سهمیه) — fallback به Pollinations' : ''));
-      if (r.status === 429) geminiImgDead = true;
+      if (r.status === 429) { console.log('   ⚠ gemini-image → 429 (سهمیه) — فقط Pollinations'); geminiImgDead = true; }
       return null;
     }
     const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
@@ -150,25 +163,25 @@ async function generateImagePollinations(styleDesc) {
     if (!r.ok) { console.log('   ⚠ pollinations → HTTP ' + r.status); return null; }
     const buf = Buffer.from(await r.arrayBuffer());
     return buf.length > 2000 ? buf : null;
-  } catch (e) {
-    console.log('   ⚠ pollinations → ' + String(e.message).slice(0, 80));
-    return null;
-  }
+  } catch (e) { console.log('   ⚠ pollinations err'); return null; }
 }
 
 async function visionCheck(imageBuf, dishName) {
+  if (geminiTextDead) return { ok: true, reason: 'quota — accepted without vision' };
   try {
+    const small = await sharp(imageBuf).resize(512, 512, { fit: 'cover' }).jpeg({ quality: 60 }).toBuffer();
     const r = await fetch(API + '/models/' + TEXT_MODELS[0] + ':generateContent?key=' + GEMINI, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [
-          { inline_data: { mime_type: 'image/jpeg', data: imageBuf.toString('base64') } },
-          { text: 'آیا تصویر دقیقاً غذای «' + dishName + '» را نشان می‌دهد؟ فقط با فرمت YES یا NO به همراه یک جمله توضیح جواب بده.' }
+          { inline_data: { mime_type: 'image/jpeg', data: small.toString('base64') } },
+          { text: 'آیا تصویر دقیقاً غذای «' + dishName + '» را نشان می‌دهد؟ فقط YES یا NO با یک جمله توضیح.' }
         ]}]
       })
     });
     const j = await r.json();
+    if (r.status === 429) { geminiTextDead = true; return { ok: true, reason: 'quota — accepted' }; }
     const txt = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
     if (!txt) return { ok: true, reason: 'vision unavailable — accepted' };
     return { ok: /^\s*YES/i.test(txt), reason: txt.trim().split('\n').pop() };
@@ -180,10 +193,10 @@ async function visionCheck(imageBuf, dishName) {
 async function produceImage(dishName, styleDesc) {
   let lastBuf = null, lastReason = '';
   for (let attempt = 0; attempt < 3; attempt++) {
-    const refined = attempt === 0 ? styleDesc : styleDesc + '. Previous issue: ' + lastReason + '. Fix it, more authentic Persian styling.';
+    const refined = attempt === 0 ? styleDesc : styleDesc + '. Previous issue: ' + lastReason + '. Fix it, more authentic styling.';
     let buf = await generateImageGemini(refined);
     if (!buf) buf = await generateImagePollinations(refined);
-    if (!buf) { lastReason = 'no image'; await sleep(2000); continue; }
+    if (!buf) { lastReason = 'no image'; await sleep(3000); continue; }
     const check = await visionCheck(buf, dishName);
     if (check.ok) { console.log('   🎨 vision: ✓ ' + check.reason); return buf; }
     lastBuf = buf; lastReason = check.reason;
@@ -282,22 +295,21 @@ async function insertRow(row) {
       if (imgCount > 0 && imgCount % 5 === 0) {
         try {
           const { execSync } = await import('node:child_process');
-          execSync('git add img/recipes && (git diff --staged --quiet || git commit -m "chore: recipe images batch [skip ci]" && (git pull --rebase origin main || true) && git push', { stdio: 'inherit' });
+          execSync('git add img/recipes && (git diff --staged --quiet || git commit -m "chore: recipe images batch [skip ci]" && (git pull --rebase origin main || true) && git push)', { stdio: 'inherit' });
         } catch (e) { console.log('   push warn:', String(e).slice(0, 120)); }
       }
 
-      await sleep(2000);
+      await sleep(4000);
     } catch (e) {
       console.log('   ❌ ' + e.message); fail++;
       doneLines.push(dish + '  →  FAIL(' + e.message + ')');
     }
   }
 
-  /* commit نهایی عکس‌ها */
   if (imgCount > 0) {
     try {
       const { execSync } = await import('node:child_process');
-      execSync('git add img/recipes && (git diff --staged --quiet ||git commit -m "chore: recipe images [skip ci]" && (git pull --rebase origin main || true) && git push', { stdio: 'inherit' });
+      execSync('git add img/recipes && (git diff --staged --quiet || git commit -m "chore: recipe images [skip ci]" && (git pull --rebase origin main || true) && git push)', { stdio: 'inherit' });
     } catch (e) { console.log('push warn:', String(e).slice(0, 120)); }
   }
 
