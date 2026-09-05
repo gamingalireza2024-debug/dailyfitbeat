@@ -54,3 +54,15 @@
 🇮🇳 وادا پاو | هند  →  FAIL(bad-json)
 🇦🇺 چیکن ساندویچ | استرالیا  →  FAIL(bad-json)
 
+2026-09-05T09:21:02.667Z — 2 ok / 0 skip / 8 retry
+فرنی چیا و توت‌فرنگی | آمریکا  →  RETRY-next-run
+نان تست آووکادو و تخم‌مرغ | استرالیا  →  OK(avocado-and-egg-toast-australia)
+کاسه اسموتی میوه و ماست | برزیل  →  RETRY-next-run
+پنکیک جو دوسر و موز | کانادا  →  RETRY-next-run
+تخم‌مرغ آب‌پز و نان چاودار | دانمارک  →  RETRY-next-run
+کینوا با شیر و میوه | پرو  →  OK(peruvian-quinoa-milk-fruit)
+املت گوجه و پنیر فتا | قبرس  →  RETRY-next-run
+پودینگ چیا با نارگیل و انبه | تایلند  →  RETRY-next-run
+نان سبوس‌دار با پنیر و خیار | هلند  →  RETRY-next-run
+کاسه ماست و توت‌های جنگلی | سوئد  →  RETRY-next-run
+
