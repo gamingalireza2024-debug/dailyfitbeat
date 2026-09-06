@@ -107,6 +107,8 @@
       <select id="oProduct"></select>
       <textarea id="oNote" rows="3" placeholder="یادداشت (اختیاری)"></textarea>
       <input id="oRef" placeholder="کد پیگیری واریز (در صورت پرداخت دستی)">
+      <!-- honeypot ضدربات: با CSS مخفی است؛ اگر پر شود سرور سفارش را نادیده می‌گیرد -->
+      <input name="website" id="oWebsite" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;opacity:0;height:0;width:0" aria-hidden="true">
       <button type="submit">ثبت سفارش</button>
     </form>
     <div id="orderOk"></div>

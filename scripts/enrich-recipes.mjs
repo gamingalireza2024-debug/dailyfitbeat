@@ -1,18 +1,39 @@
-/* DailyFitBeat — Enrich Recipes v2
+/* DailyFitBeat — Enrich Recipes v3
    موتور متن: Gemini (با بک‌آف ۶۰ث) → GitHub Models (رایگان داخلی)
-   فقط فیلدهای خالی PATCH می‌شوند؛ داده سالم دست نمی‌خورد. */
+   اصلاح v3:
+   ۱) صفحه‌بندی کامل خواندن رسپی‌ها (قبلاً سقف ۲۰۰۰ بود و بی‌سروصدا می‌بُرید)
+   ۲) فیلد protein و kcal هم اگر خالی بود پر می‌شوند (پروتئین عدد کلیدی کارت‌هاست)
+   ۳) اگر kcal خالی بماند اما ماکروها باشند، از فرمول ۴/۴/۴/۹ تخمین زده می‌شود
+   ۴) حذف فیلد image_style از پرامپت (هیچ‌جا استفاده نمی‌شد — هدررفت توکن)
+   ۵) اعتبارسنجی LIMIT (بین ۵ تا ۱۰۰) */
 const SB_URL = 'https://hvqchqqlfcjxsohxywbd.supabase.co';
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const GEMINI = process.env.GEMINI_API_KEY || '';
 const GH_TOKEN = process.env.GITHUB_TOKEN || '';
 const API = 'https://generativelanguage.googleapis.com/v1beta';
-const TEXT_MODELS = ['gemini-3.6-flash', 'gemini-3-flash', 'gemini-2.5-flash'];
+const TEXT_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
 const GH_MODELS = ['gpt-4o-mini', 'gpt-4o'];
-const LIMIT = parseInt(process.env.LIMIT || '20', 10);
+const LIMIT = Math.min(Math.max(parseInt(process.env.LIMIT || '20', 10) || 20, 5), 100);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 if (!SERVICE) { console.error('❌ SERVICE key missing'); process.exit(1); }
 const svcH = { apikey: SERVICE, Authorization: 'Bearer ' + SERVICE };
+
+/* ---------- خواندن صفحه‌بندی‌شده همه رسپی‌ها ---------- */
+async function loadAll() {
+  const out = [];
+  let offset = 0;
+  while (true) {
+    const r = await fetch(SB_URL + '/rest/v1/recipes?select=slug,name_fa,name_en,kcal,protein,carbs,fat,fiber,sugar,desc_en,ingredients,steps,tips&limit=1000&offset=' + offset, { headers: svcH });
+    if (!r.ok) break;
+    const j = await r.json();
+    if (!Array.isArray(j) || !j.length) break;
+    out.push(...j);
+    if (j.length < 1000) break;
+    offset += 1000;
+  }
+  return out;
+}
 
 /* ---------- دروازه Gemini: فاصله ۶ث + بک‌آف ۶۰ث ---------- */
 let lastGeminiAt = 0;
@@ -25,7 +46,8 @@ async function geminiFetch(model, body) {
       const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(60000)
       });
       if (r.status === 429) { console.log('   ⏳ 429 — صبر ۶۰ث…'); await sleep(60000); continue; }
       return r;
@@ -65,7 +87,8 @@ async function ghText(prompt) {
             { role: 'system', content: 'You are a chef & nutritionist. Return ONLY valid JSON, no extra text.' },
             { role: 'user', content: prompt }
           ]
-        })
+        }),
+        signal: AbortSignal.timeout(60000)
       });
       if (!r.ok) { console.log('   ⚠ gh-models ' + model + ' → ' + r.status); continue; }
       const j = await r.json();
@@ -93,21 +116,20 @@ const ENRICH_PROMPT = (r, ings) => `تو سرآشپز و متخصص تغذیه �
 {
   "steps":["حداقل ۵ مرحله پخت با جزئیات واقعی","..."],
   "tips":["۲ تا ۳ نکته پخت یا جایگزین","..."],
-  "carbs":40,"fat":22,"fiber":5,"sugar":3,
-  "desc_en":"One-sentence English description of the dish",
-  "image_style":"short English description of the exact cooked dish appearance (color, texture, garnish, plating)"
+  "protein":32,"carbs":40,"fat":22,"fiber":5,"sugar":3,
+  "desc_en":"One-sentence English description of the dish"
 }
-اعداد ماکرو منطقی و هماهنگ با کالری حدود ${r.kcal || 400}. فقط JSON.`;
+اعداد ماکرو و پروتئین منطقی و هماهنگ با کالری حدود ${r.kcal || 400}. فقط JSON.`;
 
 (async () => {
   console.log('📖 خواندن همه رسپی‌ها…');
-  const all = await (await fetch(SB_URL + '/rest/v1/recipes?select=slug,name_fa,name_en,kcal,desc_en,ingredients,steps,tips,carbs,fat,fiber,sugar&limit=2000', { headers: svcH })).json();
+  const all = await loadAll();
   console.log('   کل: ' + all.length);
 
   const incomplete = all.filter(r =>
     (!Array.isArray(r.steps) || !r.steps.length) ||
     (!Array.isArray(r.tips) || !r.tips.length) ||
-    !r.carbs || !r.fat
+    !r.carbs || !r.fat || !r.protein
   );
   console.log('   ناقص: ' + incomplete.length + ' | این اجرا: ' + Math.min(LIMIT, incomplete.length));
 
@@ -132,7 +154,17 @@ const ENRICH_PROMPT = (r, ings) => `تو سرآشپز و متخصص تغذیه �
     if (!r.fat && p.fat) patch.fat = Number(p.fat) || 0;
     if (!r.fiber && p.fiber) patch.fiber = Number(p.fiber) || 0;
     if (!r.sugar && p.sugar) patch.sugar = Number(p.sugar) || 0;
+    if (!r.protein && p.protein) patch.protein = Number(p.protein) || 0;
     if ((!r.desc_en || r.desc_en === r.name_en) && p.desc_en) patch.desc_en = p.desc_en;
+
+    /* kcal: اول مقدار AI، بعد تخمین از ماکروها (۴/۴/۴/۹) */
+    if (!r.kcal) {
+      const carbs = patch.carbs ?? Number(r.carbs) ?? 0;
+      const prot = patch.protein ?? Number(r.protein) ?? 0;
+      const fat = patch.fat ?? Number(r.fat) ?? 0;
+      if (p.kcal) patch.kcal = Number(p.kcal) || 0;
+      else if (carbs || prot || fat) patch.kcal = Math.round(4 * (Number(carbs) + Number(prot)) + 9 * Number(fat));
+    }
 
     if (!Object.keys(patch).length) { console.log('   ⏭ چیزی برای پرکردن نبود'); continue; }
 

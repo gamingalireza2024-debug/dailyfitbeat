@@ -5,8 +5,10 @@ const STATIC = [
   { loc: "https://dailyfitbeat.ir/", pri: "1.0", chg: "weekly" },
   { loc: "https://dailyfitbeat.ir/recipes.html", pri: "0.9", chg: "weekly" },
   { loc: "https://dailyfitbeat.ir/planner.html", pri: "0.8", chg: "monthly" },
+  { loc: "https://dailyfitbeat.ir/ai.html", pri: "0.8", chg: "monthly" },
   { loc: "https://dailyfitbeat.ir/market.html", pri: "0.7", chg: "monthly" },
-  { loc: "https://dailyfitbeat.ir/pro.html", pri: "0.7", chg: "monthly" }
+  { loc: "https://dailyfitbeat.ir/pro.html", pri: "0.7", chg: "monthly" },
+  { loc: "https://dailyfitbeat.ir/about.html", pri: "0.4", chg: "yearly" }
 ];
 
 function esc(s) {
@@ -16,7 +18,7 @@ function esc(s) {
 export default async function handler(req, res) {
   let recipes = [];
   try {
-    const r = await fetch(SB_URL + "/rest/v1/recipes?select=slug&limit=2000", {
+    const r = await fetch(SB_URL + "/rest/v1/recipes?select=slug&limit=1000", {
       headers: { apikey: ANON, Authorization: "Bearer " + ANON }
     });
     if (r.ok) recipes = await r.json();
@@ -28,9 +30,10 @@ export default async function handler(req, res) {
   for (const p of STATIC) {
     lines.push("<url><loc>" + esc(p.loc) + "</loc><lastmod>" + today + "</lastmod><changefreq>" + p.chg + "</changefreq><priority>" + p.pri + "</priority></url>");
   }
+  /* URL تمیز /recipes/{slug} — هماهنگ با canonical و rewrite در vercel.json */
   for (const r of recipes) {
     if (!r || !r.slug) continue;
-    lines.push("<url><loc>https://dailyfitbeat.ir/recipe.html?slug=" + encodeURIComponent(r.slug) + "</loc><lastmod>" + today + "</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>");
+    lines.push("<url><loc>https://dailyfitbeat.ir/recipes/" + encodeURIComponent(r.slug) + "</loc><lastmod>" + today + "</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>");
   }
   lines.push("</urlset>");
 

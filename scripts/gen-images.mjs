@@ -1,22 +1,31 @@
-/* DailyFitBeat — gen-images v2 (PRO)
-   پرامپت اختصاصی هر غذا با Gemini + تولید Pollinations + کنترل بینایی */
+/* DailyFitBeat — gen-images v3 (PRO)
+   اصلاح v3:
+   ۱) یکسان‌سازی مسیر عکس‌ها با importer: همه‌چیز در img/recipes/<slug>.jpg
+   ۲) مهاجرت خودکار عکس‌های قدیمی img/<slug>.jpg بدون هزینه AI (فقط کپی + PATCH)
+   ۳) visionCheck روی نسخه ۵۱۲px (جلوگیری از payload بزرگ و رد بی‌دلیل)
+   ۴) timeout برای درخواست‌های Gemini + بررسی پاسخ PATCH
+   ۵) سقف LIMIT هر اجرا برای کنترل هزینه */
 import sharp from "sharp";
 import fs from "fs";
 import { execSync } from "child_process";
 
 const SB_URL = "https://hvqchqqlfcjxsohxywbd.supabase.co";
-const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2cWNocXFsZmNqeHNvaHh5d2JkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTI3ODYsImV4cCI6MjEwMjk4ODc4Nn0.yJursP15upa_-nE8P41l4uUssITBK319dzfaa2tbJ1k";
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const GEMINI = process.env.GEMINI_API_KEY || "";
-const H = { apikey: SERVICE || ANON, Authorization: "Bearer " + (SERVICE || ANON) };
 const FORCE = (process.env.FORCE || "0") === "1";
+const LIMIT = Math.min(Math.max(parseInt(process.env.LIMIT || "40", 10) || 40, 1), 100);
+const H = { apikey: SERVICE, Authorization: "Bearer " + SERVICE };
 const API = "https://generativelanguage.googleapis.com/v1beta";
-const TEXT_MODELS = ["gemini-3.6-flash", "gemini-3-flash", "gemini-2.5-flash"];
+const TEXT_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
+const IMG_DIR = "img/recipes"; // ← همیشه همین مسیر (هماهنگ با import-recipes.mjs)
 
 const STYLE = "Ultra-realistic cinematic premium food photography, square 1:1, dark moody background, warm natural side light, gentle steam, rich macro texture, shallow depth of field, appetizing, high-end editorial style, consistent series look. No text, no watermark, no people, no logo.";
 const DISH = { soup: "a bowl of hot soup", salad: "a fresh colorful salad plate", sandwich: "a filled sandwich on a wooden board", breakfast: "a breakfast plate", iranian: "a Persian rice and stew dish, served on a plate", main: "a grilled main dish on a plate" };
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+if (!SERVICE) { console.error("❌ SUPABASE_SERVICE_ROLE_KEY missing — بدون آن نمی‌توان DB را به‌روز کرد"); process.exit(1); }
+fs.mkdirSync(IMG_DIR, { recursive: true });
 
 function push() {
   try { execSync("git add img && (git diff --staged --quiet || git commit -m 'food images pro [skip ci]') && (git pull --rebase origin main || true) && git push", { stdio: "inherit" }); }
@@ -31,10 +40,11 @@ async function geminiText(prompt) {
       const r = await fetch(API + "/models/" + model + ":generateContent?key=" + GEMINI, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        signal: AbortSignal.timeout(60000)
       });
-      const j = await r.json();
       if (!r.ok) { console.log("⚠ text", model, r.status); continue; }
+      const j = await r.json();
       const t = (j.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
       if (t) return t;
     } catch (e) {}
@@ -60,18 +70,21 @@ async function genPollinations(prompt) {
   } catch (e) { console.log("   ⚠ pollinations err"); return null; }
 }
 
-/* ---------- کنترل بینایی ---------- */
+/* ---------- کنترل بینایی (روی نسخه کوچک ۵۱۲px) ---------- */
 async function visionCheck(buf, nameFa) {
   if (!GEMINI) return { ok: true, reason: "no-key — accepted" };
   try {
+    const small = await sharp(buf).resize(512, 512, { fit: "cover" }).jpeg({ quality: 60 }).toBuffer();
     const r = await fetch(API + "/models/" + TEXT_MODELS[0] + ":generateContent?key=" + GEMINI, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contents: [{ parts: [
-        { inline_data: { mime_type: "image/jpeg", data: buf.toString("base64") } },
+        { inline_data: { mime_type: "image/jpeg", data: small.toString("base64") } },
         { text: "آیا تصویر دقیقاً غذای «" + nameFa + "» را نشان می‌دهد؟ فقط YES یا NO به همراه یک جمله توضیح." }
-      ]}] })
+      ]}] }),
+      signal: AbortSignal.timeout(60000)
     });
+    if (!r.ok) return { ok: true, reason: "vision http " + r.status + " — accepted" };
     const j = await r.json();
     const txt = j.candidates?.[0]?.content?.parts?.[0]?.text || "";
     if (!txt) return { ok: true, reason: "vision unavailable — accepted" };
@@ -94,31 +107,52 @@ async function produceImage(r, styleDesc) {
   return lastBuf;
 }
 
+async function patchImage(slug, path) {
+  const r = await fetch(SB_URL + "/rest/v1/recipes?slug=eq." + encodeURIComponent(slug), {
+    method: "PATCH",
+    headers: { ...H, "Content-Type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify({ image: path })
+  });
+  if (!r.ok && r.status !== 204) console.log("   ⚠ PATCH " + slug + " → " + r.status);
+  return r.ok || r.status === 204;
+}
+
 /* ---------- main ---------- */
 const recipes = await (await fetch(SB_URL + "/rest/v1/recipes?select=slug,name_fa,name_en,desc_en,category,image,ingredients&limit=2000", { headers: H })).json();
-console.log("recipes:", recipes.length, "| FORCE:", FORCE);
+console.log("recipes:", recipes.length, "| FORCE:", FORCE, "| LIMIT:", LIMIT);
 
-let done = 0, skip = 0;
+let done = 0, migrated = 0, skip = 0;
 for (const r of recipes) {
-  const path = "img/" + r.slug + ".jpg";
-  if (!FORCE && r.image === path && fs.existsSync(path)) { skip++; continue; }
+  if (done >= LIMIT) { console.log("سقف LIMIT رسید — بقیه به اجرای بعد موکول شد."); break; }
+
+  const newPath = IMG_DIR + "/" + r.slug + ".jpg";   // img/recipes/<slug>.jpg
+  const oldPath = "img/" + r.slug + ".jpg";          // مسیر قدیمی و ناسازگار
+
+  /* حالت ۱: مهاجرت عکس قدیمی از ریشه img/ به img/recipes — بدون هزینه AI */
+  if (r.image === oldPath && fs.existsSync(oldPath)) {
+    await sharp(oldPath).jpeg({ quality: 72 }).toFile(newPath);
+    await patchImage(r.slug, newPath);
+    migrated++;
+    console.log("↪ migrated:", r.slug);
+    if (migrated % 10 === 0) push();
+    continue;
+  }
+
+  /* حالت ۲: عکس درست از قبل هست — skip */
+  if (!FORCE && r.image === newPath && fs.existsSync(newPath)) { skip++; continue; }
 
   console.log("•", r.slug);
   const styleDesc = await describeDish(r);
   const buf = await produceImage(r, styleDesc);
   if (!buf) { console.log("   skip (no image)"); continue; }
 
-  await sharp(buf).resize(800, 800, { fit: "cover" }).jpeg({ quality: 72 }).toFile(path);
-  await fetch(SB_URL + "/rest/v1/recipes?slug=eq." + r.slug, {
-    method: "PATCH",
-    headers: { ...H, "Content-Type": "application/json", Prefer: "return=minimal" },
-    body: JSON.stringify({ image: path })
-  });
+  await sharp(buf).resize(800, 800, { fit: "cover" }).jpeg({ quality: 72 }).toFile(newPath);
+  if (!patchImage(r.slug, newPath)) console.log("   ⚠ DB آپدیت نشد — مسیر فایل: " + newPath);
   done++;
-  console.log("   ok →", path);
+  console.log("   ok →", newPath);
 
   if (done % 5 === 0) push();
   await sleep(3000);
 }
 push();
-console.log("🏁 done:", done, "| skipped:", skip);
+console.log("🏁 done:", done, "| migrated:", migrated, "| skipped:", skip);

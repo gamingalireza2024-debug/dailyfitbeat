@@ -4,6 +4,24 @@ const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const h = { apikey: ANON, Authorization: "Bearer " + ANON };
 const svc = { apikey: ANON, Authorization: "Bearer " + SERVICE };
 const ALLOWED_STATUSES = ["new","pending","payment_submitted","under_review","paid","processing","delivered","sent","rejected","cancelled","refunded"];
+
+/* ---------- ضداسپم سفارش مهمان: محدودسازی نرخ بر اساس IP (در حافظه هر نمونه Serverless) ---------- */
+const ORDER_HITS = new Map(); // ip -> [timestamps]
+function orderRateOk(ip) {
+  const now = Date.now(), win = 10 * 60 * 1000, max = 8; // حداکثر ۸ سفارش در ۱۰ دقیقه از هر IP
+  const arr = (ORDER_HITS.get(ip) || []).filter(t => now - t < win);
+  if (arr.length >= max) { ORDER_HITS.set(ip, arr); return false; }
+  arr.push(now); ORDER_HITS.set(ip, arr);
+  if (ORDER_HITS.size > 5000) { // جلوگیری از رشد بی‌رویه حافظه
+    for (const k of ORDER_HITS.keys()) { if (ORDER_HITS.get(k).every(t => now - t >= win)) ORDER_HITS.delete(k); if (ORDER_HITS.size <= 2500) break; }
+  }
+  return true;
+}
+function clientIp(req) {
+  const f = req.headers["x-forwarded-for"];
+  return (Array.isArray(f) ? f[0] : (f || req.headers["x-real-ip"] || "")).split(",")[0].trim() || "unknown";
+}
+const clean = (v, n) => String(v == null ? "" : v).slice(0, n).trim();
 import { generatePlan as pbGenerate } from "../lib/planbuilder.js";
 async function sendTelegram(text) {
   const TG = process.env.TG_TOKEN, CH = process.env.TG_CHAT;
@@ -81,15 +99,27 @@ export default async function handler(req, res) {
   if (t === "match") { const have = String(req.query.a || "").split(",").filter(Boolean); res.status(200).json(await (await fetch(SB_URL + "/rest/v1/rpc/match_recipes", { method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ have }) })).json()); return; }
   if (t === "products") { res.status(200).json(await sbGet("/rest/v1/products?select=*&active=eq.true&order=id.asc")); return; }
   if (t === "plans") { res.status(200).json(await sbGet("/rest/v1/plans?select=*&order=id.asc")); return; }
-  if (t === "admin_check") { const auth = req.headers.authorization; res.status(200).json(await (await fetch(SB_URL + "/rest/v1/admins?select=email", { headers: auth ? { apikey: ANON, Authorization: auth } : h })).json()); return; }
+  if (t === "admin_check") {
+    /* اول اعتبار توکن بررسی می‌شود؛ خطای خام PostgREST به بیرون نشت نمی‌کند */
+    const u = await authUser(req);
+    if (!u || !u.email) { res.status(200).json([]); return; }
+    const rows = await sbGet("/rest/v1/admins?email=eq." + encodeURIComponent(u.email) + "&select=email");
+    res.status(200).json(Array.isArray(rows) ? rows : []); return;
+  }
 
   if (t === "order" && req.method === "POST") {
     const b = req.body || {};
-    if (!b.name || !b.phone || !b.product) { res.status(400).json({ error: "fields required" }); return; }
-    const arr = await sbWrite("/rest/v1/orders?select=id", "POST", { name: b.name, phone: b.phone, email: b.email, product: b.product, note: b.note, ref: b.ref, user_id: b.user_id || null, status: "new" });
+    /* honeypot: فیلد مخفی فرم؛ ربات‌ها پرش می‌کنند — پاسخ موفقیت جعلی تا لیست را ترک نکنند */
+    if (clean(b.website, 200)) { res.status(200).json({ id: null, tg: false, mail: "skipped" }); return; }
+    if (!orderRateOk(clientIp(req))) { res.status(429).json({ error: "تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره تلاش کن" }); return; }
+    const name = clean(b.name, 80), phone = clean(b.phone, 20), email = clean(b.email, 120), product = clean(b.product, 120), note = clean(b.note, 500), ref = clean(b.ref, 60);
+    if (!name || !phone || !product) { res.status(400).json({ error: "fields required" }); return; }
+    if (!/^[0-9+\-\s]{7,20}$/.test(phone)) { res.status(400).json({ error: "invalid phone" }); return; }
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { res.status(400).json({ error: "invalid email" }); return; }
+    const arr = await sbWrite("/rest/v1/orders?select=id", "POST", { name, phone, email, product, note, ref, user_id: b.user_id || null, status: "new" });
     const id = Array.isArray(arr) && arr[0] ? arr[0].id : null;
-    const tg = await sendTelegram("🛒 سفارش #" + id + "\n" + b.name + " | " + b.phone + "\n" + b.product + "\nکد واریز: " + b.ref);
-    const mail = await sendMail(b, id);
+    const tg = await sendTelegram("🛒 سفارش #" + id + "\n" + name + " | " + phone + "\n" + product + "\nکد واریز: " + ref);
+    const mail = await sendMail({ email, name, product }, id);
     res.status(200).json({ id, tg, mail }); return;
   }
 

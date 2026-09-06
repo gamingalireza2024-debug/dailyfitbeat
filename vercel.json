@@ -2,6 +2,15 @@
   "redirects": [
     { "source": "/mealplan.html", "destination": "/planner.html", "permanent": true }
   ],
+  "rewrites": [
+    { "source": "/recipes/:slug", "destination": "/recipe.html?slug=:slug" },
+    { "source": "/recipes", "destination": "/recipes.html" },
+    { "source": "/planner", "destination": "/planner.html" },
+    { "source": "/market", "destination": "/market.html" },
+    { "source": "/pro", "destination": "/pro.html" },
+    { "source": "/ai", "destination": "/ai.html" },
+    { "source": "/about", "destination": "/about.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

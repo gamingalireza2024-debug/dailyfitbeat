@@ -18,6 +18,9 @@ if (!SERVICE) { console.error('❌ SUPABASE_SERVICE_ROLE_KEY missing'); process.
 if (!GEMINI) { console.error('❌ GEMINI_API_KEY missing'); process.exit(1); }
 mkdirSync('img/recipes', { recursive: true });
 
+/* سقف اجرا: LIMIT اعداد فارسی/انگلیسی — رسپی‌های پردازش‌نشده در dishes.txt می‌مانند */
+const LIMIT = parseInt(String(process.env.LIMIT || '').trim(), 10);
+
 const svcH = { apikey: SERVICE, Authorization: 'Bearer ' + SERVICE };
 
 const dishes = existsSync(FILE_IN)
@@ -59,7 +62,8 @@ async function geminiFetch(model, body) {
       const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(90000)
       });
       if (r.status === 429) {
         console.log('   ⏳ 429 — صبر ۶۰ ثانیه و تلاش دوباره…');
@@ -67,21 +71,45 @@ async function geminiFetch(model, body) {
         continue;
       }
       return r;
-    } catch (e) { return null; }
+    } catch (e) {
+      /* خطای شبکه/timeout: به‌جای رد شدن، تلاش دوباره */
+      console.log('   ⚠ network: ' + (e.name === 'TimeoutError' ? 'timeout' : e.message) + ' — retry ' + (back + 1));
+      continue;
+    }
   }
   return null;
 }
 
 async function pickImageModel() {
   try {
-    const r = await fetch(API + '/models?pageSize=200&key=' + GEMINI);
+    const r = await fetch(API + '/models?pageSize=200&key=' + GEMINI, { signal: AbortSignal.timeout(30000) });
     const j = await r.json();
     const models = j.models || [];
-    const img = models.find(m => /image/i.test(m.name) && (m.supportedGenerationMethods || []).includes('generateContent'));
-    if (img) { IMAGE_MODEL = img.name.replace(/^models\//, ''); console.log('🎛 image model: ' + IMAGE_MODEL); return; }
+    /* ۱) اول مدل‌های شناخته‌شده و پایدار ۲) بعد اولین مدل تصویر غیرآزمایشی */
+    const prefer = ['gemini-2.5-flash-image', 'gemini-2.0-flash-preview-image-generation'];
+    const okModel = m => (m.supportedGenerationMethods || []).includes('generateContent');
+    let img = models.find(m => prefer.some(p => m.name.includes(p)) && okModel(m));
+    if (!img) img = models.find(m => /image/i.test(m.name) && !/exp|deprecated/i.test(m.name) && okModel(m));
+    if (img) { IMAGE_MODEL = img.name.replace(/^models\//, ''); console.log('🎛 image model: ' + IMAGE_MODEL); }
   } catch (e) {}
-  IMAGE_MODEL = 'gemini-2.5-flash-image';
-  console.log('🎛 image model (fallback): ' + IMAGE_MODEL);
+  if (!IMAGE_MODEL) { IMAGE_MODEL = 'gemini-2.5-flash-image'; console.log('🎛 image model (fallback): ' + IMAGE_MODEL); }
+}
+
+/* ---------- تشخیص داینامیک مدل متن (مدل‌های ناموجود نباید هر بار ۴۰۴ بخورند) ---------- */
+async function resolveTextModels() {
+  try {
+    const r = await fetch(API + '/models?pageSize=200&key=' + GEMINI, { signal: AbortSignal.timeout(30000) });
+    const j = await r.json();
+    const avail = new Set((j.models || []).map(m => m.name.replace(/^models\//, '')));
+    const alive = TEXT_MODELS.filter(m => avail.has(m));
+    if (alive.length) {
+      TEXT_MODELS.length = 0;
+      TEXT_MODELS.push(...alive);
+      console.log('🧠 text models: ' + TEXT_MODELS.join(', '));
+      return;
+    }
+  } catch (e) {}
+  console.log('🧠 text models (fallback): ' + TEXT_MODELS.join(', '));
 }
 
 /* ---------- متن ---------- */
@@ -198,7 +226,13 @@ async function insertRow(row) {
   const existing = await loadExisting();
   console.log('   ' + existing.slugs.size + ' رسپی موجود یافت شد.');
   await pickImageModel();
+  await resolveTextModels();
   console.log('');
+
+  /* رسپی‌های این اجرا + رسپی‌های باقی‌مانده برای اجرای بعد */
+  const todo = Number.isFinite(LIMIT) && LIMIT > 0 ? dishes.slice(0, LIMIT) : dishes;
+  const keep = Number.isFinite(LIMIT) && LIMIT > 0 ? dishes.slice(LIMIT) : [];
+  if (keep.length) console.log('⏳ LIMIT=' + LIMIT + ' — ' + keep.length + ' غذا به اجرای بعد موکول شد.');
 
   const seenInRun = new Set();
   let ok = 0, skip = 0, fail = 0;
@@ -206,7 +240,7 @@ async function insertRow(row) {
   const failedDishes = [];
   let imgCount = 0;
 
-  for (const dish of dishes) {
+  for (const dish of todo) {
     const nd = norm(dish);
     console.log('• ' + dish);
 
@@ -292,8 +326,9 @@ async function insertRow(row) {
     } catch (e) { console.log('push warn:', String(e).slice(0, 120)); }
   }
 
-  /* غذاهای شکست‌خورده برای اجرای بعد می‌مانند */
-  writeFileSync(FILE_IN, failedDishes.join('\n') + (failedDishes.length ? '\n' : ''));
+  /* غذاهای شکست‌خورده + پردازش‌نشده برای اجرای بعد می‌مانند */
+  const remaining = [...keep, ...failedDishes];
+  writeFileSync(FILE_IN, remaining.join('\n') + (remaining.length ? '\n' : ''));
   appendFileSync(FILE_DONE, new Date().toISOString() + ' — ' + ok + ' ok / ' + skip + ' skip / ' + fail + ' retry\n' + doneLines.join('\n') + '\n\n');
 
   console.log(`\n🏁 Done: ${ok} added, ${skip} skipped, ${fail} queued for next run`);
