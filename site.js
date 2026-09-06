@@ -22,6 +22,11 @@
   window.dfbTrack = function (name, params) {
     try { gtag('event', name, params || {}); } catch (e) {}
   };
+  /* فاز ۴: ذخیره کد رفرال از لینک دعوت (?ref=CODE) برای اعمال بعد از ورود */
+  try {
+    var rp = new URLSearchParams(location.search).get('ref');
+    if (rp && /^[A-Za-z0-9-]{3,20}$/.test(rp) && !localStorage.getItem('dfb-ref')) localStorage.setItem('dfb-ref', rp.toUpperCase());
+  } catch (e) {}
 })();
 // DailyFitBeat — پیکربندی مرکزی و متادیتا
 (function () {

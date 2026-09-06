@@ -78,6 +78,8 @@
   <button data-t="diet">برنامه‌های غذایی</button>
   <button data-t="seo">SEO و FAQ</button>
   <button data-t="media">رسانه</button>
+  <button data-t="comments">نظرات</button>
+  <button data-t="tickets">تیکت‌ها</button>
   <button data-t="audit">گزارش رویدادها</button>
 </aside>
 <main style="min-width:0">
@@ -106,6 +108,14 @@
 
   <div class="apane" id="pane-recipes">
     <button class="btn" id="rNew">رسپی جدید</button>
+    <div class="bulk-bar" id="bulkBar">
+      <b>ویرایش گروهی:</b>
+      <select id="bulkStatus"><option value="">وضعیت…</option><option value="published">منتشر</option><option value="draft">پیش‌نویس</option></select>
+      <select id="bulkCat"><option value="">دسته…</option><option value="iranian">ایرانی</option><option value="main">غذای اصلی</option><option value="salad">سالاد</option><option value="sandwich">ساندویچ</option><option value="breakfast">صبحانه</option><option value="soup">سوپ</option></select>
+      <select id="bulkNoindex"><option value="">noindex…</option><option value="true">بله (مخفی)</option><option value="false">خیر</option></select>
+      <button class="btn small" id="bulkApply">اعمال روی انتخاب‌شده‌ها</button>
+      <span id="bulkCount"></span>
+    </div>
     <div id="recForm" class="rec-form" style="display:none">
       <input id="rSlug" placeholder="slug انگلیسی"><input id="rNameFa" placeholder="نام فارسی"><input id="rNameEn" placeholder="نام انگلیسی">
       <select id="rCat"><option value="iranian">ایرانی</option><option value="main">غذای اصلی</option><option value="salad">سالاد</option><option value="sandwich">ساندویچ</option><option value="breakfast">صبحانه</option><option value="soup">سوپ</option></select>
@@ -123,8 +133,9 @@
       <label class="inline-check"><input type="checkbox" id="rNoindex"> noindex (از گوگل مخفی)</label>
       <button class="btn full" id="rSave">ذخیره رسپی</button>
       <button class="btn ghost full" id="rPrev">پیش‌نمایش رسپی</button>
+      <button class="btn ghost full" id="rVersions">تاریخچه نسخه‌ها</button>
     </div>
-    <table class="admin-tbl"><thead><tr><th>رسپی</th><th>وضعیت</th><th>SEO</th><th>دسته</th><th>کالری</th><th>ویرایش</th><th>حذف</th></tr></thead><tbody id="recBody"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>☑</th><th>رسپی</th><th>وضعیت</th><th>SEO</th><th>دسته</th><th>کالری</th><th>ویرایش</th><th>حذف</th></tr></thead><tbody id="recBody"></tbody></table>
   </div>
 
   <div class="apane" id="pane-seo">
@@ -153,6 +164,26 @@
     <p class="hint">برای آپلود فایل جدید، از دکمه آپلود در بخش محصولات استفاده کن یا فایل را به پوشه img/ در ریپو اضافه کن.</p>
     <div class="add-form"><button class="btn" id="mlReload">بارگذاری مجدد</button><input id="mlFilter" placeholder="جستجو در مسیرها..."></div>
     <div class="media-grid" id="mediaGrid"></div>
+  </div>
+
+  <div class="apane" id="pane-comments">
+    <h3>مدیریت نظرات کاربران</h3>
+    <div class="add-form">
+      <select id="cmFilter"><option value="pending">در انتظار تأیید</option><option value="approved">تأیید شده</option><option value="rejected">رد شده</option><option value="all">همه</option></select>
+      <button class="btn" id="cmReload">بارگذاری</button>
+      <button class="btn ghost" id="cmCsv">خروجی CSV</button>
+    </div>
+    <table class="admin-tbl"><thead><tr><th>تاریخ</th><th>کاربر</th><th>رسپی</th><th>متن نظر</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="cmBody"></tbody></table>
+    <div class="pager" id="pagerC"></div>
+  </div>
+
+  <div class="apane" id="pane-tickets">
+    <h3>تیکت‌های پشتیبانی</h3>
+    <div class="add-form">
+      <select id="tkFilter"><option value="">همه</option><option value="open">باز</option><option value="answered">پاسخ داده شده</option><option value="closed">بسته</option></select>
+      <button class="btn" id="tkReload">بارگذاری</button>
+    </div>
+    <div id="tkList"></div>
   </div>
 
   <div class="apane" id="pane-prods">

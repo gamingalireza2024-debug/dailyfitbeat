@@ -208,8 +208,152 @@
       var n = r.ok ? await r.json() : [];
       if (!Array.isArray(n)) n = [];
       el.innerHTML = n.length ? n.map(function (x) {
-        return '<div class="u-item"><b>' + esc(x.title || 'اعلان') + '</b><br><small>' + esc(x.body || '') + '</small><br><small style="color:#98a298">' + faDate(x.created_at) + '</small></div>';
+        return '<div class="u-item' + (x.read ? '' : ' unread') + '"><b>' + esc(x.title || 'اعلان') + '</b><br><small>' + esc(x.body || '') + '</small><br><small style="color:#98a298">' + faDate(x.created_at) + '</small></div>';
       }).join('') : '<div class="u-empty">اعلانی نداری</div>';
+      var nb = $('notifReadAll');
+      if (nb && !nb.dataset.b) {
+        nb.dataset.b = '1';
+        nb.onclick = async function () { await api('notif_read', { method: 'POST', body: '{}' }); main(USER); };
+      }
+    });
+
+    /* ───────── فاز ۴: استریک و نشان‌ها ───────── */
+    await safe('streak', async function () {
+      var el = $('uStreak');
+      if (!el) return;
+      var r = await api('streak');
+      if (!r.ok) { el.innerHTML = '<div class="u-empty">برای استریک وارد شو</div>'; return; }
+      var s = await r.json();
+      var ch = s.current >= 7 ? 'چالش ۷ روزه را بردی! حالا برو سراغ ۱۴ روز ⚡' : 'چالش ۷ روزه: ' + Math.min(s.current, 7) + ' از ۷ روز';
+      el.innerHTML = '<div class="streak-box"><span class="flame">🔥</span><div><b>' + faN(s.current) + ' روز پیوسته</b><br><small>رکورد تو: ' + faN(s.best) + ' روز</small></div></div><small class="cm-hint">' + esc(ch) + '</small>';
+      if (s.new_badges && s.new_badges.length) alert('🎉 نشان جدید گرفتی: ' + s.new_badges.join('، '));
+    });
+
+    await safe('badges', async function () {
+      var el = $('uBadges');
+      if (!el) return;
+      var r = await api('badges');
+      var arr = r.ok ? await r.json() : [];
+      if (!Array.isArray(arr)) arr = [];
+      var have = {};
+      arr.forEach(function (b) { have[b.badge_key] = true; });
+      var CATALOG = [
+        { k: 'streak_3', t: '۳ روز پیوسته', i: '🔥' },
+        { k: 'streak_7', t: '۷ روز پیوسته', i: '🔥' },
+        { k: 'streak_14', t: '۱۴ روز پیوسته', i: '⚡' },
+        { k: 'streak_30', t: '۳۰ روز پیوسته', i: '👑' },
+        { k: 'first_comment', t: 'اولین نظر', i: '💬' },
+        { k: 'fav_10', t: '۱۰ ذخیره', i: '❤️' },
+        { k: 'referred', t: 'با دعوت آمدم', i: '🤝' },
+        { k: 'referral_5', t: 'دعوت‌گر طلایی', i: '🌟' },
+        { k: 'referral_10', t: 'سفیر دیلی‌بیت', i: '🏆' }
+      ];
+      el.innerHTML = CATALOG.map(function (b) {
+        var on = !!have[b.k];
+        return '<div class="badge' + (on ? ' on' : '') + '" title="' + esc(b.t) + (on ? '' : ' — هنوز قفل') + '"><span>' + b.i + '</span><small>' + esc(b.t) + '</small></div>';
+      }).join('');
+    });
+
+    /* ───────── فاز ۴: تاریخچه بازدید ───────── */
+    await safe('history', async function () {
+      var el = $('uHistory');
+      if (!el) return;
+      var r = await api('my_history');
+      var h = r.ok ? await r.json() : [];
+      if (!Array.isArray(h)) h = [];
+      if (!h.length) { el.innerHTML = '<div class="u-empty">هنوز رسپی‌ای ندیده‌ای</div>'; return; }
+      var all = await (await fetch('/api/db?t=all')).json();
+      var made = false, out = '';
+      h.forEach(function (x) {
+        var rec = (Array.isArray(all) ? all : []).find(function (a) { return a.slug === x.slug; });
+        if (rec) { made = true; out += '<div class="u-item"><a href="recipe.html?slug=' + esc(rec.slug) + '">' + esc(rec.name_fa) + '</a> <small>' + faN(x.views) + ' بار</small></div>'; }
+      });
+      el.innerHTML = made ? out : '<div class="u-empty">هنوز رسپی‌ای ندیده‌ای</div>';
+    });
+
+    /* ───────── فاز ۴: نظرات من ───────── */
+    await safe('comments', async function () {
+      var el = $('uComments');
+      if (!el) return;
+      var r = await api('my_comments');
+      var c = r.ok ? await r.json() : [];
+      if (!Array.isArray(c)) c = [];
+      var ST = { pending: 'در انتظار تأیید', approved: 'منتشر شد', rejected: 'رد شد' };
+      el.innerHTML = c.length ? c.map(function (x) {
+        return '<div class="u-item"><a href="recipe.html?slug=' + esc(x.recipe_slug) + '">' + esc(x.recipe_slug) + '</a> <small class="u-st u-st-' + esc(x.status) + '">' + (ST[x.status] || esc(x.status)) + '</small><br><small>' + esc(String(x.body || '').slice(0, 90)) + '</small></div>';
+      }).join('') : '<div class="u-empty">هنوز نظری ثبت نکردی</div>';
+    });
+
+    /* ───────── فاز ۴: دعوت دوستان (رفرال) ───────── */
+    await safe('referral', async function () {
+      var el = $('uReferral');
+      if (!el) return;
+      var r = await api('referral_get');
+      var j = r.ok ? await r.json() : null;
+      if (!j || !j.code) { el.innerHTML = '<div class="u-empty">کد دعوت آماده نیست — بعداً دوباره بیا</div>'; return; }
+      var url = location.origin + '/?ref=' + encodeURIComponent(j.code) + ' — یا کد ' + j.code;
+      var prefill = '';
+      try { prefill = localStorage.getItem('dfb-ref') || new URLSearchParams(location.search).get('ref') || ''; } catch (e) {}
+      el.innerHTML = '<p style="font-size:12px;color:var(--ink-soft);margin:0 0 8px">این لینک/کد را برای دوستات بفرست؛ با اولین ورودشان شمارش بالا می‌رود:</p>' +
+        '<div class="ref-box"><code>' + esc(url) + '</code><button class="dl-btn" id="refCopy">کپی</button></div>' +
+        '<small class="cm-hint">' + faN(j.count) + ' دعوت موفق — در ۵ و ۱۰ دعوت نشان ویژه بگیر</small>' +
+        '<div class="ref-apply"><input id="refApplyIn" placeholder="کد دعوت دوستت را بزن" maxlength="20" value="' + esc(prefill) + '"><button class="dl-btn" id="refApplyBtn">اعمال</button></div>';
+      var cp = $('refCopy');
+      cp.onclick = function () {
+        try { navigator.clipboard.writeText(url); cp.textContent = 'کپی شد ✓'; setTimeout(function () { cp.textContent = 'کپی'; }, 2000); } catch (e) { prompt('این را کپی کن:', url); }
+      };
+      var ab = $('refApplyBtn');
+      if (ab) ab.onclick = async function () {
+        var code = $('refApplyIn').value.trim();
+        if (!code) { alert('کد را وارد کن'); return; }
+        var res = await api('referral_apply', { method: 'POST', body: JSON.stringify({ code: code }) });
+        var jj = await res.json().catch(function () { return {}; });
+        alert(res.ok ? 'اعمال شد! 🤝' : (jj.error || 'خطا'));
+        if (res.ok) { try { localStorage.removeItem('dfb-ref'); } catch (e) {} main(USER); }
+      };
+    });
+
+    /* ───────── فاز ۴: تیکت پشتیبانی ───────── */
+    await safe('tickets', async function () {
+      var el = $('uTickets');
+      if (!el) return;
+      var r = await api('my_tickets');
+      var arr = r.ok ? await r.json() : [];
+      if (!Array.isArray(arr)) arr = [];
+      var ST = { open: 'باز', answered: 'پاسخ داده شد', closed: 'بسته شد' };
+      var html = '<div class="tk-new"><input id="tkSubject" placeholder="موضوع تیکت" maxlength="120"><textarea id="tkBody" placeholder="توضیح کامل سؤال یا مشکل…" maxlength="2000"></textarea><button class="btn small" id="tkSend">ارسال تیکت</button></div>';
+      html += arr.length ? arr.map(function (x) {
+        var reps = (x.replies || []).map(function (rp) {
+          return '<div class="tk-reply' + (rp.is_admin ? ' admin' : '') + '"><b>' + esc(rp.author_name || '') + '</b><p>' + esc(rp.body) + '</p><small>' + faDate(rp.created_at) + '</small></div>';
+        }).join('');
+        return '<div class="u-item tk-item"><b>#' + esc(x.id) + ' — ' + esc(x.subject) + '</b> <small class="u-st u-st-tk">' + (ST[x.status] || esc(x.status)) + '</small><br><small>' + esc(x.body) + '</small><div class="tk-reps">' + reps + '</div>' + (x.status !== 'closed' ? '<div class="tk-ans"><input placeholder="پاسخ بنویس…" data-tid="' + esc(x.id) + '"><button class="dl-btn tk-send">ارسال</button></div>' : '') + '</div>';
+      }).join('') : '<div class="u-empty">تیکتی نداری</div>';
+      el.innerHTML = html;
+      var snd = $('tkSend');
+      if (snd && !snd.dataset.b) {
+        snd.dataset.b = '1';
+        snd.onclick = async function () {
+          var s = $('tkSubject').value.trim(), b = $('tkBody').value.trim();
+          if (s.length < 3 || b.length < 10) { alert('موضوع و متن را کامل کن (متن حداقل ۱۰ حرف)'); return; }
+          snd.disabled = true;
+          var res = await api('ticket_new', { method: 'POST', body: JSON.stringify({ subject: s, body: b }) });
+          var j = await res.json().catch(function () { return {}; });
+          if (res.ok) { alert('تیکت ثبت شد #' + (j.id || '')); main(USER); } else alert(j.error || 'خطا');
+          snd.disabled = false;
+        };
+      }
+      el.querySelectorAll('.tk-send').forEach(function (btn) {
+        if (btn.dataset.b) return;
+        btn.dataset.b = '1';
+        btn.onclick = async function () {
+          var inp = btn.parentElement.querySelector('input');
+          var tid = Number(inp.getAttribute('data-tid')), body = inp.value.trim();
+          if (body.length < 2) return;
+          var res = await api('ticket_reply', { method: 'POST', body: JSON.stringify({ ticket_id: tid, body: body }) });
+          var j = await res.json().catch(function () { return {}; });
+          if (res.ok) main(USER); else alert(j.error || 'خطا');
+        };
+      });
     });
 
     await safe('shopping', async function () {

@@ -394,7 +394,7 @@ async function initDetail() {
   var tipsHtml = Array.isArray(r.tips) && r.tips.length ? '<div class="tips-section"><h3>نکات پخت</h3><ul class="tips-list">' + r.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' : '';
   var subsHtml = Array.isArray(r.substitutions) && r.substitutions.length ? '<div class="subs-section"><h3>جایگزین‌ها</h3><div class="subs-grid">' + r.substitutions.map(function (s) { return '<div class="sub-card"><b>' + esc(s.from) + '</b><span>→</span><b>' + esc(s.to) + '</b></div>'; }).join('') + '</div></div>' : '';
   var videoHtml = r.video_url ? '<div class="video-section"><h3>ویدیوی پخت</h3><a href="' + esc(r.video_url) + '" target="_blank" rel="noopener" class="video-card"><div class="video-thumb"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" alt="' + esc(r.name_fa) + '"><span class="play-btn">▶</span></div><p>تماشای ویدیو در اینستاگرام</p></a></div>' : '';
-  el.innerHTML = '<div class="container rd-wrap"><div class="rd-img"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" alt="' + esc(r.name_fa) + '" fetchpriority="high" decoding="async"><button id="favBtn" class="heart' + (favOn ? ' on' : '') + '">♥</button></div><div class="rd-info"><span class="rd-region">' + esc(countryFa(r.region)) + '</span><h1>' + esc(r.name_fa) + '</h1><p class="rd-en">' + esc(r.name_en || '') + '</p><p class="rd-desc">' + esc(r.desc_fa || '') + '</p><div class="rd-stats"><div><b>' + r.time_min + '</b><span>زمان پخت (دقیقه)</span></div><div><b>' + diff(r.time_min) + '</b><span>سطح دشواری</span></div></div>' + nutritionBars + '<h3>مواد لازم</h3><ul class="ing-list">' + ings.map(function (i) { return '<li>' + esc(i.fa) + '<span>' + esc(i.q) + '</span></li>'; }).join('') + '</ul>' + stepsHtml + tipsHtml + subsHtml + videoHtml + '<div class="f-cta"><a class="btn" href="planner.html">افزودن به برنامه</a><a class="btn ghost" href="recipes.html">همه رسپی‌ها</a></div></div></div>';
+  el.innerHTML = '<div class="container rd-wrap"><div class="rd-img"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" alt="' + esc(r.name_fa) + '" fetchpriority="high" decoding="async"><button id="favBtn" class="heart' + (favOn ? ' on' : '') + '">♥</button></div><div class="rd-info"><span class="rd-region">' + esc(countryFa(r.region)) + '</span><h1>' + esc(r.name_fa) + '</h1><p class="rd-en">' + esc(r.name_en || '') + '</p><p class="rd-desc">' + esc(r.desc_fa || '') + '</p><div class="rd-stats"><div><b>' + r.time_min + '</b><span>زمان پخت (دقیقه)</span></div><div><b>' + diff(r.time_min) + '</b><span>سطح دشواری</span></div></div>' + nutritionBars + '<h3>مواد لازم</h3><ul class="ing-list">' + ings.map(function (i) { return '<li>' + esc(i.fa) + '<span>' + esc(i.q) + '</span></li>'; }).join('') + '</ul>' + stepsHtml + tipsHtml + subsHtml + videoHtml + '<div class="f-cta"><a class="btn" href="planner.html">افزودن به برنامه</a><a class="btn ghost" href="recipes.html">همه رسپی‌ها</a></div></div></div><div id="cmBox" class="cm-box"></div>';
   document.getElementById('favBtn').onclick = async function () {
     if (!USER) { alert('برای ذخیره علاقه‌مندی، اول با گوگل وارد شو'); doLogin(); return; }
     if (favOn) {
@@ -412,6 +412,52 @@ async function initDetail() {
     }
     document.getElementById('favBtn').classList.toggle('on', favOn);
   };
+
+  /* فاز ۴: ثبت تاریخچه بازدید برای کاربر واردشده */
+  var histTok = '';
+  if (sb && USER) {
+    try {
+      var sH = await sb.auth.getSession();
+      histTok = sH.data.session ? sH.data.session.access_token : '';
+      if (histTok) fetch('/api/db?t=history_add', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + histTok }, body: JSON.stringify({ slug: r.slug }), keepalive: true }).catch(function () {});
+    } catch (e) {}
+  }
+
+  /* فاز ۴: نظرات کاربران */
+  var cmBox = document.getElementById('cmBox');
+  if (cmBox) {
+    var renderComments = async function () {
+      var list = [];
+      try { list = await (await fetch('/api/db?t=comments_get&slug=' + encodeURIComponent(r.slug))).json(); } catch (e) {}
+      if (!Array.isArray(list)) list = [];
+      cmBox.innerHTML = '<h3 class="cm-title">نظر کاربران (' + list.length.toLocaleString('fa-IR') + ')</h3>' +
+        '<div id="cmList">' + (list.length ? list.map(function (c) {
+          return '<div class="cm-item"><div class="cm-head"><b>' + esc(c.author_name) + '</b><time>' + esc(String(c.created_at || '').slice(0, 10)) + '</time></div><p>' + esc(c.body) + '</p></div>';
+        }).join('') : '<p class="cm-empty">هنوز نظری ثبت نشده — اولین نفر باش!</p>') + '</div>' +
+        '<div class="cm-form">' + (USER
+          ? '<textarea id="cmText" maxlength="600" placeholder="نظرت درباره این رسپی چیه؟"></textarea><button class="btn" id="cmSend">ثبت نظر</button><small class="cm-hint">نظر بعد از تأیید نمایش داده می‌شود</small>'
+          : '<p class="cm-empty">برای ثبت نظر <a href="#" id="cmLogin">وارد شو</a> — سریع با گوگل!</p>') + '</div>';
+      var lg = document.getElementById('cmLogin');
+      if (lg) lg.onclick = function (e) { e.preventDefault(); doLogin(); };
+      var snd = document.getElementById('cmSend');
+      if (snd && !snd.dataset.bound) {
+        snd.dataset.bound = '1';
+        snd.onclick = async function () {
+          var txt = document.getElementById('cmText').value.trim();
+          if (txt.length < 3) { alert('متن نظر خیلی کوتاهه'); return; }
+          snd.disabled = true; snd.textContent = 'در حال ثبت…';
+          try {
+            var res = await fetch('/api/db?t=comment_post', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + histTok }, body: JSON.stringify({ slug: r.slug, body: txt }) });
+            var j = await res.json().catch(function () { return {}; });
+            if (res.ok) { alert(j.status === 'approved' ? 'نظرت منتشر شد ✓' : 'نظرت ثبت شد و بعد از تأیید نمایش داده می‌شود'); renderComments(); }
+            else alert(j.error || 'خطا در ثبت نظر');
+          } catch (e) { alert('خطا در ثبت نظر'); }
+          snd.disabled = false; snd.textContent = 'ثبت نظر';
+        };
+      }
+    };
+    renderComments();
+  }
 }
 function initOrder() {
   var f = document.getElementById('orderForm');

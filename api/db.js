@@ -22,6 +22,35 @@ function clientIp(req) {
   return (Array.isArray(f) ? f[0] : (f || req.headers["x-real-ip"] || "")).split(",")[0].trim() || "unknown";
 }
 const clean = (v, n) => String(v == null ? "" : v).slice(0, n).trim();
+const sbUpsert = async (p, body) => (await fetch(SB_URL + p, { method: "POST", headers: { ...svc, "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(body) })).json();
+
+/* ---------- فاز ۴: ضداسپم عمومی + نشان‌های دستاورد ---------- */
+const RATE_HITS = new Map(); // key -> [timestamps]
+function rateOk(key, max, winMs) {
+  const now = Date.now();
+  const arr = (RATE_HITS.get(key) || []).filter(t => now - t < winMs);
+  if (arr.length >= max) { RATE_HITS.set(key, arr); return false; }
+  arr.push(now); RATE_HITS.set(key, arr);
+  if (RATE_HITS.size > 5000) {
+    for (const k of RATE_HITS.keys()) { if (RATE_HITS.get(k).every(t => now - t >= winMs)) RATE_HITS.delete(k); if (RATE_HITS.size <= 2500) break; }
+  }
+  return true;
+}
+async function userBadgeKeys(uid) {
+  const r = await sbGet("/rest/v1/user_badges?user_id=eq." + uid + "&select=badge_key");
+  return new Set((Array.isArray(r) ? r : []).map(b => b.badge_key));
+}
+/* نشان‌های جدید را می‌دهد و فقط موارد تازه را برمی‌گرداند */
+async function awardBadges(uid, keys) {
+  if (!Array.isArray(keys) || !keys.length) return [];
+  const have = await userBadgeKeys(uid);
+  const fresh = keys.filter(k => !have.has(k));
+  for (const k of fresh) await sbUpsert("/rest/v1/user_badges", { user_id: uid, badge_key: k });
+  return fresh;
+}
+const SLUG_RE = /^[a-z0-9-]{1,120}$/;
+const CAT_WHITELIST = ["iranian", "main", "salad", "sandwich", "breakfast", "soup"];
+const RECIPE_FIELDS = ["name_fa", "name_en", "category", "region", "time_min", "kcal", "protein", "carbs", "fat", "fiber", "sugar", "image", "video_url", "desc_fa", "tags", "keys", "ingredients", "steps", "tips", "substitutions", "meta_title", "meta_description", "status", "noindex"];
 import { generatePlan as pbGenerate } from "../lib/planbuilder.js";
 async function sendTelegram(text) {
   const TG = process.env.TG_TOKEN, CH = process.env.TG_CHAT;
@@ -551,14 +580,17 @@ export default async function handler(req, res) {
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
     const d14 = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
     const mFirst = new Date(); mFirst.setDate(1); mFirst.setHours(0, 0, 0, 0);
-    const [orders, pays, profs, ents, recs, ai, views] = await Promise.all([
+    const [orders, pays, profs, ents, recs, ai, views, cms, tks, strk] = await Promise.all([
       sbGet("/rest/v1/orders?select=id,status,total,created_at"),
       sbGet("/rest/v1/payments?select=id,status,amount"),
       sbGet("/rest/v1/profiles?select=id"),
       sbGet("/rest/v1/entitlements?select=id,entitlement_type,status,expires_at"),
       sbGet("/rest/v1/recipes?select=slug,status,noindex"),
       sbGet("/rest/v1/ai_usage?select=request_count,last_request_at,period_start&period_start=gte." + mFirst.toISOString().slice(0, 10)),
-      sbGet("/rest/v1/page_views?select=slug,count&day=gte." + d14)
+      sbGet("/rest/v1/page_views?select=slug,count&day=gte." + d14),
+      sbGet("/rest/v1/comments?status=eq.pending&select=id"),
+      sbGet("/rest/v1/tickets?status=eq.open&select=id"),
+      sbGet("/rest/v1/user_streaks?current=gte.2&select=user_id")
     ]);
     const O = Array.isArray(orders) ? orders : [], P = Array.isArray(pays) ? pays : [], U = Array.isArray(profs) ? profs : [], E = Array.isArray(ents) ? ents : [];
     const R = Array.isArray(recs) ? recs : [], A = Array.isArray(ai) ? ai : [], V = Array.isArray(views) ? views : [];
@@ -582,6 +614,9 @@ export default async function handler(req, res) {
       recipes: R.length,
       drafts: R.filter(x => x.status !== "published").length,
       ai_month: A.reduce((s, x) => s + (Number(x.request_count) || 0), 0),
+      pending_comments: Array.isArray(cms) ? cms.length : 0,
+      open_tickets: Array.isArray(tks) ? tks.length : 0,
+      active_streaks: Array.isArray(strk) ? strk.length : 0,
       orders_14d, top_viewed
     }); return;
   }
@@ -657,6 +692,320 @@ export default async function handler(req, res) {
     (Array.isArray(ri) ? ri : []).forEach(r => { if (r.image) items.push({ path: r.image, owner: "رسپی: " + r.slug, status: r.status }); });
     (Array.isArray(pi) ? pi : []).forEach(p => { if (p.image) items.push({ path: p.image, owner: "محصول: " + p.title_fa, status: null }); });
     res.status(200).json(items); return;
+  }
+
+  /* ═══════════════ فاز ۴ — نظرات، گیمیفیکیشن، تیکت، رفرال، ابزار ادمین ═══════════════ */
+
+  /* نظرات عمومی یک رسپی (فقط تأییدشده‌ها) — بدون نیاز به ورود */
+  if (t === "comments_get") {
+    const slug = String(req.query.slug || "").slice(0, 120);
+    if (!SLUG_RE.test(slug)) { res.status(200).json([]); return; }
+    res.status(200).json(await sbGet("/rest/v1/comments?recipe_slug=eq." + slug + "&status=eq.approved&select=id,author_name,body,created_at&order=created_at.desc&limit=100"));
+    return;
+  }
+
+  /* ارسال نظر (کاربر واردشده) — اول در صف تأیید */
+  if (t === "comment_post" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "برای ثبت نظر اول وارد شو" }); return; }
+    if (!rateOk("cm:" + user.id, 5, 10 * 60 * 1000)) { res.status(429).json({ error: "نظرهای زیاد پشت سر هم — چند دقیقه بعد تلاش کن" }); return; }
+    const b = req.body || {};
+    const slug = String(b.slug || "").slice(0, 120);
+    const body = clean(b.body, 600);
+    if (!SLUG_RE.test(slug)) { res.status(400).json({ error: "رسپی نامعتبر" }); return; }
+    if (body.length < 3) { res.status(400).json({ error: "متن نظر خیلی کوتاه است" }); return; }
+    const isAdmin = await isAdminUser(user);
+    const name = clean((user.user_metadata && user.user_metadata.name) || user.email.split("@")[0], 60);
+    const st = isAdmin ? "approved" : "pending";
+    await sbWrite("/rest/v1/comments", "POST", { user_id: user.id, author_name: name, recipe_slug: slug, body, status: st });
+    await awardBadges(user.id, ["first_comment"]);
+    res.status(200).json({ ok: true, status: st });
+    return;
+  }
+
+  /* نظرات خود کاربر */
+  if (t === "my_comments") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    res.status(200).json(await sbGet("/rest/v1/comments?user_id=eq." + user.id + "&select=id,recipe_slug,body,status,created_at&order=created_at.desc&limit=30"));
+    return;
+  }
+
+  /* استریک روزانه — با هر بار بازکردن پنل به‌روز می‌شود */
+  if (t === "streak") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    const yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const cur = await sbGet("/rest/v1/user_streaks?user_id=eq." + user.id + "&select=current,best,last_day");
+    const row = Array.isArray(cur) && cur[0] ? cur[0] : {};
+    let c = Number(row.current) || 0;
+    if (row.last_day !== today) c = (row.last_day === yest) ? c + 1 : 1;
+    const best = Math.max(c, Number(row.best) || 0);
+    await sbUpsert("/rest/v1/user_streaks", { user_id: user.id, current: c, best, last_day: today, updated_at: new Date().toISOString() });
+    const candidates = [3, 7, 14, 30].filter(n => c >= n).map(n => "streak_" + n);
+    const fresh = await awardBadges(user.id, candidates);
+    res.status(200).json({ current: c, best, new_badges: fresh });
+    return;
+  }
+
+  /* نشان‌های کاربر */
+  if (t === "badges") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    res.status(200).json(await sbGet("/rest/v1/user_badges?user_id=eq." + user.id + "&select=badge_key,earned_at&order=earned_at.asc"));
+    return;
+  }
+
+  /* ثبت تاریخچه بازدید رسپی (کاربر واردشده) */
+  if (t === "history_add" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    const slug = clean((req.body || {}).slug, 120);
+    if (!SLUG_RE.test(slug)) { res.status(400).json({ error: "bad slug" }); return; }
+    const ex = await sbGet("/rest/v1/recipe_history?user_id=eq." + user.id + "&slug=eq." + slug + "&select=id,views");
+    if (Array.isArray(ex) && ex[0]) await sbWrite("/rest/v1/recipe_history?id=eq." + ex[0].id, "PATCH", { views: (Number(ex[0].views) || 0) + 1, last_at: new Date().toISOString() });
+    else await sbUpsert("/rest/v1/recipe_history", { user_id: user.id, slug, views: 1, last_at: new Date().toISOString() });
+    res.status(200).json({ ok: true });
+    return;
+  }
+
+  /* تاریخچه من */
+  if (t === "my_history") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    res.status(200).json(await sbGet("/rest/v1/recipe_history?user_id=eq." + user.id + "&select=slug,views,last_at&order=last_at.desc&limit=20"));
+    return;
+  }
+
+  /* تیکت جدید */
+  if (t === "ticket_new" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "برای ثبت تیکت وارد شو" }); return; }
+    if (!rateOk("tk:" + user.id, 3, 60 * 60 * 1000)) { res.status(429).json({ error: "سقف تیکت در یک ساعت پر شد" }); return; }
+    const b = req.body || {};
+    const subject = clean(b.subject, 120), body = clean(b.body, 2000);
+    if (subject.length < 3 || body.length < 10) { res.status(400).json({ error: "موضوع و متن تیکت را کامل کن" }); return; }
+    const ins = await sbWrite("/rest/v1/tickets", "POST", { user_id: user.id, email: user.email, subject, body, status: "open" });
+    res.status(200).json({ ok: true, id: Array.isArray(ins) && ins[0] ? ins[0].id : null });
+    return;
+  }
+
+  /* تیکت‌های من + پاسخ‌ها */
+  if (t === "my_tickets") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    const rows = await sbGet("/rest/v1/tickets?user_id=eq." + user.id + "&select=*&order=created_at.desc&limit=20");
+    const list = Array.isArray(rows) ? rows : [];
+    if (list.length) {
+      const ids = list.map(x => x.id).join(",");
+      const reps = await sbGet("/rest/v1/ticket_replies?ticket_id=in.(" + ids + ")&select=ticket_id,is_admin,author_name,body,created_at&order=created_at.asc");
+      const byT = {};
+      (Array.isArray(reps) ? reps : []).forEach(r => { (byT[r.ticket_id] = byT[r.ticket_id] || []).push(r); });
+      list.forEach(x => { x.replies = byT[x.id] || []; });
+    }
+    res.status(200).json(list);
+    return;
+  }
+
+  /* پاسخ کاربر به تیکت خودش */
+  if (t === "ticket_reply" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    const b = req.body || {};
+    const tid = Number(b.ticket_id) || 0, body = clean(b.body, 1500);
+    if (!tid || body.length < 2) { res.status(400).json({ error: "پاسخ نامعتبر" }); return; }
+    const own = await sbGet("/rest/v1/tickets?id=eq." + tid + "&user_id=eq." + user.id + "&select=id");
+    if (!Array.isArray(own) || !own[0]) { res.status(403).json({ error: "این تیکت مال تو نیست" }); return; }
+    await sbWrite("/rest/v1/ticket_replies", "POST", { ticket_id: tid, is_admin: false, author_name: clean((user.user_metadata && user.user_metadata.name) || user.email.split("@")[0], 60), body });
+    await sbWrite("/rest/v1/tickets?id=eq." + tid, "PATCH", { status: "open", updated_at: new Date().toISOString() });
+    res.status(200).json({ ok: true });
+    return;
+  }
+
+  /* رفرال: دریافت کد دعوت */
+  if (t === "referral_get") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    const p = await sbGet("/rest/v1/profiles?id=eq." + user.id + "&select=referral_code,referral_count");
+    let code = Array.isArray(p) && p[0] ? p[0].referral_code : null;
+    const count = Array.isArray(p) && p[0] ? (Number(p[0].referral_count) || 0) : 0;
+    if (!code) {
+      for (let i = 0; i < 6; i++) {
+        code = "DFB-" + Array.from({ length: 6 }, () => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 31)]).join("");
+        const dup = await sbGet("/rest/v1/profiles?referral_code=eq." + code + "&select=id");
+        if (!Array.isArray(dup) || !dup.length) break;
+        code = null;
+      }
+      if (code) await sbWrite("/rest/v1/profiles?id=eq." + user.id, "PATCH", { referral_code: code });
+      else code = null;
+    }
+    res.status(200).json({ code, count });
+    return;
+  }
+
+  /* رفرال: اعمال کد دوست (هر کاربر فقط یک‌بار) */
+  if (t === "referral_apply" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    const code = clean((req.body || {}).code, 20).toUpperCase();
+    if (!code) { res.status(400).json({ error: "کد را وارد کن" }); return; }
+    const owner = await sbGet("/rest/v1/profiles?referral_code=eq." + encodeURIComponent(code) + "&select=id,referral_count");
+    if (!Array.isArray(owner) || !owner[0]) { res.status(404).json({ error: "کد معتبر نیست" }); return; }
+    if (owner[0].id === user.id) { res.status(400).json({ error: "این کد خودته!" }); return; }
+    const have = await userBadgeKeys(user.id);
+    if (have.has("referred")) { res.status(400).json({ error: "قبلاً از کد دعوت استفاده کرده‌ای" }); return; }
+    await awardBadges(user.id, ["referred"]);
+    const nc = (Number(owner[0].referral_count) || 0) + 1;
+    await sbWrite("/rest/v1/profiles?id=eq." + owner[0].id, "PATCH", { referral_count: nc });
+    if (nc === 5) { await awardBadges(owner[0].id, ["referral_5"]); await notify(owner[0].id, "referral", "۵ نفر با کد تو عضو شدند!", "نشان «دعوت‌گر طلایی» به تو رسید."); }
+    if (nc === 10) { await awardBadges(owner[0].id, ["referral_10"]); await notify(owner[0].id, "referral", "۱۰ دعوت موفق!", "نشان «سفیر دیلی‌بیت» مال تو شد."); }
+    if (nc !== 5 && nc !== 10) await notify(owner[0].id, "referral", "یک دوست با کد تو عضو شد!", "تعداد دعوت‌های موفق تو: " + nc);
+    res.status(200).json({ ok: true });
+    return;
+  }
+
+  /* علامت‌گذاری همه اعلان‌ها به‌عنوان خوانده‌شده */
+  if (t === "notif_read" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    await sbWrite("/rest/v1/notifications?user_id=eq." + user.id + "&read=eq.false", "PATCH", { read: true });
+    res.status(200).json({ ok: true });
+    return;
+  }
+
+  /* ─── ادمین: مدیریت نظرات ─── */
+  if (t === "admin_comments") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const pageN = Math.max(1, +(req.query.page || 1)); const lim = 30;
+    const st = ["pending", "approved", "rejected"].includes(req.query.st) ? "&status=eq." + req.query.st : "";
+    const r = await fetch(SB_URL + "/rest/v1/comments?select=*&order=created_at.desc&limit=" + lim + "&offset=" + (pageN - 1) * lim + st, { headers: { ...svc, Prefer: "count=exact" } });
+    const total = parseInt((r.headers.get("content-range") || "0").split("/").pop() || "0", 10);
+    res.status(200).json({ rows: await r.json(), total });
+    return;
+  }
+  if (t === "comment_status" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const b = req.body || {};
+    const id = Number(b.id) || 0;
+    const st = ["pending", "approved", "rejected"].includes(b.status) ? b.status : null;
+    if (!id || !st) { res.status(400).json({ error: "bad input" }); return; }
+    const upd = await sbWrite("/rest/v1/comments?id=eq." + id, "PATCH", { status: st });
+    if (st === "approved" && Array.isArray(upd) && upd[0]) await notify(upd[0].user_id, "comment", "نظرت منتشر شد!", "نظر تو روی رسپی تأیید و منتشر شد. ممنون که با ما هستی.");
+    await audit(user.email, "comment_" + st, "comment", id);
+    res.status(200).json({ ok: true });
+    return;
+  }
+  if (t === "comment_delete" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const id = Number((req.body || {}).id) || 0;
+    if (!id) { res.status(400).json({ error: "bad input" }); return; }
+    await fetch(SB_URL + "/rest/v1/comments?id=eq." + id, { method: "DELETE", headers: svc });
+    await audit(user.email, "comment_delete", "comment", id);
+    res.status(200).json({ ok: true });
+    return;
+  }
+
+  /* ─── ادمین: تیکت‌ها ─── */
+  if (t === "admin_tickets") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const st = ["open", "answered", "closed"].includes(req.query.st) ? "&status=eq." + req.query.st : "";
+    const rows = await sbGet("/rest/v1/tickets?select=*&order=updated_at.desc&limit=50" + st);
+    const list = Array.isArray(rows) ? rows : [];
+    if (list.length) {
+      const ids = list.map(x => x.id).join(",");
+      const reps = await sbGet("/rest/v1/ticket_replies?ticket_id=in.(" + ids + ")&select=ticket_id,is_admin,author_name,body,created_at&order=created_at.asc");
+      const byT = {};
+      (Array.isArray(reps) ? reps : []).forEach(r => { (byT[r.ticket_id] = byT[r.ticket_id] || []).push(r); });
+      list.forEach(x => { x.replies = byT[x.id] || []; });
+    }
+    res.status(200).json(list);
+    return;
+  }
+  if (t === "ticket_admin_reply" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const b = req.body || {};
+    const tid = Number(b.ticket_id) || 0, body = clean(b.body, 1500);
+    if (!tid || body.length < 2) { res.status(400).json({ error: "bad input" }); return; }
+    const tk = await sbGet("/rest/v1/tickets?id=eq." + tid + "&select=user_id");
+    await sbWrite("/rest/v1/ticket_replies", "POST", { ticket_id: tid, is_admin: true, author_name: "پشتیبانی DailyFitBeat", body });
+    await sbWrite("/rest/v1/tickets?id=eq." + tid, "PATCH", { status: "answered", updated_at: new Date().toISOString() });
+    if (Array.isArray(tk) && tk[0]) await notify(tk[0].user_id, "ticket", "پاسخ پشتیبانی رسید", "به تیکت #" + tid + " پاسخ داده شد — از پنل کاربری ببین.");
+    await audit(user.email, "ticket_reply", "ticket", tid);
+    res.status(200).json({ ok: true });
+    return;
+  }
+  if (t === "ticket_admin_status" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const b = req.body || {};
+    const id = Number(b.id) || 0;
+    const st = ["open", "answered", "closed"].includes(b.status) ? b.status : null;
+    if (!id || !st) { res.status(400).json({ error: "bad input" }); return; }
+    await sbWrite("/rest/v1/tickets?id=eq." + id, "PATCH", { status: st, updated_at: new Date().toISOString() });
+    await audit(user.email, "ticket_" + st, "ticket", id);
+    res.status(200).json({ ok: true });
+    return;
+  }
+
+  /* ─── ادمین: Bulk Edit رسپی‌ها ─── */
+  if (t === "admin_bulk" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const b = req.body || {};
+    const slugs = (Array.isArray(b.slugs) ? b.slugs : []).filter(s => SLUG_RE.test(String(s))).slice(0, 300);
+    if (!slugs.length) { res.status(400).json({ error: "هیچ رسپی انتخاب نشده" }); return; }
+    const patch = {};
+    if (b.patch && ["published", "draft"].includes(b.patch.status)) patch.status = b.patch.status;
+    if (b.patch && typeof b.patch.noindex === "boolean") patch.noindex = b.patch.noindex;
+    if (b.patch && CAT_WHITELIST.includes(b.patch.category)) patch.category = b.patch.category;
+    if (!Object.keys(patch).length) { res.status(400).json({ error: "تغییری انتخاب نشده" }); return; }
+    const q = "/rest/v1/recipes?slug=in.(" + slugs.join(",") + ")";
+    await fetch(SB_URL + q, { method: "PATCH", headers: { ...svc, "Content-Type": "application/json" }, body: JSON.stringify(patch) });
+    await audit(user.email, "bulk_edit", "recipes", slugs.length, { patch });
+    res.status(200).json({ ok: true, count: slugs.length });
+    return;
+  }
+
+  /* ─── ادمین: Version History رسپی‌ها ─── */
+  if (t === "version_save" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const b = req.body || {};
+    const slug = String(b.slug || "").slice(0, 120);
+    if (!SLUG_RE.test(slug) || !b.snapshot || typeof b.snapshot !== "object") { res.status(400).json({ error: "bad input" }); return; }
+    await sbWrite("/rest/v1/recipe_versions", "POST", { slug, snapshot: b.snapshot, editor: user.email });
+    /* نگه‌داشتن حداکثر ۱۰ نسخه آخر برای هر رسپی */
+    const all = await sbGet("/rest/v1/recipe_versions?slug=eq." + slug + "&select=id&order=created_at.desc");
+    const old = (Array.isArray(all) ? all : []).slice(10).map(x => x.id);
+    if (old.length) await fetch(SB_URL + "/rest/v1/recipe_versions?id=in.(" + old.join(",") + ")", { method: "DELETE", headers: svc });
+    res.status(200).json({ ok: true });
+    return;
+  }
+  if (t === "versions_list") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const slug = String(req.query.slug || "").slice(0, 120);
+    if (!SLUG_RE.test(slug)) { res.status(400).json({ error: "bad slug" }); return; }
+    res.status(200).json(await sbGet("/rest/v1/recipe_versions?slug=eq." + slug + "&select=id,editor,created_at&order=created_at.desc&limit=10"));
+    return;
+  }
+  if (t === "version_get") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const id = Number(req.query.id) || 0;
+    if (!id) { res.status(400).json({ error: "bad id" }); return; }
+    res.status(200).json(await sbGet("/rest/v1/recipe_versions?id=eq." + id + "&select=snapshot"));
+    return;
+  }
+  if (t === "version_restore" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const id = Number((req.body || {}).id) || 0;
+    if (!id) { res.status(400).json({ error: "bad id" }); return; }
+    const v = await sbGet("/rest/v1/recipe_versions?id=eq." + id + "&select=slug,snapshot");
+    if (!Array.isArray(v) || !v[0] || !v[0].snapshot) { res.status(404).json({ error: "نسخه پیدا نشد" }); return; }
+    const snap = v[0].snapshot;
+    const patch = {};
+    for (const f of RECIPE_FIELDS) if (f in snap) patch[f] = snap[f];
+    if (!Object.keys(patch).length) { res.status(400).json({ error: "اسنپ‌شات خالی است" }); return; }
+    await fetch(SB_URL + "/rest/v1/recipes?slug=eq." + encodeURIComponent(v[0].slug), { method: "PATCH", headers: { ...svc, "Content-Type": "application/json" }, body: JSON.stringify(patch) });
+    await audit(user.email, "version_restore", "recipe", v[0].slug);
+    res.status(200).json({ ok: true, slug: v[0].slug });
+    return;
   }
 
   res.status(404).json({ error: "not found" });

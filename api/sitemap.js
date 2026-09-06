@@ -24,6 +24,7 @@ const CUISINE_FA = { iran: "ایران", gilan: "گیلان", italian: "ایتا
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
+const today = new Date().toISOString().slice(0, 10); /* ← در سطح ماژول بود تا urlLine به آن دسترسی داشته باشد */
 function urlLine(loc, pri, chg) {
   return "<url><loc>" + esc(loc) + "</loc><lastmod>" + today + "</lastmod><changefreq>" + chg + "</changefreq><priority>" + pri + "</priority></url>";
 }
@@ -38,7 +39,6 @@ export default async function handler(req, res) {
     if (r2.ok) products = await r2.json();
   } catch (e) { recipes = []; products = []; }
 
-  const today = new Date().toISOString().slice(0, 10);
   const lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'];
 
   for (const p of STATIC) lines.push(urlLine(p.loc, p.pri, p.chg));

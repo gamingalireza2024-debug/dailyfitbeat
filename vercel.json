@@ -1,4 +1,5 @@
 {
+  "trailingSlash": false,
   "redirects": [
     { "source": "/mealplan.html", "destination": "/planner.html", "permanent": true }
   ],

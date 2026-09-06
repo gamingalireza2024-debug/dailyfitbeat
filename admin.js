@@ -105,6 +105,8 @@
         if (b.dataset.t === 'orders') safe('orders', function () { return loadOrders(1); });
         if (b.dataset.t === 'seo') safe('seo', function () { loadRedirects(); loadFaqs(); });
         if (b.dataset.t === 'media') safe('media', loadMedia);
+        if (b.dataset.t === 'comments') safe('comments', function () { return loadComments(1); });
+        if (b.dataset.t === 'tickets') safe('tickets', loadTickets);
       };
     });
     await refreshREC().catch(function (e) { console.error('recipes load error:', e); });
@@ -151,7 +153,10 @@
       '<div class="sc"><b>' + fmt(s.expired_pro) + '</b><span>PRO منقضی</span></div>' +
       '<div class="sc"><b>' + fmt(s.recipes) + '</b><span>رسپی‌ها</span></div>' +
       '<div class="sc warn"><b>' + fmt(s.drafts) + '</b><span>پیش‌نویس</span></div>' +
-      '<div class="sc"><b>' + fmt(s.ai_month) + '</b><span>مصرف AI (ماه)</span></div>';
+      '<div class="sc"><b>' + fmt(s.ai_month) + '</b><span>مصرف AI (ماه)</span></div>' +
+      '<div class="sc warn"><b>' + fmt(s.pending_comments || 0) + '</b><span>نظر در انتظار</span></div>' +
+      '<div class="sc warn"><b>' + fmt(s.open_tickets || 0) + '</b><span>تیکت باز</span></div>' +
+      '<div class="sc"><b>' + fmt(s.active_streaks || 0) + '</b><span>استریک فعال</span></div>';
     /* نمودار SVG سفارش‌های ۱۴ روز */
     var ch = document.getElementById('chartOrders');
     var od = s.orders_14d || [];
@@ -253,8 +258,9 @@
     document.getElementById('recBody').innerHTML = REC.map(function (r) {
       var sc = seoScore(r);
       var cls = sc >= 80 ? 'ok' : sc >= 50 ? 'mid' : 'low';
-      return '<tr><td><b>' + esc(r.name_fa) + '</b><br><small dir="ltr">' + esc(r.slug) + '</small></td><td>' + (r.status === 'draft' ? '<span class="st-badge draft">پیش‌نویس</span>' : '<span class="st-badge pub">منتشر</span>') + '</td><td><span class="score ' + cls + '">' + sc + '</span></td><td>' + esc(r.category) + '</td><td>' + fmt(r.kcal) + '</td><td><button class="btn small edR" data-s="' + esc(r.slug) + '">ویرایش</button></td><td><button class="del-btn dlR" data-s="' + esc(r.slug) + '">حذف</button></td></tr>';
+      return '<tr><td><input type="checkbox" class="bulkCk" value="' + esc(r.slug) + '"></td><td><b>' + esc(r.name_fa) + '</b><br><small dir="ltr">' + esc(r.slug) + '</small></td><td>' + (r.status === 'draft' ? '<span class="st-badge draft">پیش‌نویس</span>' : '<span class="st-badge pub">منتشر</span>') + '</td><td><span class="score ' + cls + '">' + sc + '</span></td><td>' + esc(r.category) + '</td><td>' + fmt(r.kcal) + '</td><td><button class="btn small edR" data-s="' + esc(r.slug) + '">ویرایش</button></td><td><button class="del-btn dlR" data-s="' + esc(r.slug) + '">حذف</button></td></tr>';
     }).join('');
+    document.querySelectorAll('.bulkCk').forEach(function (ck) { ck.onchange = updateBulkCount; });
     document.querySelectorAll('.edR').forEach(function (b) {
       b.onclick = function () {
         fillForm(REC.find(function (x) { return x.slug === b.dataset.s; }));
@@ -320,6 +326,8 @@
       noindex: document.getElementById('rNoindex').checked
     };
     var exists = REC.find(function (x) { return x.slug === slug; });
+    /* فاز ۴: قبل از هر ویرایش، اسنپ‌شات وضعیت فعلی در تاریخچه نسخه‌ها ذخیره می‌شود */
+    if (exists) { try { await api('version_save', { method: 'POST', body: JSON.stringify({ slug: slug, snapshot: exists }) }); } catch (e) {} }
     var res = exists ? await sb.from('recipes').update(obj).eq('slug', slug) : await sb.from('recipes').insert(obj);
     if (res.error) { alert('خطا: ' + res.error.message); return; }
     await refreshREC();
@@ -837,11 +845,145 @@
     });
   }
 
+  /* ═══════ فاز ۴: مدیریت نظرات ═══════ */
+  var CM_ST = { pending: 'در انتظار', approved: 'تأیید شده', rejected: 'رد شده' };
+  async function loadComments(page) {
+    var st = gv('cmFilter');
+    var r = await api('admin_comments&page=' + page + (st && st !== 'all' ? '&st=' + st : ''));
+    if (!r.ok) return;
+    var j = await r.json();
+    var list = j.rows || [];
+    document.getElementById('cmBody').innerHTML = list.map(function (c) {
+      return '<tr><td>' + faDate(c.created_at) + '</td><td>' + esc(c.author_name) + '</td><td><a href="recipe.html?slug=' + esc(c.recipe_slug) + '" target="_blank">' + esc(c.recipe_slug) + '</a></td><td>' + esc(c.body) + '</td><td><span class="st-badge ' + (c.status === 'approved' ? 'pub' : 'draft') + '">' + (CM_ST[c.status] || esc(c.status)) + '</span></td>' +
+        '<td><select data-id="' + c.id + '" class="cmSt"><option value="">تغییر…</option><option value="approved"' + (c.status === 'approved' ? ' selected' : '') + '>تأیید</option><option value="pending"' + (c.status === 'pending' ? ' selected' : '') + '>در انتظار</option><option value="rejected"' + (c.status === 'rejected' ? ' selected' : '') + '>رد</option></select> <button class="del-btn cmDel" data-id="' + c.id + '">حذف</button></td></tr>';
+    }).join('') || '<tr><td colspan="6">نظر در این فیلتر نیست</td></tr>';
+    pager(document.getElementById('pagerC'), page, j.total || 0, 30, loadComments);
+    document.querySelectorAll('.cmSt').forEach(function (sel) {
+      sel.onchange = async function () {
+        if (!sel.value) return;
+        var r2 = await api('comment_status', { method: 'POST', body: JSON.stringify({ id: Number(sel.dataset.id), status: sel.value }) });
+        if (r2.ok) loadComments(page); else alert('خطا');
+      };
+    });
+    document.querySelectorAll('.cmDel').forEach(function (btn) {
+      btn.onclick = async function () {
+        if (!confirm('این نظر حذف شود؟')) return;
+        var r2 = await api('comment_delete', { method: 'POST', body: JSON.stringify({ id: Number(btn.dataset.id) }) });
+        if (r2.ok) loadComments(page); else alert('خطا');
+      };
+    });
+  }
+  async function exportCommentsCSV() {
+    var r = await api('admin_comments&page=1');
+    if (!r.ok) { alert('خطا'); return; }
+    var j = await r.json();
+    var rows = [['تاریخ', 'نام', 'رسپی', 'متن', 'وضعیت']];
+    (j.rows || []).forEach(function (c) {
+      rows.push([new Date(c.created_at).toLocaleString('fa-IR'), c.author_name, c.recipe_slug, c.body, CM_ST[c.status] || c.status]);
+    });
+    var csv = '\uFEFF' + rows.map(function (r2) { return r2.map(function (c) { return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'dailyfitbeat-comments.csv';
+    a.click();
+  }
+
+  /* ═══════ فاز ۴: تیکت‌ها ═══════ */
+  async function loadTickets() {
+    var st = gv('tkFilter');
+    var r = await api('admin_tickets' + (st ? '&st=' + st : ''));
+    if (!r.ok) return;
+    var list = await r.json();
+    if (!Array.isArray(list)) list = [];
+    document.getElementById('tkList').innerHTML = list.length ? list.map(function (x) {
+      var reps = (x.replies || []).map(function (rp) {
+        return '<div class="tk-reply' + (rp.is_admin ? ' admin' : '') + '"><b>' + esc(rp.author_name) + '</b><p>' + esc(rp.body) + '</p><small>' + faDate(rp.created_at) + '</small></div>';
+      }).join('');
+      return '<div class="tk-admin-card"><div class="tk-head"><b>#' + esc(x.id) + ' — ' + esc(x.subject) + '</b><span class="st-badge ' + (x.status === 'open' ? 'draft' : 'pub') + '">' + esc(x.status) + '</span><small dir="ltr">' + esc(x.email) + '</small><small>' + faDate(x.created_at) + '</small></div>' +
+        '<p class="tk-body">' + esc(x.body) + '</p><div class="tk-reps">' + reps + '</div>' +
+        '<div class="tk-admin-actions"><input class="tkReplyIn" data-tid="' + esc(x.id) + '" placeholder="پاسخ پشتیبانی…"><button class="btn small tkReplyGo" data-tid="' + esc(x.id) + '">پاسخ</button>' +
+        '<select data-id="' + esc(x.id) + '" class="tkSt"><option value="">وضعیت…</option><option value="open">باز</option><option value="answered">پاسخ داده شد</option><option value="closed">بسته</option></select></div></div>';
+    }).join('') : '<p class="no-res">تیکتی نیست</p>';
+    document.querySelectorAll('.tkReplyGo').forEach(function (btn) {
+      btn.onclick = async function () {
+        var inp = document.querySelector('.tkReplyIn[data-tid="' + btn.dataset.tid + '"]');
+        var body = inp.value.trim();
+        if (body.length < 2) return;
+        var r2 = await api('ticket_admin_reply', { method: 'POST', body: JSON.stringify({ ticket_id: Number(btn.dataset.tid), body: body }) });
+        if (r2.ok) loadTickets(); else alert('خطا');
+      };
+    });
+    document.querySelectorAll('.tkSt').forEach(function (sel) {
+      sel.onchange = async function () {
+        if (!sel.value) return;
+        var r2 = await api('ticket_admin_status', { method: 'POST', body: JSON.stringify({ id: Number(sel.dataset.id), status: sel.value }) });
+        if (r2.ok) loadTickets(); else alert('خطا');
+      };
+    });
+  }
+
+  /* ═══════ فاز ۴: ویرایش گروهی (Bulk Edit) ═══════ */
+  function updateBulkCount() {
+    var n = document.querySelectorAll('.bulkCk:checked').length;
+    var el = document.getElementById('bulkCount');
+    if (el) el.textContent = n ? fmt(n) + ' انتخاب شده' : '';
+  }
+  async function applyBulk() {
+    var slugs = Array.prototype.map.call(document.querySelectorAll('.bulkCk:checked'), function (c) { return c.value; });
+    if (!slugs.length) { alert('اول چند رسپی را تیک بزن'); return; }
+    var patch = {};
+    if (gv('bulkStatus')) patch.status = gv('bulkStatus');
+    if (gv('bulkCat')) patch.category = gv('bulkCat');
+    if (gv('bulkNoindex')) patch.noindex = gv('bulkNoindex') === 'true';
+    if (!Object.keys(patch).length) { alert('حداقل یکی از فیلدهای ویرایش را انتخاب کن'); return; }
+    if (!confirm('این تغییرات روی ' + slugs.length + ' رسپی اعمال شود؟')) return;
+    var r = await api('admin_bulk', { method: 'POST', body: JSON.stringify({ slugs: slugs, patch: patch }) });
+    var j = await r.json().catch(function () { return {}; });
+    if (r.ok) { alert('روی ' + fmt(j.count || slugs.length) + ' رسپی اعمال شد'); await refreshREC(); loadRecipes(); }
+    else alert(j.error || 'خطا');
+  }
+
+  /* ═══════ فاز ۴: تاریخچه نسخه‌ها ═══════ */
+  async function showVersions() {
+    var slug = gv('rSlug').trim();
+    if (!slug) { alert('اول یک رسپی را ویرایش کن تا نسخه‌هایش را ببینید'); return; }
+    var r = await api('versions_list&slug=' + encodeURIComponent(slug));
+    if (!r.ok) { alert('خطا در دریافت نسخه‌ها'); return; }
+    var arr = await r.json();
+    if (!Array.isArray(arr) || !arr.length) { alert('هنوز نسخه‌ای ذخیره نشده — با هر «ذخیره رسپی»، وضعیت قبلی به‌عنوان نسخه ثبت می‌شود'); return; }
+    var old = document.getElementById('verBox');
+    if (old) old.remove();
+    var html = '<div id="verBox" class="ver-box"><b>نسخه‌های ذخیره‌شده «' + esc(slug) + '»:</b>';
+    arr.forEach(function (v) {
+      html += '<div class="ver-row"><small>' + faDate(v.created_at) + ' — <span dir="ltr">' + esc(v.editor) + '</span></small><button class="btn small verRestore" data-id="' + esc(v.id) + '">بازیابی</button></div>';
+    });
+    html += '<small class="hint">بازیابی، محتوای آن نسخه را به رسپی برمی‌گرداند (وضعیت فعلی قبل از بازیابی خودکار ذخیره می‌شود).</small></div>';
+    document.getElementById('recForm').insertAdjacentHTML('beforeend', html);
+    document.querySelectorAll('.verRestore').forEach(function (btn) {
+      btn.onclick = async function () {
+        if (!confirm('محتوای فعلی با این نسخه جایگزین شود؟')) return;
+        var cur = REC.find(function (x) { return x.slug === slug; });
+        if (cur) { try { await api('version_save', { method: 'POST', body: JSON.stringify({ slug: slug, snapshot: cur }) }); } catch (e) {} }
+        var r2 = await api('version_restore', { method: 'POST', body: JSON.stringify({ id: Number(btn.dataset.id) }) });
+        var j2 = await r2.json().catch(function () { return {}; });
+        if (r2.ok) { alert('بازیابی شد ✓'); await refreshREC(); fillForm(REC.find(function (x) { return x.slug === slug; })); }
+        else alert(j2.error || 'خطا');
+      };
+    });
+  }
+
   function bindAll() {
     document.getElementById('csvBtn').onclick = exportCSV;
     document.getElementById('filterSt').onchange = function () { loadOrders(1); };
     document.getElementById('rNew').onclick = function () { fillForm(null); };
     document.getElementById('rSave').onclick = saveRecipe;
+    document.getElementById('rVersions').onclick = showVersions;
+    document.getElementById('bulkApply').onclick = applyBulk;
+    document.getElementById('cmReload').onclick = function () { loadComments(1); };
+    document.getElementById('cmFilter').onchange = function () { loadComments(1); };
+    document.getElementById('tkReload').onclick = loadTickets;
+    document.getElementById('tkFilter').onchange = loadTickets;
+    document.getElementById('cmCsv').onclick = exportCommentsCSV;
     document.getElementById('aAdd').onclick = addProd;
     document.getElementById('pAdd').onclick = async function () {
       var t = document.getElementById('pTitle').value.trim();
