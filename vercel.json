@@ -4,6 +4,7 @@
     { "source": "/mealplan.html", "destination": "/planner.html", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/recipes/category/:cat", "destination": "/recipes.html?cat=:cat" },
     { "source": "/recipes/goal/:goal", "destination": "/recipes.html?goal=:goal" },
     { "source": "/recipes/meal/:meal", "destination": "/recipes.html?meal=:meal" },

@@ -19,7 +19,7 @@ const API = "https://generativelanguage.googleapis.com/v1beta";
 const TEXT_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
 const IMG_DIR = "img/recipes"; // ← همیشه همین مسیر (هماهنگ با import-recipes.mjs)
 
-const STYLE = "Ultra-realistic cinematic premium food photography, square 1:1, dark moody background, warm natural side light, gentle steam, rich macro texture, shallow depth of field, appetizing, high-end editorial style, consistent series look. No text, no watermark, no people, no logo.";
+const STYLE = "Ultra-realistic professional food photography, bright natural daylight from a side window, rustic light oak wooden table, warm white and orange ceramic dishes, gentle steam rising, shallow depth of field, 45-degree angle, vibrant warm appetizing tones, consistent series look, high resolution. No text, no watermark, no people, no logo.";
 const DISH = { soup: "a bowl of hot soup", salad: "a fresh colorful salad plate", sandwich: "a filled sandwich on a wooden board", breakfast: "a breakfast plate", iranian: "a Persian rice and stew dish, served on a plate", main: "a grilled main dish on a plate" };
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));

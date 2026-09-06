@@ -1,11 +1,15 @@
-/* DailyFitBeat — Enrich Recipes v3
+/* DailyFitBeat — Enrich Recipes v4
    موتور متن: Gemini (با بک‌آف ۶۰ث) → GitHub Models (رایگان داخلی)
-   اصلاح v3:
+   جدید v4:
+   ۱) چهار فیلد تازه هم پر می‌شوند: desc_fa ، region ، substitutions (video_url قابل تولید خودکار نیست)
+   ۲) اولویت‌بندی: رسپی‌هایی که فیلد خالی بیشتری دارند زودتر پردازش می‌شوند
+   ۳) region از فهرست کشور/استان معتبر انتخاب می‌شود
+   ۴) substitutions با ساختار {from,to} هماهنگ با app.js
+   اصلاحات v3:
    ۱) صفحه‌بندی کامل خواندن رسپی‌ها (قبلاً سقف ۲۰۰۰ بود و بی‌سروصدا می‌بُرید)
    ۲) فیلد protein و kcal هم اگر خالی بود پر می‌شوند (پروتئین عدد کلیدی کارت‌هاست)
    ۳) اگر kcal خالی بماند اما ماکروها باشند، از فرمول ۴/۴/۴/۹ تخمین زده می‌شود
-   ۴) حذف فیلد image_style از پرامپت (هیچ‌جا استفاده نمی‌شد — هدررفت توکن)
-   ۵) اعتبارسنجی LIMIT (بین ۵ تا ۱۰۰) */
+   ۴) اعتبارسنجی LIMIT (بین ۵ تا ۱۰۰) */
 const SB_URL = 'https://hvqchqqlfcjxsohxywbd.supabase.co';
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const GEMINI = process.env.GEMINI_API_KEY || '';
@@ -24,7 +28,7 @@ async function loadAll() {
   const out = [];
   let offset = 0;
   while (true) {
-    const r = await fetch(SB_URL + '/rest/v1/recipes?select=slug,name_fa,name_en,kcal,protein,carbs,fat,fiber,sugar,desc_en,ingredients,steps,tips&limit=1000&offset=' + offset, { headers: svcH });
+    const r = await fetch(SB_URL + '/rest/v1/recipes?select=slug,name_fa,name_en,kcal,protein,carbs,fat,fiber,sugar,desc_fa,desc_en,region,ingredients,steps,tips,substitutions&limit=1000&offset=' + offset, { headers: svcH });
     if (!r.ok) break;
     const j = await r.json();
     if (!Array.isArray(j) || !j.length) break;
@@ -116,21 +120,30 @@ const ENRICH_PROMPT = (r, ings) => `تو سرآشپز و متخصص تغذیه �
 {
   "steps":["حداقل ۵ مرحله پخت با جزئیات واقعی","..."],
   "tips":["۲ تا ۳ نکته پخت یا جایگزین","..."],
-  "protein":32,"carbs":40,"fat":22,"fiber":5,"sugar":3,
-  "desc_en":"One-sentence English description of the dish"
+  "desc_fa":"توضیح یک تا دو جمله‌ای جذاب فارسی درباره غذا",
+  "desc_en":"One-sentence English description of the dish",
+  "region":"کشور مبدأ مثل ایران، ایتالیا، ژاپن یا اگر ایرانی است استان مثل گیلان، آذربایجان شرقی، خوزستان",
+  "substitutions":[{"from":"نام یک مادهٔ اصلی","to":"جایگزین منطقی"},{"from":"نام مادهٔ دیگر","to":"جایگزین"}],
+  "protein":32,"carbs":40,"fat":22,"fiber":5,"sugar":3
 }
-اعداد ماکرو و پروتئین منطقی و هماهنگ با کالری حدود ${r.kcal || 400}. فقط JSON.`;
+region را فقط یکی از این‌ها بگذار (یا استان ایرانی اگر غذا ایرانی است): ایران، ایتالیا، ژاپن، تایلند، اسپانیا، مراکش، فرانسه، چین، هند، ترکیه، مکزیک، انگلستان، یونان، کره، لبنان، آمریکا، آرژانتین، برزیل، بین‌المللی. اعداد ماکرو منطقی و هماهنگ با کالری حدود ${r.kcal || 400}. فقط JSON.`;
 
 (async () => {
   console.log('📖 خواندن همه رسپی‌ها…');
   const all = await loadAll();
   console.log('   کل: ' + all.length);
 
-  const incomplete = all.filter(r =>
-    (!Array.isArray(r.steps) || !r.steps.length) ||
-    (!Array.isArray(r.tips) || !r.tips.length) ||
-    !r.carbs || !r.fat || !r.protein
-  );
+  const missing = r => [
+    (!Array.isArray(r.steps) || !r.steps.length),
+    (!Array.isArray(r.tips) || !r.tips.length),
+    !r.carbs || !r.fat || !r.protein,
+    !r.desc_fa,
+    !r.desc_en || r.desc_en === r.name_en,
+    !r.region,
+    (!Array.isArray(r.substitutions) || !r.substitutions.length)
+  ].filter(Boolean).length;
+  const incomplete = all.filter(r => missing(r) > 0)
+    .sort((a, b) => missing(b) - missing(a));
   console.log('   ناقص: ' + incomplete.length + ' | این اجرا: ' + Math.min(LIMIT, incomplete.length));
 
   let ok = 0, fail = 0, consecutiveFails = 0;
@@ -156,6 +169,15 @@ const ENRICH_PROMPT = (r, ings) => `تو سرآشپز و متخصص تغذیه �
     if (!r.sugar && p.sugar) patch.sugar = Number(p.sugar) || 0;
     if (!r.protein && p.protein) patch.protein = Number(p.protein) || 0;
     if ((!r.desc_en || r.desc_en === r.name_en) && p.desc_en) patch.desc_en = p.desc_en;
+    if (!r.desc_fa && p.desc_fa) patch.desc_fa = String(p.desc_fa).trim();
+    if (!r.region && p.region) patch.region = String(p.region).trim();
+    if ((!Array.isArray(r.substitutions) || !r.substitutions.length) && Array.isArray(p.substitutions) && p.substitutions.length) {
+      const subs = p.substitutions
+        .filter(s => s && s.from && s.to)
+        .slice(0, 4)
+        .map(s => ({ from: String(s.from).trim(), to: String(s.to).trim() }));
+      if (subs.length) patch.substitutions = subs;
+    }
 
     /* kcal: اول مقدار AI، بعد تخمین از ماکروها (۴/۴/۴/۹) */
     if (!r.kcal) {

@@ -149,7 +149,7 @@ function parseJSON(txt) {
 }
 
 /* ---------- تصویر ---------- */
-const STYLE_TPL = (d) => 'Ultra-realistic cinematic premium food photography of: ' + d + '. Square 1:1, dark moody background, warm natural side light, gentle steam, rich macro texture, shallow depth of field, appetizing, high-end editorial style. No text, no watermark, no people, no logo.';
+const STYLE_TPL = (d) => 'Ultra-realistic professional food photography of: ' + d + '. Bright natural daylight from a side window, rustic light oak wooden table, warm white and orange ceramic dishes, gentle steam rising, shallow depth of field, 45-degree angle, vibrant warm appetizing tones, high-end editorial style, consistent series look. No text, no watermark, no people, no logo.';
 
 async function generateImageGemini(styleDesc) {
   if (!IMAGE_MODEL) return null;
