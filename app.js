@@ -276,15 +276,16 @@ function syncUrl() {
 function applyRecipeSeo(list) {
   var sp = new URLSearchParams(location.search);
   var fa = '', path = null, title = '', desc = '', bcName = '';
+  /* کلید cuisine از state (تا با آدرس تمیز هم کار کند) */
+  var ckey = curRegion !== 'all' ? Object.keys(CUISINES).find(function (k) { return CUISINES[k] === curRegion; }) : null;
   if (mealCats) {
     var mk = Object.keys(MEAL_CATS).find(function (k) { return MEAL_CATS[k] === mealCats; });
     if (!mk) return;
     fa = MEAL_FA[mk]; bcName = fa + 'های سالم'; path = '/recipes/meal/' + mk;
     title = bcName + ' با کالری و ماکرو دقیق';
     desc = 'مجموعه رسپی‌های ' + fa + ' سالم و سیرکننده با کالری، پروتئین و زمان پخت مشخص — مناسب برنامه غذایی هفتگی.';
-  } else if (sp.get('cuisine') && CUISINES[sp.get('cuisine')]) {
-    var creg = CUISINES[sp.get('cuisine')];
-    fa = ADJ[creg] ? 'غذاهای ' + ADJ[creg] : creg; bcName = fa; path = '/recipes/cuisine/' + sp.get('cuisine');
+  } else if (ckey) {
+    fa = ADJ[curRegion] ? 'غذاهای ' + ADJ[curRegion] : curRegion; bcName = fa; path = '/recipes/cuisine/' + ckey;
     title = fa + ' اصیل با رسپی گام‌به‌گام';
     desc = 'رسپی‌های واقعی ' + fa + ' با مواد در دسترس، کالری دقیق و مراحل پخت ساده — امتحانش کن.';
   } else if (curGoal !== 'all' && GOAL_FA[curGoal]) {
@@ -345,6 +346,17 @@ function initRecipes() {
   /* خواندن فیلتر از URL صفحات SEO: /recipes/category/:cat و … */
   var sp = new URLSearchParams(location.search);
   var pc = sp.get('cat'), pg = sp.get('goal'), pm = sp.get('meal'), pcu = sp.get('cuisine'), pq = sp.get('q'), pr = sp.get('region');
+  /* آدرس تمیز: /recipes/category/:cat و مانند آن — کوئری سمت مرورگر خالی است */
+  if (!pc && !pg && !pm && !pcu && !pr) {
+    var mx = location.pathname.match(/\/recipes\/(category|goal|meal|cuisine)\/([^\/?#]+)/);
+    if (mx) {
+      var seg; try { seg = decodeURIComponent(mx[2]); } catch (e) { seg = mx[2]; }
+      if (mx[1] === 'category') pc = seg;
+      else if (mx[1] === 'goal') pg = seg;
+      else if (mx[1] === 'meal') pm = seg;
+      else pcu = seg;
+    }
+  }
   if (pc && (pc === 'all' || CAT_FA[pc])) curCat = pc;
   if (pg && (pg === 'all' || GOAL_FA[pg])) curGoal = pg;
   if (pm && MEAL_CATS[pm]) mealCats = MEAL_CATS[pm];
@@ -373,7 +385,12 @@ function initRecipes() {
 }
 async function initDetail() {
   if (page !== 'recipe') return;
+  /* اسلاگ از ?slug= یا از آدرس تمیز /recipes/<slug> */
   var slug = new URLSearchParams(location.search).get('slug');
+  if (!slug) {
+    var pm = location.pathname.match(/\/recipes\/([^\/]+)/);
+    if (pm) { try { slug = decodeURIComponent(pm[1]); } catch (e) { slug = pm[1]; } }
+  }
   await loadAll();
   var r = ALL.find(function (x) { return x.slug === slug; });
   /* پیش‌نمایش پیش‌نویس برای ادمین */
