@@ -17,6 +17,14 @@
     const list = Array.isArray(ALL) ? ALL : [];
     const r = list.find(x=>x.slug===slug);
     if(!r) return;
+    /* آمار بازدید — یک بار در هر نشست برای هر رسپی */
+    try {
+      const vk = 'dfb-v-' + slug;
+      if (!sessionStorage.getItem(vk)) {
+        sessionStorage.setItem(vk, '1');
+        fetch('/api/db?t=track_view&slug=' + encodeURIComponent(slug), { keepalive: true }).catch(()=>{});
+      }
+    } catch(e) {}
     const base = window.SITE ? SITE.url : '';
     const clean = base + '/recipes/' + r.slug;
 
@@ -33,19 +41,21 @@
     if(rd) rd.prepend(bc);
 
     // Schema: Recipe + BreadcrumbList
+    const meta = (r.meta_description || r.desc_fa || r.name_fa || '').slice(0, 300);
     const ld = {
       "@context":"https://schema.org","@type":"Recipe",
       "name":r.name_fa,"alternateName":r.name_en,
       "image":[base + (r.image || '/img/hero-home.jpg')],
-      "description":r.desc_fa || r.name_fa,
+      "description":meta,
       "author":{"@type":"Organization","name":"DailyFitBeat"},
       "recipeCategory":r.category,
       "recipeCuisine":r.region || "ایرانی",
+      "keywords":(r.tags||[]).join(', '),
       "cookTime":"PT" + (r.time_min||0) + "M",
       "totalTime":"PT" + (r.time_min||0) + "M",
       "recipeYield":"۱ نفر",
       "recipeIngredient":(r.ingredients||[]).map(i=>i.fa + " " + i.q),
-      "nutrition":{"@type":"NutritionInformation","calories":(r.kcal||0)+" kcal","proteinContent":(r.protein||0)+" g","carbohydrateContent":(r.carbs||0)+" g","fatContent":(r.fat||0)+" g"}
+      "nutrition":{"@type":"NutritionInformation","calories":(r.kcal||0)+" kcal","proteinContent":(r.protein||0)+" g","carbohydrateContent":(r.carbs||0)+" g","fatContent":(r.fat||0)+" g","fiberContent":(r.fiber||0)+" g","sugarContent":(r.sugar||0)+" g"}
     };
     if(Array.isArray(r.steps) && r.steps.length){
       ld.recipeInstruction = r.steps.map(s=>({"@type":"HowToStep","text":s}));

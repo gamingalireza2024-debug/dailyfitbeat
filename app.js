@@ -13,6 +13,12 @@ var FALL = { iranian: 'img/cat-iranian.jpg', salad: 'img/cat-salad.jpg', sandwic
 var diff = function (t) { return t <= 20 ? 'آسان' : t <= 60 ? 'متوسط' : 'مفصل'; };
 var ADJ = { 'ایران': 'ایرانی', 'گیلان': 'گیلانی', 'ژاپن': 'ژاپنی', 'تایلند': 'تایلندی', 'اسپانیا': 'اسپانیایی', 'مراکش': 'مراکشی', 'فرانسه': 'فرانسوی', 'ایتالیا': 'ایتالیایی', 'چین': 'چینی', 'هند': 'هندی', 'ترکیه': 'ترکی', 'مکزیک': 'مکزیکی', 'انگلستان': 'انگلیسی', 'یونان': 'یونانی', 'کره': 'کره‌ای', 'لبنان': 'لبنانی' };
 var countryFa = function (reg) { return 'غذای ' + (ADJ[reg] || reg || 'ایرانی'); };
+/* ---------- برچسب‌های SEO برای صفحات فیلتردار ---------- */
+var CAT_FA = { iranian: 'ایرانی', main: 'غذای اصلی', salad: 'سالاد', sandwich: 'ساندویچ', breakfast: 'صبحانه', soup: 'سوپ' };
+var GOAL_FA = { 'high-protein': 'پروتئین بالا', 'weight-loss': 'کاهش وزن', quick: 'سریع و آسان', vegetarian: 'گیاهی' };
+var MEAL_FA = { breakfast: 'صبحانه', lunch: 'ناهار', dinner: 'شام', snack: 'میان‌وعده' };
+var MEAL_CATS = { breakfast: ['breakfast'], lunch: ['main', 'iranian', 'salad'], dinner: ['main', 'iranian', 'soup'], snack: ['salad', 'sandwich'] };
+var CUISINES = { iran: 'ایران', gilan: 'گیلان', italian: 'ایتالیا', japanese: 'ژاپن', thai: 'تایلند', spanish: 'اسپانیا', moroccan: 'مراکش', french: 'فرانسه', chinese: 'چین', indian: 'هند', turkish: 'ترکیه', mexican: 'مکزیک', english: 'انگلستان', greek: 'یونان', korean: 'کره', lebanese: 'لبنان', argentinian: 'آرژانتین', brazilian: 'برزیل', australian: 'استرالیا', american: 'آمریکا' };
 var NAV = [['home', 'index.html', 'خانه', 'Home'], ['recipes', 'recipes.html', 'رسپی‌ها', 'Recipes'], ['planner', 'planner.html', 'استودیو تغذیه', 'Nutrition Studio'], ['market', 'market.html', 'فیت مارکت', 'Fit Market'], ['ai', 'ai.html', 'دستیار AI', 'AI Assistant'], ['pro', 'pro.html', 'PRO', 'PRO']];
 
 async function loadAdminList(token) {
@@ -215,14 +221,71 @@ async function loadPopular() {
   if (!data.length) return;
   el.innerHTML = card(data[0], true) + data.slice(1).map(function (x) { return card(x); }).join('');
 }
-var curCat = 'all', curGoal = 'all', curQ = '', curRegion = 'all';
+var curCat = 'all', curGoal = 'all', curQ = '', curRegion = 'all', mealCats = null, pendingSeo = false;
 function renderRecipes() {
   var el = document.getElementById('recipeGrid');
   if (!el) return;
   var list = ALL.filter(function (r) {
-    return (curCat === 'all' || r.category === curCat) && (curRegion === 'all' || (r.region || '') === curRegion) && (curGoal === 'all' || (r.tags || []).indexOf(curGoal) !== -1) && (!curQ || curQ.split(' ').every(function (w) { return hay(r).indexOf(w) !== -1; }));
+    if (curCat !== 'all' && r.category !== curCat) return false;
+    if (mealCats && mealCats.indexOf(r.category) === -1) return false;
+    if (curRegion !== 'all' && (r.region || '') !== curRegion) return false;
+    if (curGoal !== 'all' && (r.tags || []).indexOf(curGoal) === -1) return false;
+    if (curQ && !curQ.split(' ').every(function (w) { return hay(r).indexOf(w) !== -1; })) return false;
+    return true;
   });
-  el.innerHTML = list.map(function (r) { return card(r); }).join('') || '<p class="no-res">چیزی در این دسته نیست</p>';
+  el.innerHTML = list.map(function (r) { return card(r); }).join('') || '<p class="no-res">چیزی در این دسته نیست — فیلتر دیگری را امتحان کن</p>';
+  if (pendingSeo && ALL.length) { pendingSeo = false; applyRecipeSeo(list); }
+}
+/* ---------- SEO داینامیک صفحات فیلتردار: meta + H1 + ItemList + Breadcrumb ---------- */
+function syncUrl() {
+  var sp = new URLSearchParams();
+  if (curCat !== 'all') sp.set('cat', curCat);
+  if (curGoal !== 'all') sp.set('goal', curGoal);
+  if (curRegion !== 'all' && !mealCats) { var cs = Object.keys(CUISINES).find(function (k) { return CUISINES[k] === curRegion; }); if (cs) sp.set('cuisine', cs); }
+  if (mealCats) { var mk = Object.keys(MEAL_CATS).find(function (k) { return MEAL_CATS[k] === mealCats; }); if (mk) sp.set('meal', mk); }
+  if (curQ) sp.set('q', curQ);
+  var qs = sp.toString();
+  try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '')); } catch (e) {}
+}
+function applyRecipeSeo(list) {
+  var sp = new URLSearchParams(location.search);
+  var fa = '', path = null, title = '', desc = '', bcName = '';
+  if (mealCats) {
+    var mk = Object.keys(MEAL_CATS).find(function (k) { return MEAL_CATS[k] === mealCats; });
+    if (!mk) return;
+    fa = MEAL_FA[mk]; bcName = fa + 'های سالم'; path = '/recipes/meal/' + mk;
+    title = bcName + ' با کالری و ماکرو دقیق';
+    desc = 'مجموعه رسپی‌های ' + fa + ' سالم و سیرکننده با کالری، پروتئین و زمان پخت مشخص — مناسب برنامه غذایی هفتگی.';
+  } else if (sp.get('cuisine') && CUISINES[sp.get('cuisine')]) {
+    var creg = CUISINES[sp.get('cuisine')];
+    fa = ADJ[creg] ? 'غذاهای ' + ADJ[creg] : creg; bcName = fa; path = '/recipes/cuisine/' + sp.get('cuisine');
+    title = fa + ' اصیل با رسپی گام‌به‌گام';
+    desc = 'رسپی‌های واقعی ' + fa + ' با مواد در دسترس، کالری دقیق و مراحل پخت ساده — امتحانش کن.';
+  } else if (curGoal !== 'all' && GOAL_FA[curGoal]) {
+    fa = 'رسپی‌های ' + GOAL_FA[curGoal]; bcName = fa; path = '/recipes/goal/' + curGoal;
+    title = fa + ' با کالری و پروتئین مشخص';
+    desc = GOAL_FA[curGoal] === 'کاهش وزن' ? 'رسپی‌های کم‌کالری و سیرکننده برای کاهش وزن — همه با کالری و ماکرو دقیق ثبت شده‌اند.' : 'رسپی‌های مناسب هدف ' + GOAL_FA[curGoal] + ' با ارزش غذایی دقیق و مواد در دسترس.';
+  } else if (curCat !== 'all' && CAT_FA[curCat]) {
+    fa = 'رسپی‌های ' + CAT_FA[curCat]; bcName = fa; path = '/recipes/category/' + curCat;
+    title = fa + ' — کالری، پروتئین و مراحل پخت دقیق';
+    desc = 'بهترین ' + CAT_FA[curCat] + 'های سالم با کالری و ماکرو دقیق، مواد لازم و مراحل گام‌به‌گام.';
+  } else return;
+
+  if (window.DFB_setMeta) DFB_setMeta({ title: title, desc: desc, path: path });
+  var h = document.querySelector('.page-head h1'), pp = document.querySelector('.page-head p');
+  if (h) h.textContent = bcName;
+  if (pp) pp.textContent = (list ? list.length.toLocaleString('fa-IR') : '') + ' رسپی واقعی با کالری و ماکرو دقیق';
+  var base = window.DFB_SITE ? DFB_SITE.url : 'https://dailyfitbeat.ir';
+  var items = (list || []).slice(0, 25).map(function (r, i) { return { "@type": "ListItem", "position": i + 1, "name": r.name_fa, "url": base + '/recipes/' + r.slug }; });
+  var ld = [{ "@context": "https://schema.org", "@type": "ItemList", "itemListElement": items },
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "خانه", "item": base + "/" },
+      { "@type": "ListItem", "position": 2, "name": "رسپی‌ها", "item": base + "/recipes.html" },
+      { "@type": "ListItem", "position": 3, "name": bcName, "item": base + path }
+    ] }];
+  var s = document.getElementById('gridLD');
+  if (!s) { s = document.createElement('script'); s.type = 'application/ld+json'; s.id = 'gridLD'; document.head.appendChild(s); }
+  s.textContent = JSON.stringify(ld);
 }
 function renderTiles() {
   var el = document.getElementById('tiles');
@@ -253,15 +316,32 @@ function renderTiles() {
 }
 function initRecipes() {
   if (page !== 'recipes') return;
+  /* خواندن فیلتر از URL صفحات SEO: /recipes/category/:cat و … */
+  var sp = new URLSearchParams(location.search);
+  var pc = sp.get('cat'), pg = sp.get('goal'), pm = sp.get('meal'), pcu = sp.get('cuisine'), pq = sp.get('q'), pr = sp.get('region');
+  if (pc && (pc === 'all' || CAT_FA[pc])) curCat = pc;
+  if (pg && (pg === 'all' || GOAL_FA[pg])) curGoal = pg;
+  if (pm && MEAL_CATS[pm]) mealCats = MEAL_CATS[pm];
+  if (pcu && CUISINES[pcu]) curRegion = CUISINES[pcu];
+  if (pr) curRegion = pr;
+  if (pq) { curQ = norm(pq); var si = document.getElementById('recipeSearch'); if (si) si.value = pq; }
+  if (pc || pg || pm || pcu || pr || pq) pendingSeo = true;
+  document.querySelectorAll('.filters .chip[data-cat]').forEach(function (c) { c.classList.toggle('on', c.dataset.cat === curCat); });
+  document.querySelectorAll('.filters .chip[data-goal]').forEach(function (c) { c.classList.toggle('on', c.dataset.goal === curGoal); });
   var sr = document.getElementById('recipeSearch');
-  if (sr) sr.oninput = function () { curQ = norm(sr.value); renderRecipes(); };
-  document.querySelectorAll('.filters .chip').forEach(function (ch) {
+  if (sr) sr.oninput = function () { curQ = norm(sr.value); syncUrl(); renderRecipes(); };
+  document.querySelectorAll('.filters .chip[data-cat]').forEach(function (ch) {
     ch.onclick = function () {
-      document.querySelectorAll('.filters .chip').forEach(function (x) { x.classList.remove('on'); });
-      ch.classList.add('on');
-      if (ch.dataset.cat !== undefined) curCat = ch.dataset.cat;
-      if (ch.dataset.goal !== undefined) curGoal = ch.dataset.goal;
-      renderTiles(); renderRecipes();
+      curCat = ch.dataset.cat; mealCats = null;
+      document.querySelectorAll('.filters .chip[data-cat]').forEach(function (x) { x.classList.toggle('on', x === ch); });
+      pendingSeo = true; syncUrl(); renderTiles(); renderRecipes();
+    };
+  });
+  document.querySelectorAll('.filters .chip[data-goal]').forEach(function (ch) {
+    ch.onclick = function () {
+      curGoal = ch.dataset.goal;
+      document.querySelectorAll('.filters .chip[data-goal]').forEach(function (x) { x.classList.toggle('on', x === ch); });
+      pendingSeo = true; syncUrl(); renderRecipes();
     };
   });
 }
@@ -270,9 +350,25 @@ async function initDetail() {
   var slug = new URLSearchParams(location.search).get('slug');
   await loadAll();
   var r = ALL.find(function (x) { return x.slug === slug; });
+  /* پیش‌نمایش پیش‌نویس برای ادمین */
+  if (!r && window.DFB && DFB.isAdmin && DFB.isAdmin() && sb) {
+    try {
+      var s0 = await sb.auth.getSession();
+      var aa = await (await fetch('/api/db?t=all_admin', { headers: { Authorization: 'Bearer ' + (s0.data.session ? s0.data.session.access_token : '') } })).json();
+      if (Array.isArray(aa)) r = aa.find(function (x) { return x.slug === slug; });
+    } catch (e) {}
+  }
   var el = document.getElementById('rd');
   if (!el) return;
-  if (!r) { el.innerHTML = '<p class="no-res">پیدا نشد</p>'; return; }
+  if (!r) {
+    /* اسلاگ قدیمی؟ ریدایرکت ثبت‌شده را امتحان کن */
+    try {
+      var resR = await fetch('/api/redirect?from=/recipes/' + encodeURIComponent(slug || ''));
+      if (resR.ok && resR.redirected) { location.replace(resR.url); return; }
+    } catch (e) {}
+    el.innerHTML = '<p class="no-res">رسپی پیدا نشد — <a href="recipes.html">همه رسپی‌ها</a></p>';
+    return;
+  }
   document.title = r.name_fa + ' | DailyFitBeat';
   if (window.DFB_setRecipeMeta) window.DFB_setRecipeMeta(r);
   var ings = Array.isArray(r.ingredients) ? r.ingredients : [];
@@ -338,11 +434,34 @@ async function initMarket() {
   if (!grid) return;
   var data = await (await fetch('/api/db?t=products')).json();
   if (!Array.isArray(data)) return;
-  grid.innerHTML = data.map(function (p) {
-    return '<div class="pcard"><div class="p-img"><img src="' + esc(p.image || 'img/prod-fallback.jpg') + '" alt="' + esc(p.title_fa) + '"><span class="p-rate">★ ' + Number(p.rating).toLocaleString('fa-IR') + '</span>' + (p.off_percent ? '<span class="p-badge" style="background:#d33">' + Number(p.off_percent).toLocaleString('fa-IR') + '٪ تخفیف</span>' : (p.badge ? '<span class="p-badge">' + esc(p.badge) + '</span>' : '')) + '</div><div class="p-body"><h4>' + esc(p.title_fa) + '</h4><p>' + esc(p.desc_fa || '') + '</p><div class="p-price">' + rial(p.price_rial) + (p.old_price_rial ? '<s>' + rial(p.old_price_rial) + '</s>' : '') + '</div><button class="btn p-cart" data-id="' + esc(p.id) + '" data-t="' + esc(p.title_fa) + '">خرید</button></div></div>';
-  }).join('');
+  var pid = new URLSearchParams(location.search).get('id');
+  if (pid) { renderProductPage(data, pid, grid); }
+  else {
+    grid.innerHTML = data.map(function (p) {
+      var pl = '/market/p/' + encodeURIComponent(p.id);
+      return '<div class="pcard"><a class="p-link" href="' + pl + '"><div class="p-img"><img src="' + esc(p.image || 'img/prod-fallback.jpg') + '" alt="' + esc(p.title_fa) + '"><span class="p-rate">★ ' + Number(p.rating).toLocaleString('fa-IR') + '</span>' + (p.off_percent ? '<span class="p-badge" style="background:#d33">' + Number(p.off_percent).toLocaleString('fa-IR') + '٪ تخفیف</span>' : (p.badge ? '<span class="p-badge">' + esc(p.badge) + '</span>' : '')) + '</div><h4>' + esc(p.title_fa) + '</h4></a><div class="p-body"><p>' + esc(p.desc_fa || '') + '</p><div class="p-price">' + rial(p.price_rial) + (p.old_price_rial ? '<s>' + rial(p.old_price_rial) + '</s>' : '') + '</div><button class="btn p-cart" data-id="' + esc(p.id) + '" data-t="' + esc(p.title_fa) + '">خرید</button></div></div>';
+    }).join('');
+  }
   var sel = document.getElementById('oProduct');
   if (sel) sel.innerHTML = data.map(function (p) { return '<option>' + esc(p.title_fa) + '</option>'; }).join('');
+}
+/* ---------- صفحه اختصاصی محصول + اسکیمای Product ---------- */
+function renderProductPage(data, pid, grid) {
+  var p = data.find(function (x) { return String(x.id) === String(pid); });
+  if (!p) { grid.innerHTML = '<p class="no-res">محصول پیدا نشد — <a href="market.html">همه محصولات</a></p>'; return; }
+  var base = window.DFB_SITE ? DFB_SITE.url : 'https://dailyfitbeat.ir';
+  if (window.DFB_setMeta) DFB_setMeta({ title: p.meta_title || p.title_fa, desc: p.meta_description || p.desc_fa || p.title_fa, path: '/market/p/' + p.id, image: p.image || undefined, type: 'article' });
+  grid.innerHTML = '<div class="pdp"><div class="pdp-img"><img src="' + esc(p.image || 'img/prod-fallback.jpg') + '" alt="' + esc(p.title_fa) + '"></div><div class="pdp-info"><nav class="crumbs"><a href="/">خانه</a> › <a href="market.html">فیت مارکت</a> › <span>' + esc(p.title_fa) + '</span></nav>' + (p.badge ? '<span class="p-badge">' + esc(p.badge) + '</span>' : '') + '<h1>' + esc(p.title_fa) + '</h1><p class="pdp-desc">' + esc(p.desc_fa || '') + '</p><div class="p-price">' + rial(p.price_rial) + (p.old_price_rial ? '<s>' + rial(p.old_price_rial) + '</s>' : '') + '</div><button class="btn p-cart" data-id="' + esc(p.id) + '" data-t="' + esc(p.title_fa) + '">افزودن به سبد خرید</button><p class="pdp-hint">بعد از تأیید پرداخت، فایل در «پنل کاربری ← محصولات من» فعال می‌شود.</p><a class="btn ghost" href="market.html">همه محصولات</a></div></div>';
+  var ld = [{ "@context": "https://schema.org", "@type": "Product", "name": p.title_fa, "description": p.desc_fa || p.title_fa, "image": base + (p.image || '/img/prod-fallback.jpg'), "brand": { "@type": "Brand", "name": "DailyFitBeat" }, "offers": { "@type": "Offer", "priceCurrency": "IRR", "price": Number(p.price_rial) || 0, "availability": "https://schema.org/InStock", "url": base + '/market/p/' + p.id } },
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "خانه", "item": base + "/" },
+      { "@type": "ListItem", "position": 2, "name": "فیت مارکت", "item": base + "/market.html" },
+      { "@type": "ListItem", "position": 3, "name": p.title_fa, "item": base + '/market/p/' + p.id }
+    ] }];
+  var s = document.createElement('script');
+  s.type = 'application/ld+json';
+  s.textContent = JSON.stringify(ld);
+  document.head.appendChild(s);
 }
 async function initPro() {
   var box = document.getElementById('planCards');

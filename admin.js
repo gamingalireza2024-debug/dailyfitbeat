@@ -103,6 +103,8 @@
         if (b.dataset.t === 'audit') safe('audit', loadAudit);
         if (b.dataset.t === 'diet') safe('diet', function () { pickUsers(); loadDietList(); });
         if (b.dataset.t === 'orders') safe('orders', function () { return loadOrders(1); });
+        if (b.dataset.t === 'seo') safe('seo', function () { loadRedirects(); loadFaqs(); });
+        if (b.dataset.t === 'media') safe('media', loadMedia);
       };
     });
     await refreshREC().catch(function (e) { console.error('recipes load error:', e); });
@@ -115,7 +117,25 @@
     ['aPrice', 'aOld', 'pPrice', 'pOld'].forEach(function (id) { bindMoney(document.getElementById(id)); });
     bindAll();
   }
-  async function refreshREC() { REC = await (await fetch('/api/db?t=all')).json(); }
+  async function refreshREC() {
+    var r = await fetch('/api/db?t=all_admin', { headers: { Authorization: 'Bearer ' + (await tok()) } });
+    if (!r.ok) { REC = await (await fetch('/api/db?t=all')).json(); return; }
+    REC = await r.json();
+  }
+
+  /* امتیاز SEO ساده هر رسپی (۰ تا ۱۰۰) */
+  function seoScore(r) {
+    var pts = 0;
+    if ((r.meta_title || r.name_fa || '').length >= 10) pts += 20;
+    if ((r.meta_description || r.desc_fa || '').length >= 60) pts += 25;
+    if (r.image) pts += 15;
+    if (Array.isArray(r.steps) && r.steps.length >= 4) pts += 15;
+    if (Array.isArray(r.tips) && r.tips.length) pts += 5;
+    if (r.kcal > 0 && r.protein > 0) pts += 10;
+    if (r.time_min > 0) pts += 5;
+    if (Array.isArray(r.tags) && r.tags.length) pts += 5;
+    return pts;
+  }
 
   async function loadDash() {
     var r = await api('admin_stats');
@@ -128,7 +148,31 @@
       '<div class="sc"><b>' + fmt(s.pending_orders) + '</b><span>در انتظار</span></div>' +
       '<div class="sc"><b>' + rialFa(s.revenue) + '</b><span>درآمد تأییدشده</span></div>' +
       '<div class="sc"><b>' + fmt(s.active_pro) + '</b><span>PRO فعال</span></div>' +
-      '<div class="sc"><b>' + fmt(s.expired_pro) + '</b><span>PRO منقضی</span></div>';
+      '<div class="sc"><b>' + fmt(s.expired_pro) + '</b><span>PRO منقضی</span></div>' +
+      '<div class="sc"><b>' + fmt(s.recipes) + '</b><span>رسپی‌ها</span></div>' +
+      '<div class="sc warn"><b>' + fmt(s.drafts) + '</b><span>پیش‌نویس</span></div>' +
+      '<div class="sc"><b>' + fmt(s.ai_month) + '</b><span>مصرف AI (ماه)</span></div>';
+    /* نمودار SVG سفارش‌های ۱۴ روز */
+    var ch = document.getElementById('chartOrders');
+    var od = s.orders_14d || [];
+    if (ch && od.length) {
+      var max = Math.max.apply(null, od.map(function (o) { return o.n; }).concat([1]));
+      var W = 560, H = 120, bw = W / od.length;
+      var bars = od.map(function (o, i) {
+        var h = Math.round((o.n / max) * (H - 24));
+        return '<rect x="' + (i * bw + bw * 0.18).toFixed(1) + '" y="' + (H - 18 - h) + '" width="' + (bw * 0.64).toFixed(1) + '" height="' + h + '" rx="3" fill="var(--accent)" opacity="0.85"><title>' + o.day + ': ' + o.n + '</title></rect>' +
+          (i % 3 === 0 ? '<text x="' + (i * bw + bw / 2) + '" y="' + (H - 4) + '" font-size="9" text-anchor="middle" fill="var(--muted)">' + o.day.slice(5) + '</text>' : '');
+      }).join('');
+      ch.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto" dir="ltr">' + bars + '</svg>';
+    }
+    /* پربازدیدترین‌ها */
+    var tv = document.getElementById('topViewed');
+    if (tv) {
+      tv.innerHTML = (s.top_viewed || []).map(function (v) {
+        var rec = REC.find(function (x) { return x.slug === v.slug; });
+        return '<tr><td><b>' + esc(rec ? rec.name_fa : v.slug) + '</b><br><small dir="ltr">' + esc(v.slug) + '</small></td><td>' + fmt(v.n) + '</td><td><a class="btn small" href="recipe.html?slug=' + esc(v.slug) + '" target="_blank">باز کن</a></td></tr>';
+      }).join('') || '<tr><td colspan="3">هنوز بازدیدی ثبت نشده</td></tr>';
+    }
     var a = await (await api('admin_audit')).json();
     document.getElementById('dashAudit').innerHTML = (Array.isArray(a) ? a.slice(0, 8) : []).map(function (x) {
       return '<tr><td>' + faDate(x.created_at) + '</td><td>' + esc(x.admin_email) + '</td><td>' + esc(x.action) + '</td><td>' + esc(x.target_type) + '#' + esc(x.target_id) + '</td></tr>';
@@ -207,7 +251,9 @@
 
   async function loadRecipes() {
     document.getElementById('recBody').innerHTML = REC.map(function (r) {
-      return '<tr><td><b>' + esc(r.name_fa) + '</b><br><small dir="ltr">' + esc(r.slug) + '</small></td><td>' + esc(r.category) + '</td><td>' + (esc(r.region) || '-') + '</td><td>' + fmt(r.kcal) + '</td><td><button class="btn small edR" data-s="' + esc(r.slug) + '">ویرایش</button></td><td><button class="del-btn dlR" data-s="' + esc(r.slug) + '">حذف</button></td></tr>';
+      var sc = seoScore(r);
+      var cls = sc >= 80 ? 'ok' : sc >= 50 ? 'mid' : 'low';
+      return '<tr><td><b>' + esc(r.name_fa) + '</b><br><small dir="ltr">' + esc(r.slug) + '</small></td><td>' + (r.status === 'draft' ? '<span class="st-badge draft">پیش‌نویس</span>' : '<span class="st-badge pub">منتشر</span>') + '</td><td><span class="score ' + cls + '">' + sc + '</span></td><td>' + esc(r.category) + '</td><td>' + fmt(r.kcal) + '</td><td><button class="btn small edR" data-s="' + esc(r.slug) + '">ویرایش</button></td><td><button class="del-btn dlR" data-s="' + esc(r.slug) + '">حذف</button></td></tr>';
     }).join('');
     document.querySelectorAll('.edR').forEach(function (b) {
       b.onclick = function () {
@@ -246,6 +292,10 @@
     g('rIngs').value = r ? (r.ingredients || []).map(function (i) { return i.fa + ':' + i.q; }).join('\n') : '';
     g('rSteps').value = r ? (r.steps || []).join('\n') : '';
     g('rTips').value = r ? (r.tips || []).join('\n') : '';
+    g('rMetaTitle').value = r ? (r.meta_title || '') : '';
+    g('rMetaDesc').value = r ? (r.meta_description || '') : '';
+    g('rStatus').value = r ? (r.status || 'published') : 'published';
+    g('rNoindex').checked = r ? !!r.noindex : false;
     document.getElementById('recForm').style.display = 'grid';
   }
   async function saveRecipe() {
@@ -263,7 +313,11 @@
       keys: g('rKeys').split(',').map(function (s) { return s.trim(); }).filter(Boolean),
       ingredients: g('rIngs').split('\n').map(function (l) { var p = l.split(':'); return { fa: (p[0] || '').trim(), q: (p[1] || '').trim() || 'به‌اندازه' }; }).filter(function (i) { return i.fa; }),
       steps: g('rSteps').split('\n').map(function (s) { return s.trim(); }).filter(Boolean),
-      tips: g('rTips').split('\n').map(function (s) { return s.trim(); }).filter(Boolean)
+      tips: g('rTips').split('\n').map(function (s) { return s.trim(); }).filter(Boolean),
+      meta_title: g('rMetaTitle').trim() || null,
+      meta_description: g('rMetaDesc').trim() || null,
+      status: g('rStatus') === 'draft' ? 'draft' : 'published',
+      noindex: document.getElementById('rNoindex').checked
     };
     var exists = REC.find(function (x) { return x.slug === slug; });
     var res = exists ? await sb.from('recipes').update(obj).eq('slug', slug) : await sb.from('recipes').insert(obj);
@@ -725,6 +779,64 @@
     });
   }
 
+  /* ---------- SEO: ریدایرکت‌ها ---------- */
+  var REDIRS = [];
+  async function loadRedirects() {
+    REDIRS = await (await api('redirect_list')).json();
+    document.getElementById('rdBody').innerHTML = (Array.isArray(REDIRS) ? REDIRS : []).map(function (x) {
+      return '<tr><td dir="ltr">' + esc(x.from_path) + '</td><td dir="ltr">' + esc(x.to_url) + '</td><td>' + x.code + '</td><td><input type="checkbox" class="rdOn" data-id="' + x.id + '" ' + (x.active ? 'checked' : '') + '></td><td><button class="del-btn rdDel" data-id="' + x.id + '">حذف</button></td></tr>';
+    }).join('') || '<tr><td colspan="5">ریدایرکتی ثبت نشده</td></tr>';
+    document.querySelectorAll('.rdDel').forEach(function (b) {
+      b.onclick = async function () { if (!confirm('حذف ریدایرکت؟')) return; await api('redirect_del', { method: 'POST', body: JSON.stringify({ id: Number(b.dataset.id) }) }); loadRedirects(); };
+    });
+    document.querySelectorAll('.rdOn').forEach(function (c) {
+      c.onchange = async function () {
+        var row = REDIRS.find(function (x) { return String(x.id) === c.dataset.id; });
+        if (!row) return;
+        await api('redirect_save', { method: 'POST', body: JSON.stringify({ id: row.id, from_path: row.from_path, to_url: row.to_url, code: row.code, active: c.checked }) });
+        loadRedirects();
+      };
+    });
+  }
+
+  /* ---------- SEO: FAQها ---------- */
+  var FAQS = [];
+  async function loadFaqs() {
+    FAQS = await (await api('faq_list')).json();
+    document.getElementById('fqBody').innerHTML = (Array.isArray(FAQS) ? FAQS : []).map(function (x) {
+      return '<tr><td>' + esc(x.page_key) + '</td><td><b>' + esc(x.question) + '</b></td><td>' + esc(x.answer.slice(0, 80)) + (x.answer.length > 80 ? '…' : '') + '</td><td>' + (x.sort || 0) + '</td><td><input type="checkbox" class="fqOn" data-id="' + x.id + '" ' + (x.active ? 'checked' : '') + '></td><td><button class="del-btn fqDel" data-id="' + x.id + '">حذف</button></td></tr>';
+    }).join('') || '<tr><td colspan="6">سوالی ثبت نشده — اولین سوال را اضافه کن</td></tr>';
+    document.querySelectorAll('.fqDel').forEach(function (b) {
+      b.onclick = async function () { if (!confirm('حذف سوال؟')) return; await api('faq_del', { method: 'POST', body: JSON.stringify({ id: Number(b.dataset.id) }) }); loadFaqs(); };
+    });
+    document.querySelectorAll('.fqOn').forEach(function (c) {
+      c.onchange = async function () {
+        var row = FAQS.find(function (x) { return String(x.id) === c.dataset.id; });
+        if (!row) return;
+        await api('faq_save', { method: 'POST', body: JSON.stringify({ id: row.id, page_key: row.page_key, question: row.question, answer: row.answer, sort: row.sort || 0, active: c.checked }) });
+        loadFaqs();
+      };
+    });
+  }
+
+  /* ---------- رسانه ---------- */
+  var MEDIA = [];
+  async function loadMedia() {
+    MEDIA = await (await api('media_list')).json();
+    renderMedia();
+  }
+  function renderMedia() {
+    var q = (gv('mlFilter') || '').toLowerCase();
+    var box = document.getElementById('mediaGrid');
+    if (!box) return;
+    box.innerHTML = MEDIA.filter(function (m) { return !q || m.path.toLowerCase().indexOf(q) !== -1; }).map(function (m) {
+      return '<div class="media-item"><img src="' + esc(m.path) + '" loading="lazy" alt="" onerror="this.classList.add(\'bad\')"><small dir="ltr">' + esc(m.path) + '</small><span>' + esc(m.owner) + '</span><button class="btn small" data-p="' + esc(m.path) + '">کپی مسیر</button></div>';
+    }).join('') || '<p class="no-res">تصویری پیدا نشد</p>';
+    box.querySelectorAll('button[data-p]').forEach(function (b) {
+      b.onclick = function () { try { navigator.clipboard.writeText(b.dataset.p); b.textContent = 'کپی شد ✓'; setTimeout(function () { b.textContent = 'کپی مسیر'; }, 1200); } catch (e) {} };
+    });
+  }
+
   function bindAll() {
     document.getElementById('csvBtn').onclick = exportCSV;
     document.getElementById('filterSt').onchange = function () { loadOrders(1); };
@@ -739,6 +851,25 @@
       loadPlans();
     };
     document.getElementById('uqBtn').onclick = function () { loadUsers(gv('uq'), 1); };
+    document.getElementById('rdAdd').onclick = async function () {
+      var f = gv('rdFrom').trim(), t = gv('rdTo').trim();
+      if (!f || !t) { alert('مسیر قدیم و مقصد لازم است'); return; }
+      var r = await api('redirect_save', { method: 'POST', body: JSON.stringify({ from_path: f, to_url: t, code: Number(gv('rdCode')) || 301, active: true }) });
+      if (r.ok) { sv('rdFrom', ''); sv('rdTo', ''); loadRedirects(); } else alert('خطا در ذخیره');
+    };
+    document.getElementById('fqAdd').onclick = async function () {
+      var q = gv('fqQ').trim(), a = gv('fqA').trim();
+      if (!q || !a) { alert('سوال و پاسخ لازم است'); return; }
+      var r = await api('faq_save', { method: 'POST', body: JSON.stringify({ page_key: gv('fqPage'), question: q, answer: a, sort: toNum(gv('fqSort')) || 0, active: true }) });
+      if (r.ok) { sv('fqQ', ''); sv('fqA', ''); loadFaqs(); } else alert('خطا در ذخیره');
+    };
+    document.getElementById('mlReload').onclick = loadMedia;
+    var mf = document.getElementById('mlFilter');
+    if (mf) mf.oninput = renderMedia;
+    document.getElementById('rPrev').onclick = function () {
+      var sl = gv('rSlug').trim();
+      if (sl) window.open('recipe.html?slug=' + encodeURIComponent(sl), '_blank');
+    };
     document.getElementById('cAdd').onclick = async function () {
       var r = await api('admin_coupons', {
         method: 'POST',

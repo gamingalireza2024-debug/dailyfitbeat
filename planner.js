@@ -100,8 +100,11 @@
   document.getElementById('plCalc').onclick = calcCalories;
 
   function render(plan) {
+    var target = toNum(document.getElementById('plKcal').value) || null;
+    var avg = target && plan.days && plan.days.length ? Math.round(plan.days.reduce(function (s, d) { return s + (Number(d.kcal) || 0); }, 0) / plan.days.length) : null;
+    var prog = (target && avg) ? '<div class="goal-progress"><div class="gp-head"><b>پیشرفت به سمت هدف</b><small>' + faN(avg) + ' از ' + faN(target) + ' کالری (میانگین روزانه)</small></div><div class="gp-bar"><i style="width:' + Math.min(100, Math.round(avg / target * 100)) + '%"></i></div><small>' + (avg <= target ? 'در محدوده هدف هستی — عالیه!' : 'کمی بالاتر از هدف؛ وعده سبک‌تر انتخاب کن') + '</small></div>' : '';
     var days = plan.days || [];
-    out.innerHTML = days.map(function (d) {
+    out.innerHTML = prog + days.map(function (d) {
       return '<div class="day-card"><div class="day-head"><b>روز ' + faN(d.day) + '</b><small>' + faN(d.kcal) + ' کالری' + (d.protein != null ? ' | ' + faN(d.protein) + 'g پروتئین' : '') + '</small></div>' +
         d.meals.map(function (m) {
           return '<div class="meal-line"><b>' + esc(m.type_fa) + '</b><a href="recipe.html?slug=' + esc(m.slug) + '">' + esc(m.title) + '</a><small>' + faN(m.kcal) + ' کالری' + (m.note ? ' — ' + esc(m.note) : '') + '</small></div>';
@@ -144,6 +147,8 @@
 
     last = { plan: plan, shopList: shopList };
     pdfBtn.disabled = false;
+    var pb2 = document.getElementById('plPrev');
+    if (pb2) pb2.disabled = false;
     out.scrollIntoView({ behavior: 'smooth' });
   }
 
@@ -184,9 +189,9 @@
     }
     btn.disabled = false; btn.textContent = 'ساخت برنامه';
   };
-  pdfBtn.onclick = function () { if (last) genPdf(last); };
+  pdfBtn.onclick = function () { if (last) genPdf(last, false); };
 
-  async function genPdf(data) {
+  async function genPdf(data, preview) {
     var plan = data.plan; var days = plan.days || [];
     if (!days.length) return;
     await new Promise(function (r) { var i = new Image(); i.onload = r; i.onerror = r; i.src = 'img/logo.png'; });
@@ -232,6 +237,14 @@
       pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', (210 - w) / 2, y, w, hh);
       y += hh + 6;
     }
-    pdf.save('DailyFitBeat-SmartDiet.pdf');
+    if (preview) window.open(pdf.output('bloburl'), '_blank');
+    else pdf.save('DailyFitBeat-SmartDiet.pdf');
   }
+  /* پیش‌نمایش PDF: خروجی در تب جدید بدون دانلود */
+  var prevBtn = document.getElementById('plPrev');
+  if (prevBtn) prevBtn.onclick = function () {
+    if (!last) { alert('اول برنامه را بساز'); return; }
+    prevBtn.disabled = true;
+    genPdf(last, true).catch(function (e) { alert('پیش‌نمایش ساخته نشد: ' + (e && e.message)); }).finally(function () { prevBtn.disabled = false; });
+  };
 })();

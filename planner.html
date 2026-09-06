@@ -14,9 +14,8 @@
 <meta property="og:description" content="برنامه غذایی شخصی با ۵ وعده در روز، لیست خرید هفتگی و PDF.">
 <meta property="og:image" content="https://dailyfitbeat.ir/img/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/vazirmatn.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="design.css">
 <style>
@@ -110,16 +109,34 @@
     <div class="pl-actions">
       <button class="btn" id="plGo">ساخت برنامه</button>
       <button class="btn ghost" id="plPdf" disabled>دانلود PDF برنامه</button>
+      <button class="btn ghost" id="plPrev" disabled>پیش‌نمایش PDF</button>
     </div>
   </div>
 
   <div id="plOut"></div>
   <div id="plMacro"></div>
   <div id="plShopWrap"></div>
+
+  <div class="seo-content">
+    <h2>استودیو تغذیه دیلی‌بیت چطور کار می‌کند؟</h2>
+    <p>استودیو تغذیه دیلی‌بیت یک <strong>محاسبه‌گر کالری و برنامه‌ساز غذایی فارسی</strong> است که روی مرورگر موبایل و کامپیوتر تو کار می‌کند. کافیست قد، وزن، سن، جنسیت و سطح فعالیتت را وارد کنی تا با فرمول علمی Mifflin-St Jeor، نرخ سوخت‌وساز پایه (BMR) و کالری روزانه‌ات (TDEE) محاسبه شود. بر اساس هدف تو — کاهش وزن، پروتئین بالا یا حفظ وزن — همین عدد به هدف کالری روزانه تبدیل می‌شود.</p>
+    <p>بعد از محاسبه، برنامه‌ساز از میان <a href="recipes.html">رسپی‌های واقعی دیلی‌بیت</a> برایت برنامه چندروزه می‌چیند؛ برنامه‌ای که هر وعده‌اش کالری و پروتئین دقیق دارد. اگر مواد غذایی در یخچالت را انتخاب کنی، برنامه فقط از همان مواد می‌چیند تا دورریز نداشته باشی و لیست خرید هوشمند هم با آن ساخته می‌شود. نتیجه را می‌توانی به‌صورت <strong>PDF</strong> ببینی، چاپ کنی یا در پنل کاربری ذخیره کنی.</p>
+    <p>اگر نمی‌دانی از کجا شروع کنی، صفحه <a href="weight-loss.html">برنامه غذایی کاهش وزن</a> و <a href="weekly-plan.html">برنامه غذایی هفتگی</a> راهنمای گام‌به‌گام دارند؛ و برای سوال‌های سریع، <a href="ai-assistant.html">دستیار تغذیه هوش مصنوعی</a> همیشه پاسخگوست. سوال پرتکرار دیگری داری؟ در بخش <a href="about.html">درباره ما</a> راه‌های ارتباطی را ببین.</p>
+    <div id="plFaq"></div>
+  </div>
 </div></section>
 
 <div id="pdfDoc" style="position:fixed;inset-inline-start:-2000px;top:0;width:794px;background:#fff"></div>
 <footer id="ftr"></footer>
+<script>
+/* FAQهای پنل ادمین برای صفحه planner */
+fetch('/api/db?t=faqs&page=planner').then(function(r){return r.json();}).then(function(f){
+  if (Array.isArray(f) && f.length) {
+    var box = document.getElementById('plFaq');
+    box.innerHTML = '<h2 class="sec-title">سوال‌های پرتکرار</h2>' + f.map(function(q){ return '<details class="faq"><summary>'+q.question+'</summary><p>'+q.answer+'</p></details>'; }).join('');
+  }
+}).catch(function(){});
+</script>
 <script src="site.js"></script>
 <script src="app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>

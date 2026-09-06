@@ -348,3 +348,91 @@ body[data-page="home"] #hdr{position:relative;top:auto}
 #hdr{z-index:60}
 @media(max-width:768px){ ... }
 @media(max-width:600px){ ... }
+
+/* =========================================================
+   Phase 2/3 — SEO Pages, Landing, Admin Dash, Media, FAQ
+   ========================================================= */
+
+/* ---------- لندینگ و CTA ---------- */
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.hero-cta.center{justify-content:center}
+.page-head .hero-cta .btn{background:var(--accent);color:#fff;border:none;padding:13px 26px;border-radius:14px;font-weight:700}
+.page-head .hero-cta .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.seo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:26px 0}
+.seo-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.seo-card h3{margin:0 0 10px;font-size:16px;color:var(--ink)}
+.seo-card p{margin:0;color:var(--ink-soft);font-size:14px;line-height:1.9}
+.seo-card p a{color:var(--accent)}
+.seo-steps{margin:20px 0}
+.seo-content{margin:34px 0 10px;padding:24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.seo-content h2{margin:0 0 14px;font-size:20px}
+.seo-content p{color:var(--ink-soft);line-height:2;font-size:14.5px;margin:0 0 12px}
+.seo-content a{color:var(--accent);font-weight:600}
+
+/* ---------- FAQ ---------- */
+.faq-box{display:flex;flex-direction:column;gap:10px;margin:18px 0}
+details.faq{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+details.faq summary{cursor:pointer;font-weight:700;color:var(--ink);font-size:15px}
+details.faq[open] summary{color:var(--accent);margin-bottom:8px}
+details.faq p{margin:0;color:var(--ink-soft);line-height:1.9;font-size:14px}
+
+/* ---------- مقایسه Free vs PRO ---------- */
+.compare-tbl-wrap{margin:30px 0}
+table.compare-tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+table.compare-tbl th,table.compare-tbl td{padding:12px 14px;text-align:center;font-size:14px;border-bottom:1px solid var(--line)}
+table.compare-tbl th{background:var(--accent-soft);color:var(--ink);font-weight:800}
+table.compare-tbl td:first-child{text-align:right;color:var(--ink-soft)}
+table.compare-tbl td:nth-child(3){color:var(--accent);font-weight:800}
+@media(max-width:600px){.compare-tbl-wrap{overflow-x:auto}}
+
+/* ---------- نوار پیشرفت هدف در Planner ---------- */
+.goal-progress{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.goal-progress .gp-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.goal-progress .gp-head small{color:var(--muted)}
+.goal-progress .gp-bar{height:12px;background:var(--accent-soft);border-radius:99px;overflow:hidden}
+.goal-progress .gp-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#fb923c);border-radius:99px;transition:width .6s ease}
+.goal-progress > small{display:block;margin-top:8px;color:var(--ink-soft)}
+
+/* ---------- صفحه محصول ---------- */
+.pdp{display:grid;grid-template-columns:minmax(260px,420px) 1fr;gap:28px;align-items:start}
+.pdp-img img{width:100%;border-radius:var(--r);box-shadow:var(--shadow)}
+.pdp-info h1{margin:10px 0 8px;font-size:26px}
+.pdp-info .p-badge{display:inline-block;margin-inline-start:0}
+.pdp-info .p-price{font-size:20px;font-weight:900;color:var(--accent);margin:12px 0}
+.pdp-info .p-price s{color:var(--muted);font-weight:400;margin-inline-start:8px}
+.pdp-desc{color:var(--ink-soft);line-height:2}
+.pdp-hint{font-size:12.5px;color:var(--muted);margin:10px 0 16px}
+.pdp-info .crumbs{margin-bottom:10px}
+@media(max-width:720px){.pdp{grid-template-columns:1fr}}
+.pcard .p-link{text-decoration:none;color:inherit;display:block}
+.pcard .p-link h4{margin:10px 0 4px}
+.pcard .p-body{padding:0 12px 14px}
+
+/* ---------- ادمین: چارت، بج‌ها، امتیاز، رسانه ---------- */
+.chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:22px}
+.sc.warn b{color:#d97706}
+.st-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:700}
+.st-badge.pub{background:#e7f6ec;color:#15803d}
+.st-badge.draft{background:#fef3c7;color:#b45309}
+.score{display:inline-block;min-width:38px;text-align:center;padding:3px 8px;border-radius:8px;font-weight:800;font-size:12.5px}
+.score.ok{background:#e7f6ec;color:#15803d}
+.score.mid{background:#fef3c7;color:#b45309}
+.score.low{background:#fee2e2;color:#b91c1c}
+.inline-check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft)}
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:14px}
+.media-item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.media-item img{width:100%;height:110px;object-fit:cover;border-radius:10px;background:var(--bg)}
+.media-item img.bad{display:flex;align-items:center;justify-content:center;min-height:60px;content:'نایاب'}
+.media-item small{font-size:10.5px;color:var(--muted);word-break:break-all}
+.media-item span{font-size:11.5px;color:var(--ink-soft)}
+.media-item .btn{font-size:11.5px;padding:6px 8px}
+.admin-tbl{display:block;overflow-x:auto}
+.admin-tbl thead,.admin-tbl tbody{display:table;width:100%}
+@media(max-width:768px){.admin-layout{grid-template-columns:1fr}.aside{display:flex;flex-wrap:wrap;gap:6px}.aside button{width:auto}}
+
+/* ---------- Skeleton & Empty State ---------- */
+.skeleton{position:relative;overflow:hidden;background:var(--line);border-radius:12px;min-height:80px}
+.skeleton::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);animation:dfb-sh 1.3s infinite}
+@keyframes dfb-sh{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.no-res{color:var(--muted);text-align:center;padding:26px 10px;font-size:14px}
+.no-res a{color:var(--accent)}

@@ -95,7 +95,19 @@ export default async function handler(req, res) {
 
   if (t === "ingredients") { res.status(200).json(await sbGet("/rest/v1/ingredients?select=key,fa,en&key=in.(chicken,beef,egg,tomato,rice,potato,onion,garlic,mushroom,spinach,avocado,bread,greek-yogurt,salmon,chickpea,lentil,fish,shrimp,eggplant,kashk,walnut,pomegranate-molasses)")); return; }
   if (t === "popular") { res.status(200).json(await sbGet("/rest/v1/recipes?select=*&limit=4")); return; }
-  if (t === "all") { res.status(200).json(await sbGet("/rest/v1/recipes?select=*&limit=300")); return; }
+  if (t === "all") { res.status(200).json(await sbGet("/rest/v1/recipes?select=*&status=eq.published&limit=300")); return; }
+  if (t === "all_admin") {
+    const au = await authUser(req); if (!au) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(au))) { res.status(403).json({ error: "forbidden" }); return; }
+    res.status(200).json(await sbGet("/rest/v1/recipes?select=*&order=slug.asc&limit=500")); return;
+  }
+  if (t === "faqs") { res.status(200).json(await sbGet("/rest/v1/faqs?active=eq.true&page_key=eq." + encodeURIComponent(String(req.query.page || "index").slice(0, 40)) + "&select=question,answer&order=sort.asc")); return; }
+  if (t === "track_view") {
+    const slug = String(req.query.slug || "").slice(0, 120);
+    if (!/^[a-z0-9-]{1,120}$/.test(slug)) { res.status(200).json({ ok: false }); return; }
+    try { await fetch(SB_URL + "/rest/v1/rpc/increment_view", { method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ p_slug: slug }) }); } catch (e) {}
+    res.status(200).json({ ok: true }); return;
+  }
   if (t === "match") { const have = String(req.query.a || "").split(",").filter(Boolean); res.status(200).json(await (await fetch(SB_URL + "/rest/v1/rpc/match_recipes", { method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ have }) })).json()); return; }
   if (t === "products") { res.status(200).json(await sbGet("/rest/v1/products?select=*&active=eq.true&order=id.asc")); return; }
   if (t === "plans") { res.status(200).json(await sbGet("/rest/v1/plans?select=*&order=id.asc")); return; }
@@ -537,27 +549,114 @@ export default async function handler(req, res) {
   if (t === "admin_stats") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
-    const [orders, pays, profs, ents] = await Promise.all([
-      sbGet("/rest/v1/orders?select=id,status,total"),
+    const d14 = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+    const mFirst = new Date(); mFirst.setDate(1); mFirst.setHours(0, 0, 0, 0);
+    const [orders, pays, profs, ents, recs, ai, views] = await Promise.all([
+      sbGet("/rest/v1/orders?select=id,status,total,created_at"),
       sbGet("/rest/v1/payments?select=id,status,amount"),
       sbGet("/rest/v1/profiles?select=id"),
-      sbGet("/rest/v1/entitlements?select=id,entitlement_type,status,expires_at")
+      sbGet("/rest/v1/entitlements?select=id,entitlement_type,status,expires_at"),
+      sbGet("/rest/v1/recipes?select=slug,status,noindex"),
+      sbGet("/rest/v1/ai_usage?select=request_count,last_request_at,period_start&period_start=gte." + mFirst.toISOString().slice(0, 10)),
+      sbGet("/rest/v1/page_views?select=slug,count&day=gte." + d14)
     ]);
     const O = Array.isArray(orders) ? orders : [], P = Array.isArray(pays) ? pays : [], U = Array.isArray(profs) ? profs : [], E = Array.isArray(ents) ? ents : [];
+    const R = Array.isArray(recs) ? recs : [], A = Array.isArray(ai) ? ai : [], V = Array.isArray(views) ? views : [];
     const revenue = P.filter(x => x.status === "approved").reduce((s, x) => s + (Number(x.amount) || 0), 0);
+    /* نمودار ۱۴ روز سفارش */
+    const byDay = {};
+    for (let i = 13; i >= 0; i--) { const k = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10); byDay[k] = 0; }
+    O.forEach(o => { const k = String(o.created_at || "").slice(0, 10); if (k in byDay) byDay[k]++; });
+    const orders_14d = Object.keys(byDay).map(k => ({ day: k, n: byDay[k] }));
+    /* پربازدیدترین رسپی‌ها */
+    const viewSum = {};
+    V.forEach(v => { viewSum[v.slug] = (viewSum[v.slug] || 0) + (Number(v.count) || 0); });
+    const top_viewed = Object.keys(viewSum).map(s => ({ slug: s, n: viewSum[s] })).sort((a, b) => b.n - a.n).slice(0, 8);
     res.status(200).json({
       users: U.length, orders: O.length,
       paid_orders: O.filter(x => ["paid", "delivered", "sent"].includes(x.status)).length,
       pending_orders: O.filter(x => ["pending", "payment_submitted", "under_review"].includes(x.status)).length,
       revenue,
       active_pro: E.filter(x => x.entitlement_type === "PRO" && x.status === "ACTIVE" && (!x.expires_at || new Date(x.expires_at) > new Date())).length,
-      expired_pro: E.filter(x => x.entitlement_type === "PRO" && x.expires_at && new Date(x.expires_at) < new Date()).length
+      expired_pro: E.filter(x => x.entitlement_type === "PRO" && x.expires_at && new Date(x.expires_at) < new Date()).length,
+      recipes: R.length,
+      drafts: R.filter(x => x.status !== "published").length,
+      ai_month: A.reduce((s, x) => s + (Number(x.request_count) || 0), 0),
+      orders_14d, top_viewed
     }); return;
   }
   if (t === "admin_audit") {
     const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
     res.status(200).json(await sbGet("/rest/v1/audit_logs?select=*&order=created_at.desc&limit=100")); return;
+  }
+
+  /* ---------- مدیریت FAQ ---------- */
+  if (t === "faq_list") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    res.status(200).json(await sbGet("/rest/v1/faqs?select=*&order=page_key.asc,sort.asc&limit=500")); return;
+  }
+  if (t === "faq_save" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const b = req.body || {};
+    const row = {
+      page_key: clean(b.page_key, 40) || "index",
+      question: clean(b.question, 300),
+      answer: clean(b.answer, 2000),
+      sort: Number(b.sort) || 0,
+      active: b.active !== false
+    };
+    if (!row.question || !row.answer) { res.status(400).json({ error: "question/answer required" }); return; }
+    if (b.id) await sbWrite("/rest/v1/faqs?id=eq." + b.id, "PATCH", row);
+    else await sbWrite("/rest/v1/faqs", "POST", row);
+    res.status(200).json({ ok: true }); return;
+  }
+  if (t === "faq_del" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    await sbWrite("/rest/v1/faqs?id=eq." + (req.body || {}).id, "DELETE", {});
+    res.status(200).json({ ok: true }); return;
+  }
+
+  /* ---------- مدیریت ریدایرکت ---------- */
+  if (t === "redirect_list") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    res.status(200).json(await sbGet("/rest/v1/redirects?select=*&order=created_at.desc&limit=500")); return;
+  }
+  if (t === "redirect_save" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const b = req.body || {};
+    const fp = clean(b.from_path, 300);
+    const tu = clean(b.to_url, 500);
+    if (!fp || !tu || !/^\/[^ ]*$/.test(fp)) { res.status(400).json({ error: "from_path باید با / شروع شود و to_url لازم است" }); return; }
+    const row = { from_path: fp, to_url: tu, code: Number(b.code) === 302 ? 302 : 301, active: b.active !== false };
+    if (b.id) await sbWrite("/rest/v1/redirects?id=eq." + b.id, "PATCH", row);
+    else await sbWrite("/rest/v1/redirects", "POST", row);
+    res.status(200).json({ ok: true }); return;
+  }
+  if (t === "redirect_del" && req.method === "POST") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    await sbWrite("/rest/v1/redirects?id=eq." + (req.body || {}).id, "DELETE", {});
+    res.status(200).json({ ok: true }); return;
+  }
+
+  /* ---------- Media Library: تصاویر استفاده‌شده در دیتابیس ---------- */
+  if (t === "media_list") {
+    const user = await authUser(req); if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
+    if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+    const [ri, pi] = await Promise.all([
+      sbGet("/rest/v1/recipes?select=slug,image,status&limit=500"),
+      sbGet("/rest/v1/products?select=id,title_fa,image&limit=200")
+    ]);
+    const items = [];
+    (Array.isArray(ri) ? ri : []).forEach(r => { if (r.image) items.push({ path: r.image, owner: "رسپی: " + r.slug, status: r.status }); });
+    (Array.isArray(pi) ? pi : []).forEach(p => { if (p.image) items.push({ path: p.image, owner: "محصول: " + p.title_fa, status: null }); });
+    res.status(200).json(items); return;
   }
 
   res.status(404).json({ error: "not found" });

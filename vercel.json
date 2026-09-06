@@ -3,13 +3,21 @@
     { "source": "/mealplan.html", "destination": "/planner.html", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/recipes/category/:cat", "destination": "/recipes.html?cat=:cat" },
+    { "source": "/recipes/goal/:goal", "destination": "/recipes.html?goal=:goal" },
+    { "source": "/recipes/meal/:meal", "destination": "/recipes.html?meal=:meal" },
+    { "source": "/recipes/cuisine/:c", "destination": "/recipes.html?cuisine=:c" },
+    { "source": "/market/p/:id", "destination": "/market.html?id=:id" },
     { "source": "/recipes/:slug", "destination": "/recipe.html?slug=:slug" },
     { "source": "/recipes", "destination": "/recipes.html" },
     { "source": "/planner", "destination": "/planner.html" },
     { "source": "/market", "destination": "/market.html" },
     { "source": "/pro", "destination": "/pro.html" },
     { "source": "/ai", "destination": "/ai.html" },
-    { "source": "/about", "destination": "/about.html" }
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/weight-loss", "destination": "/weight-loss.html" },
+    { "source": "/weekly-plan", "destination": "/weekly-plan.html" },
+    { "source": "/ai-assistant", "destination": "/ai-assistant.html" }
   ],
   "headers": [
     {

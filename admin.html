@@ -6,7 +6,8 @@
 <title>پنل ادمین | DailyFitBeat</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="img/favicon.png">
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/vazirmatn.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="design.css">
 <style>
@@ -75,11 +76,17 @@
   <button data-t="users">کاربران</button>
   <button data-t="coupons">کوپن‌ها</button>
   <button data-t="diet">برنامه‌های غذایی</button>
+  <button data-t="seo">SEO و FAQ</button>
+  <button data-t="media">رسانه</button>
   <button data-t="audit">گزارش رویدادها</button>
 </aside>
 <main style="min-width:0">
   <div class="apane" id="pane-dash" style="display:block">
     <div class="stat-cards" id="statsBox"></div>
+    <h4>سفارش‌های ۱۴ روز اخیر</h4>
+    <div class="chart-wrap" id="chartOrders"></div>
+    <h4>پربازدیدترین رسپی‌ها (۳۰ روز)</h4>
+    <table class="admin-tbl"><thead><tr><th>رسپی</th><th>بازدید</th><th>مشاهده</th></tr></thead><tbody id="topViewed"></tbody></table>
     <h4>آخرین رویدادها</h4>
     <table class="admin-tbl"><thead><tr><th>تاریخ</th><th>ادمین</th><th>عملیات</th><th>هدف</th></tr></thead><tbody id="dashAudit"></tbody></table>
   </div>
@@ -110,9 +117,42 @@
       <textarea id="rIngs" placeholder="مواد (نام:مقدار هر خط)"></textarea>
       <textarea id="rSteps" placeholder="مراحل (هر خط)"></textarea>
       <textarea id="rTips" placeholder="نکات (هر خط)"></textarea>
+      <input id="rMetaTitle" class="full" placeholder="Meta Title (خالی = نام رسپی)">
+      <input id="rMetaDesc" class="full" placeholder="Meta Description (۱۵۰ کاراکتر، خالی = توضیح رسپی)">
+      <select id="rStatus"><option value="published">منتشر شده</option><option value="draft">پیش‌نویس</option></select>
+      <label class="inline-check"><input type="checkbox" id="rNoindex"> noindex (از گوگل مخفی)</label>
       <button class="btn full" id="rSave">ذخیره رسپی</button>
+      <button class="btn ghost full" id="rPrev">پیش‌نمایش رسپی</button>
     </div>
-    <table class="admin-tbl"><thead><tr><th>رسپی</th><th>دسته</th><th>کشور</th><th>کالری</th><th>ویرایش</th><th>حذف</th></tr></thead><tbody id="recBody"></tbody></table>
+    <table class="admin-tbl"><thead><tr><th>رسپی</th><th>وضعیت</th><th>SEO</th><th>دسته</th><th>کالری</th><th>ویرایش</th><th>حذف</th></tr></thead><tbody id="recBody"></tbody></table>
+  </div>
+
+  <div class="apane" id="pane-seo">
+    <h3>مدیریت ریدایرکت (Redirect Manager)</h3>
+    <div class="add-form">
+      <input id="rdFrom" placeholder="مسیر قدیمی: /recipes/old-slug">
+      <input id="rdTo" placeholder="مقصد: /recipes/new-slug">
+      <select id="rdCode"><option value="301">301 دائمی</option><option value="302">302 موقت</option></select>
+      <button class="btn" id="rdAdd">افزودن ریدایرکت</button>
+    </div>
+    <table class="admin-tbl"><thead><tr><th>از</th><th>به</th><th>کد</th><th>فعال</th><th>حذف</th></tr></thead><tbody id="rdBody"></tbody></table>
+    <h3>مدیریت FAQ (سوال‌های پرتکرار)</h3>
+    <div class="add-form">
+      <select id="fqPage"><option value="index">صفحه اصلی</option><option value="weight-loss">لندینگ کاهش وزن</option><option value="weekly-plan">لندینگ برنامه هفتگی</option><option value="ai-assistant">لندینگ دستیار AI</option><option value="pro">صفحه PRO</option><option value="planner">استودیو تغذیه</option></select>
+      <input id="fqQ" class="full" placeholder="سوال">
+      <input id="fqA" class="full" placeholder="پاسخ">
+      <input id="fqSort" type="number" placeholder="ترتیب" style="max-width:110px">
+      <button class="btn" id="fqAdd">افزودن سوال</button>
+    </div>
+    <table class="admin-tbl"><thead><tr><th>صفحه</th><th>سوال</th><th>پاسخ</th><th>ترتیب</th><th>فعال</th><th>حذف</th></tr></thead><tbody id="fqBody"></tbody></table>
+    <p class="hint">FAQهای فعال به‌صورت خودکار با اسکیمای FAQPage در صفحات مربوطه نمایش داده می‌شوند.</p>
+  </div>
+
+  <div class="apane" id="pane-media">
+    <h3>رسانه‌های استفاده‌شده (تصاویر رسپی‌ها و محصولات)</h3>
+    <p class="hint">برای آپلود فایل جدید، از دکمه آپلود در بخش محصولات استفاده کن یا فایل را به پوشه img/ در ریپو اضافه کن.</p>
+    <div class="add-form"><button class="btn" id="mlReload">بارگذاری مجدد</button><input id="mlFilter" placeholder="جستجو در مسیرها..."></div>
+    <div class="media-grid" id="mediaGrid"></div>
   </div>
 
   <div class="apane" id="pane-prods">

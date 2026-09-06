@@ -45,7 +45,10 @@
     market:  { path: "/market.html",  title: "فیت مارکت",   desc: "فروشگاه محصولات دیجیتال DailyFitBeat — برنامه‌ها و پک‌های رسپی" },
     pro:     { path: "/pro.html",     title: "PRO",         desc: "اشتراک PRO دیلی‌بیت: برنامه شخصی نامحدود، دستیار AI و لیست خرید هوشمند" },
     user:    { path: "/user.html",    title: "پنل کاربری",  desc: "", noindex: true },
-    admin:   { path: "/admin.html",   title: "پنل مدیریت", desc: "", noindex: true }
+    admin:   { path: "/admin.html",   title: "پنل مدیریت", desc: "", noindex: true },
+    "weight-loss": { path: "/weight-loss.html", title: "برنامه غذایی کاهش وزن", desc: "برنامه غذایی کاهش وزن علمی و شخصی‌سازی‌شده با کالری روزانه، رسپی‌های کم‌کالری و دستیار هوش مصنوعی" },
+    "weekly-plan": { path: "/weekly-plan.html", title: "برنامه غذایی هفتگی", desc: "برنامه غذایی هفتگی خودکار بر اساس یخچال و هدف تو — با لیست خرید هوشمند و کالری دقیق هر وعده" },
+    "ai-assistant": { path: "/ai-assistant.html", title: "دستیار تغذیه هوش مصنوعی", desc: "دستیار تغذیه هوش مصنوعی فارسی: محاسبه کالری، پیشنهاد رسپی از مواد یخچال و برنامه اختصاصی" }
   };
 
   function upsertName(n, c) {
@@ -95,6 +98,9 @@
   window.DFB_setRecipeMeta = function (r) {
     setMeta({ title: r.name_fa, desc: r.desc_fa || (r.name_fa + " — رسپی سالم با ارزش غذایی دقیق"), path: "/recipes/" + r.slug, image: r.image || SITE.defaultImage, type: "article" });
   };
+  /* دسترسی عمومی برای صفحات داینامیک (فیلترها، محصول، لندینگ‌ها) */
+  window.DFB_setMeta = function (m) { setMeta(m || {}); };
+  window.DFB_SITE = SITE;
 
   var page = document.body.getAttribute('data-page') || 'home';
   setMeta(PAGES[page] || PAGES.home);
