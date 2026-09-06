@@ -4,12 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       limit:
-        description: "حداکثر تعداد رسپی در هر اجرا"
+        description: "حداکثر تعداد رسپی در هر اجرا (۵ تا ۱۰۰)"
         default: "20"
+
+concurrency:
+  group: enrich-recipes
+  cancel-in-progress: false
 
 jobs:
   enrich:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
