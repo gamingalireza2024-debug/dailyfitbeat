@@ -116,32 +116,47 @@ body[data-page="home"] .hm-quick .qi{width:30px;height:30px;border-radius:9px;ba
 body[data-page="home"] .hm-quick .qi svg{width:15px;height:15px;stroke:var(--accent)}
 body[data-page="home"] .hm-quick b{display:block;font-size:11.5px;font-weight:800}
 body[data-page="home"] .hm-quick small{display:block;color:var(--muted);font-size:9.5px;margin-top:1px}
-body[data-page="home"] .hm-car{margin:44px 0 0}
-body[data-page="home"] .hm-car-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-body[data-page="home"] .hm-insta{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 18px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);min-height:44px}
-body[data-page="home"] .hm-insta svg{width:20px;height:20px;stroke:var(--accent)}
-body[data-page="home"] .hm-insta b{font-size:12.5px;display:block}
-body[data-page="home"] .hm-insta small{color:var(--muted);font-size:11px;display:block}
-body[data-page="home"] .hm-car-nav{margin-right:auto;display:flex;gap:10px}
-body[data-page="home"] .hm-car-nav button{width:42px;height:42px;border-radius:50%;border:1px solid var(--glass-br);background:var(--glass);backdrop-filter:blur(10px);cursor:pointer;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center}
-body[data-page="home"] .hm-car-nav button:hover{background:#fff}
-body[data-page="home"] .hm-car-nav svg{width:16px;height:16px;stroke:var(--ink)}
-body[data-page="home"] .hm-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 0 12px;scrollbar-width:none}
-body[data-page="home"] .hm-track::-webkit-scrollbar{display:none}
-body[data-page="home"] .hm-post{flex:0 0 calc((100% - 48px)/4);scroll-snap-align:start;border-radius:20px;overflow:hidden;position:relative;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);text-decoration:none;color:var(--ink)}
-body[data-page="home"] .hm-post img.ph{width:100%;height:250px;object-fit:cover;display:block;background:#f3f4f6}
-body[data-page="home"] .hm-post .badge{position:absolute;top:52px;inset-inline-start:10px;background:var(--accent);color:#fff;border-radius:999px;padding:4px 12px;font-size:10.5px;font-weight:700;z-index:2}
-body[data-page="home"] .ig-head{display:flex;gap:8px;align-items:center;padding:10px 12px}
-body[data-page="home"] .ig-ava{width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid var(--accent);flex:0 0 auto;background:#fff}
-body[data-page="home"] .ig-ava img{width:100%;height:100%;object-fit:cover}
-body[data-page="home"] .ig-head b{font-size:11.5px;font-weight:800}
-body[data-page="home"] .ig-act{display:flex;gap:12px;align-items:center;padding:9px 12px 0}
-body[data-page="home"] .ig-act svg{width:17px;height:17px;stroke:var(--ink);fill:none;stroke-width:2}
-body[data-page="home"] .ig-act .save{margin-right:auto}
-body[data-page="home"] .hm-post .cap{padding:6px 12px 12px;font-size:12px;font-weight:700;line-height:1.9}
-body[data-page="home"] .hm-dots{display:flex;gap:6px;justify-content:center;margin:8px 0 0}
-body[data-page="home"] .hm-dots i{width:7px;height:7px;border-radius:50%;background:#d1d5db}
-body[data-page="home"] .hm-dots i.on{width:18px;border-radius:99px;background:var(--accent)}
+/* ───── اینستاگرام (کاملاً با حال‌وهوای اینستاگرام) ───── */
+body[data-page="home"] .hm-ig{margin:44px 0 0;padding:8px 0 56px;background:linear-gradient(180deg,transparent,#fafafa 12%,#fafafa 88%,transparent)}
+body[data-page="home"] .ig-app{background:#fff;border:1px solid #dbdbdb;border-radius:20px;overflow:hidden;max-width:640px;margin:26px auto 0;box-shadow:0 10px 30px rgba(17,24,39,.05)}
+body[data-page="home"] .ig-profile{display:flex;gap:22px;padding:26px 26px 14px;align-items:flex-start}
+body[data-page="home"] .ig-aring{flex:0 0 auto}
+body[data-page="home"] .ig-ring{display:flex;width:80px;height:80px;border-radius:50%;padding:3px;background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
+body[data-page="home"] .ig-ring img{width:74px;height:74px;border-radius:50%;border:3px solid #fff;object-fit:cover;background:#fff}
+body[data-page="home"] .ig-pmain{flex:1;min-width:0}
+body[data-page="home"] .ig-toprow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+body[data-page="home"] .ig-handle{display:inline-flex;align-items:center;gap:5px;font-size:16px;font-weight:700;color:#262626}
+body[data-page="home"] .ig-verified{width:14px;height:14px;fill:#0095f6}
+body[data-page="home"] .ig-verified .ck{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+body[data-page="home"] .ig-btns{display:inline-flex;gap:8px;margin-right:auto}
+body[data-page="home"] .ig-follow{background:#0095f6;color:#fff;font-size:12.5px;font-weight:700;padding:8px 18px;border-radius:8px;text-decoration:none;transition:.15s}
+body[data-page="home"] .ig-follow:hover{background:#1877f2}
+body[data-page="home"] .ig-msg{background:#efefef;color:#262626;font-size:12.5px;font-weight:700;padding:8px 16px;border-radius:8px;text-decoration:none}
+body[data-page="home"] .ig-msg:hover{background:#e0e0e0}
+body[data-page="home"] .ig-stats{display:flex;gap:26px;margin:16px 0 12px}
+body[data-page="home"] .ig-stats span{font-size:13px;color:#262626}
+body[data-page="home"] .ig-stats b{font-weight:800}
+body[data-page="home"] .ig-bio{margin:0 0 6px;font-size:13px;line-height:2;color:#262626}
+body[data-page="home"] .ig-site{color:#00376b;font-size:13px;font-weight:700;text-decoration:none}
+body[data-page="home"] .ig-hls{display:flex;gap:18px;padding:12px 26px 18px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid #dbdbdb}
+body[data-page="home"] .ig-hls::-webkit-scrollbar{display:none}
+body[data-page="home"] .ig-hl{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;flex:0 0 auto}
+body[data-page="home"] .ig-hlring{width:62px;height:62px;border-radius:50%;padding:3px;background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
+body[data-page="home"] .ig-hlring::before{content:"";display:block;width:100%;height:100%;border-radius:50%;border:2.5px solid #fff;background:var(--img,none) center/cover;box-sizing:border-box}
+body[data-page="home"] .ig-hl small{font-size:11px;color:#262626;font-weight:600}
+body[data-page="home"] .ig-tabs{display:flex;border-bottom:1px solid #dbdbdb}
+body[data-page="home"] .ig-tabs span{flex:1;display:flex;gap:7px;align-items:center;justify-content:center;padding:13px 0;font-size:11.5px;font-weight:700;color:#737373;letter-spacing:.3px;position:relative}
+body[data-page="home"] .ig-tabs span.on{color:#262626}
+body[data-page="home"] .ig-tabs span.on::after{content:"";position:absolute;top:-1px;inset-inline:0;height:1px;background:#262626}
+body[data-page="home"] .ig-tabs svg{width:13px;height:13px;fill:currentColor}
+body[data-page="home"] .ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px}
+body[data-page="home"] .ig-cell{position:relative;aspect-ratio:1/1;overflow:hidden;display:block;background:#f3f4f6}
+body[data-page="home"] .ig-cell img.ph{width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease}
+body[data-page="home"] .ig-cell:hover img.ph{transform:scale(1.04)}
+body[data-page="home"] .ig-ov{position:absolute;inset:0;background:rgba(0,0,0,.38);opacity:0;transition:.2s;display:flex;align-items:center;justify-content:center;gap:22px;color:#fff;font-size:14px;font-weight:800}
+body[data-page="home"] .ig-cell:hover .ig-ov{opacity:1}
+body[data-page="home"] .ig-cta{text-align:center;margin:26px 0 0}
+body[data-page="home"] .ig-cta .hm-btn{min-width:260px}
 body[data-page="home"] .hm-serv{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:48px 0}
 body[data-page="home"] .hm-serv-card{background:transparent;border:0;box-shadow:none;overflow:visible;display:flex;flex-direction:column}
 body[data-page="home"] .hm-serv-card .im{border-radius:26px;overflow:hidden;box-shadow:0 16px 40px rgba(17,24,39,.10)}
@@ -290,7 +305,6 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
   body[data-page="recipe"] .rd-wrap{grid-template-columns:1fr}
 }
 @media(max-width:1200px){
-  body[data-page="home"] .hm-post{flex:0 0 calc((100% - 32px)/3)}
   body[data-page="home"] .hm-quick{width:165px}
 }
 @media(max-width:1024px){
@@ -304,9 +318,12 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
   body[data-page="home"] .hm-lead{font-size:13.5px}
   body[data-page="home"] .hm-quick{position:relative;top:0;left:0;transform:none;width:auto;display:flex;overflow-x:auto;margin:-42px 14px 0;z-index:2}
   body[data-page="home"] .hm-quick a{flex:0 0 auto}
-  body[data-page="home"] .hm-car{margin:40px 0 0}
-  body[data-page="home"] .hm-post{flex:0 0 calc((100% - 16px)/2)}
-  body[data-page="home"] .hm-post img.ph{height:210px}
+  body[data-page="home"] .hm-ig{margin:40px 0 0;padding:6px 0 44px}
+  body[data-page="home"] .ig-profile{padding:20px 16px 10px;gap:14px}
+  body[data-page="home"] .ig-ring{width:66px;height:66px}
+  body[data-page="home"] .ig-ring img{width:60px;height:60px}
+  body[data-page="home"] .ig-stats{gap:16px;margin:12px 0 10px}
+  body[data-page="home"] .ig-hls{padding:12px 16px 14px;gap:14px}
   body[data-page="home"] .hm-serv{grid-template-columns:1fr;gap:36px;margin:44px 0}
   body[data-page="home"] .hm-find{padding:22px 16px}
   #ftr .f-cols{gap:26px;padding:40px 20px 24px}
@@ -319,7 +336,8 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
   body[data-page="home"] .hm-wrap{padding:0 16px}
   body[data-page="home"] .hm-h1{font-size:28px}
   body[data-page="home"] .hm-btn{padding:12px 22px}
-  body[data-page="home"] .hm-post{flex:0 0 74%}
+  body[data-page="home"] .ig-stats{gap:12px}
+  body[data-page="home"] .ig-follow,.ig-msg{padding:7px 12px;font-size:11.5px}
   body[data-page="home"] .hm-find-row input{min-width:100%}
   #hdr .hactions .btn.small{display:none}
 }
@@ -328,26 +346,15 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
   body[data-page="home"] .hm-h1{font-size:26px}
   body[data-page="home"] .hm-cta{gap:10px}
   body[data-page="home"] .hm-quick{margin:-40px 10px 0}
-  body[data-page="home"] .hm-track{gap:12px}
-  body[data-page="home"] .hm-post{flex:0 0 70%}
+  body[data-page="home"] .ig-app{border-radius:14px}
+  body[data-page="home"] .ig-tabs span{font-size:10.5px}
 }
-/* ... همه کدهای قبلی design.css ... */
-
-/* ---------- RESPONSIVE ---------- */
-@media(max-width:900px){ ... }
-@media(max-width:1200px){ ... }
-@media(max-width:1024px){ ... }
-@media(max-width:768px){ ... }
-@media(max-width:390px){ ... }
-@media(max-width:360px){ ... }
 
 /* =========================================================
    MOBILE FIX v2 — فقط انتهای design.css   ← ✅ جای درست
    ========================================================= */
 body[data-page="home"] #hdr{position:relative;top:auto}
 #hdr{z-index:60}
-@media(max-width:768px){ ... }
-@media(max-width:600px){ ... }
 
 /* =========================================================
    Phase 2/3 — SEO Pages, Landing, Admin Dash, Media, FAQ

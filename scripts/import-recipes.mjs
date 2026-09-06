@@ -1,21 +1,39 @@
-/* DailyFitBeat — AI Recipe Importer v3.5
-   ضد 429: فاصله ۶ ثانیه بین درخواست‌های Gemini + بک‌آف ۶۰ ثانیه
-   غذاهای شکست‌خورده به dishes.txt برمی‌گردند برای تلاش بعدی */
+/* DailyFitBeat — AI Recipe Importer v4
+   ضد 429: فاصلهٔ ۶ ثانیه بین درخواست‌ها + بک‌آف ۶۰ ثانیه
+   غذاهای شکست‌خورده به dishes.txt برمی‌گردند برای تلاش بعدی
+   جدید v4:
+   ۱) دروازهٔ مشترک _gemini.mjs — تشخیص خودکار مدل (سری ۳/۲.۵/۲/…) + تشخیص خطای کلید با پیام فارسی
+   ۲) پشتیبانی از صف سه‌فیلدی «نام | کشور | وعده» (breakfast/snack/salad/sandwich/soup/main/iranian)
+      → دستهٔ نهایی از وعدهٔ صف تعیین می‌شود (خواستهٔ کاربر: صبحانه و میان‌وعده بیشتر)
+   ۳) رفع باگ ضدتکرار: قبلاً کل خط «نام | کشور» با نام DB مقایسه می‌شد و تکراری‌ها فیلتر نمی‌شدند */
 import { mkdirSync, writeFileSync, readFileSync, existsSync, appendFileSync } from 'node:fs';
 import sharp from 'sharp';
+import { geminiInit, geminiText, geminiImage, geminiVision, geminiState } from './_gemini.mjs';
 
 const SB_URL = 'https://hvqchqqlfcjxsohxywbd.supabase.co';
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const GEMINI = process.env.GEMINI_API_KEY || '';
 const FILE_IN = 'import/dishes.txt';
 const FILE_DONE = 'import/done.txt';
-const API = 'https://generativelanguage.googleapis.com/v1beta';
 
+/* ---------- دسته از وعدهٔ صف (نام | کشور | وعده) ---------- */
+const MEAL2CAT = {
+  breakfast: 'breakfast', snack: 'sandwich', salad: 'salad', sandwich: 'sandwich',
+  soup: 'soup', main: 'main', iranian: 'iranian', lunch: 'main', dinner: 'soup',
+};
+function parseDish(line) {
+  const parts = String(line).split('|').map(s => s.trim());
+  const name = parts[0] || '';
+  const region = parts[1] || '';
+  const meal = (parts[2] || '').toLowerCase().replace(/\s+/g, '');
+  const cat = MEAL2CAT[meal] || '';
+  return { name, region, meal, cat, tail: [region, meal].filter(Boolean).length ? ' | ' + [region, meal].filter(Boolean).join(' | ') : '' };
+}
+let snackFlip = 0; /* میان‌وعده‌ها یکی‌درمیان sandwich/salad تا هر دو رشد کنند */
+
+/* ---------- دروازه Gemini — فقط برای سازگاری امضا قدیمی ---------- */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const norm = s => String(s || '').toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/‌/g, ' ').replace(/\s+/g, ' ').trim();
 
 if (!SERVICE) { console.error('❌ SUPABASE_SERVICE_ROLE_KEY missing'); process.exit(1); }
-if (!GEMINI) { console.error('❌ GEMINI_API_KEY missing'); process.exit(1); }
 mkdirSync('img/recipes', { recursive: true });
 
 /* سقف اجرا: LIMIT اعداد فارسی/انگلیسی — رسپی‌های پردازش‌نشده در dishes.txt می‌مانند */
@@ -48,72 +66,8 @@ async function loadExisting() {
   return { slugs, names };
 }
 
-/* ---------- دروازه Gemini: فاصله ۶ ثانیه + بک‌آف ۶۰ ثانیه ---------- */
-const TEXT_MODELS = ['gemini-3.6-flash', 'gemini-3-flash', 'gemini-2.5-flash'];
-let IMAGE_MODEL = null;
-let lastGeminiAt = 0;
-
-async function geminiFetch(model, body) {
-  for (let back = 0; back < 3; back++) {
-    const gap = Date.now() - lastGeminiAt;
-    if (gap < 6000) await sleep(6000 - gap);
-    lastGeminiAt = Date.now();
-    try {
-      const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(90000)
-      });
-      if (r.status === 429) {
-        console.log('   ⏳ 429 — صبر ۶۰ ثانیه و تلاش دوباره…');
-        await sleep(60000);
-        continue;
-      }
-      return r;
-    } catch (e) {
-      /* خطای شبکه/timeout: به‌جای رد شدن، تلاش دوباره */
-      console.log('   ⚠ network: ' + (e.name === 'TimeoutError' ? 'timeout' : e.message) + ' — retry ' + (back + 1));
-      continue;
-    }
-  }
-  return null;
-}
-
-async function pickImageModel() {
-  try {
-    const r = await fetch(API + '/models?pageSize=200&key=' + GEMINI, { signal: AbortSignal.timeout(30000) });
-    const j = await r.json();
-    const models = j.models || [];
-    /* ۱) اول مدل‌های شناخته‌شده و پایدار ۲) بعد اولین مدل تصویر غیرآزمایشی */
-    const prefer = ['gemini-2.5-flash-image', 'gemini-2.0-flash-preview-image-generation'];
-    const okModel = m => (m.supportedGenerationMethods || []).includes('generateContent');
-    let img = models.find(m => prefer.some(p => m.name.includes(p)) && okModel(m));
-    if (!img) img = models.find(m => /image/i.test(m.name) && !/exp|deprecated/i.test(m.name) && okModel(m));
-    if (img) { IMAGE_MODEL = img.name.replace(/^models\//, ''); console.log('🎛 image model: ' + IMAGE_MODEL); }
-  } catch (e) {}
-  if (!IMAGE_MODEL) { IMAGE_MODEL = 'gemini-2.5-flash-image'; console.log('🎛 image model (fallback): ' + IMAGE_MODEL); }
-}
-
-/* ---------- تشخیص داینامیک مدل متن (مدل‌های ناموجود نباید هر بار ۴۰۴ بخورند) ---------- */
-async function resolveTextModels() {
-  try {
-    const r = await fetch(API + '/models?pageSize=200&key=' + GEMINI, { signal: AbortSignal.timeout(30000) });
-    const j = await r.json();
-    const avail = new Set((j.models || []).map(m => m.name.replace(/^models\//, '')));
-    const alive = TEXT_MODELS.filter(m => avail.has(m));
-    if (alive.length) {
-      TEXT_MODELS.length = 0;
-      TEXT_MODELS.push(...alive);
-      console.log('🧠 text models: ' + TEXT_MODELS.join(', '));
-      return;
-    }
-  } catch (e) {}
-  console.log('🧠 text models (fallback): ' + TEXT_MODELS.join(', '));
-}
-
 /* ---------- متن ---------- */
-const SCHEMA_PROMPT = (name) => `تو سرآشپز حرفه‌ای و متخصص تغذیه هستی. برای غذای «${name}» یک رسپی کامل و واقعی بساز.
+const SCHEMA_PROMPT = (name, catHint) => `تو سرآشپز حرفه‌ای و متخصص تغذیه هستی. برای غذای «${name}» یک رسپی کامل و واقعی بساز.
 فقط JSON معتبر برگردان، بدون هیچ متن اضافه، با این ساختار دقیق:
 {
   "name_fa":"نام فارسی","name_en":"English Name","slug":"english-kebab-case-unique",
@@ -125,22 +79,8 @@ const SCHEMA_PROMPT = (name) => `تو سرآشپز حرفه‌ای و متخصص
   "tags":["کم‌کالری","پرپروتئین"],"keys":["panini","italy"],
   "image_style":"short English description of the exact dish appearance (colors, texture, garnish, plating)"
 }
-الزامات: حداقل ۶ ماده با مقدار واقعی، حداقل ۵ مرحله، ۲ تا ۳ نکته، اعداد منطقی، slug یکتا. فقط JSON.`;
+الزامات: حداقل ۶ ماده با مقدار واقعی، حداقل ۵ مرحله، ۲ تا ۳ نکته، اعداد منطقی، slug یکتا.${catHint ? '\nمهم: مقدار category حتماً باید «' + catHint + '» باشد.' : ''} فقط JSON.`;
 
-async function geminiText(prompt) {
-  for (const model of TEXT_MODELS) {
-    const r = await geminiFetch(model, {
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, responseMimeType: 'application/json' }
-    });
-    if (!r) continue;
-    if (!r.ok) { console.log('   ⚠ ' + model + ' → HTTP ' + r.status); continue; }
-    const j = await r.json();
-    const t = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
-    if (t) { console.log('   🧠 model: ' + model); return t; }
-  }
-  return '';
-}
 function parseJSON(txt) {
   try { return JSON.parse(txt); } catch (e) {}
   const m = String(txt).match(/\{[\s\S]*\}/);
@@ -152,16 +92,7 @@ function parseJSON(txt) {
 const STYLE_TPL = (d) => 'Ultra-realistic professional food photography of: ' + d + '. Bright natural daylight from a side window, rustic light oak wooden table, warm white and orange ceramic dishes, gentle steam rising, shallow depth of field, 45-degree angle, vibrant warm appetizing tones, high-end editorial style, consistent series look. No text, no watermark, no people, no logo.';
 
 async function generateImageGemini(styleDesc) {
-  if (!IMAGE_MODEL) return null;
-  const r = await geminiFetch(IMAGE_MODEL, {
-    contents: [{ parts: [{ text: STYLE_TPL(styleDesc) }] }],
-    generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
-  });
-  if (!r || !r.ok) return null;
-  const j = await r.json();
-  const parts = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || [];
-  for (const p of parts) if (p.inline_data && p.inline_data.data) return Buffer.from(p.inline_data.data, 'base64');
-  return null;
+  return geminiImage(STYLE_TPL(styleDesc));
 }
 
 async function generateImagePollinations(styleDesc) {
@@ -177,16 +108,8 @@ async function generateImagePollinations(styleDesc) {
 async function visionCheck(imageBuf, dishName) {
   try {
     const small = await sharp(imageBuf).resize(512, 512, { fit: 'cover' }).jpeg({ quality: 60 }).toBuffer();
-    const r = await geminiFetch(TEXT_MODELS[0], {
-      contents: [{ parts: [
-        { inline_data: { mime_type: 'image/jpeg', data: small.toString('base64') } },
-        { text: 'آیا تصویر دقیقاً غذای «' + dishName + '» را نشان می‌دهد؟ فقط YES یا NO با یک جمله توضیح.' }
-      ]}]
-    });
-    if (!r || !r.ok) return { ok: true, reason: 'vision unavailable — accepted' };
-    const j = await r.json();
-    const txt = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
-    if (!txt) return { ok: true, reason: 'vision empty — accepted' };
+    const txt = await geminiVision(small.toString('base64'), 'آیا تصویر دقیقاً غذای «' + dishName + '» را نشان می‌دهد؟ فقط YES یا NO با یک جمله توضیح.');
+    if (!txt) return { ok: true, reason: 'vision unavailable — accepted' };
     return { ok: /^\s*YES/i.test(txt), reason: txt.trim().split('\n').pop() };
   } catch (e) {
     return { ok: true, reason: 'vision error — accepted' };
@@ -225,8 +148,8 @@ async function insertRow(row) {
   console.log('📖 خواندن رسپی‌های موجود…');
   const existing = await loadExisting();
   console.log('   ' + existing.slugs.size + ' رسپی موجود یافت شد.');
-  await pickImageModel();
-  await resolveTextModels();
+  await geminiInit();
+  if (!geminiState.ready) console.log('⚠ بدون مدل متنی، فقط Pollinations برای عکس کار می‌کند — کلید GEMINI_API_KEY را طبق راهنمای بالا درست کن.');
   console.log('');
 
   /* رسپی‌های این اجرا + رسپی‌های باقی‌مانده برای اجرای بعد */
@@ -241,9 +164,11 @@ async function insertRow(row) {
   let imgCount = 0;
 
   for (const dish of todo) {
-    const nd = norm(dish);
+    const pd = parseDish(dish);
+    const nd = norm(pd.name); /* فقط نام — نه کل خط (رفع باگ ضدتکرار) */
     console.log('• ' + dish);
 
+    if (!nd) { skip++; continue; }
     if (existing.names.has(nd) || seenInRun.has(nd)) {
       console.log('   ⏭ نام تکراری — skip');
       skip++; doneLines.push(dish + '  →  SKIP(duplicate-name)');
@@ -251,7 +176,10 @@ async function insertRow(row) {
     }
 
     try {
-      const raw = await geminiText(SCHEMA_PROMPT(dish));
+      /* وعدهٔ صف بر دسته حاکم است (snack یکی‌درمیان sandwich/salad) */
+      let catHint = pd.cat;
+      if (pd.meal === 'snack') catHint = (snackFlip++ % 2 === 0) ? 'sandwich' : 'salad';
+      const raw = await geminiText(SCHEMA_PROMPT(pd.name || dish, catHint));
       const r = parseJSON(raw);
       if (!r || !r.slug || !r.name_fa) {
         console.log('   ❌ JSON نامعتبر — به اجرای بعد موکول شد');
@@ -278,7 +206,7 @@ async function insertRow(row) {
       const row = {
         slug: r.slug, name_fa: r.name_fa, name_en: r.name_en || '',
         desc_fa: r.desc_fa || '', desc_en: r.desc_en || r.name_en || '',
-        category: r.category || 'main', region: r.region || 'ایران',
+        category: catHint || r.category || 'main', region: r.region || pd.region || 'ایران',
         time_min: Number(r.time_min) || 30,
         kcal: Number(r.kcal) || 0, protein: Number(r.protein) || 0,
         carbs: Number(r.carbs) || 0, fat: Number(r.fat) || 0,

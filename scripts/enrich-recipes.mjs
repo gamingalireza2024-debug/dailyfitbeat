@@ -1,22 +1,18 @@
-/* DailyFitBeat — Enrich Recipes v4
-   موتور متن: Gemini (با بک‌آف ۶۰ث) → GitHub Models (رایگان داخلی)
-   جدید v4:
-   ۱) چهار فیلد تازه هم پر می‌شوند: desc_fa ، region ، substitutions (video_url قابل تولید خودکار نیست)
+/* DailyFitBeat — Enrich Recipes v5
+   موتور متن: Gemini (دروازهٔ مشترک _gemini.mjs با تشخیص خودکار مدل) → GitHub Models (رایگان داخلی)
+   جدید v5:
+   ۱) اتصال به دروازهٔ _gemini.mjs — مدل به‌صورت خودکار از ListModels انتخاب می‌شود (سری ۳/۲.۵/۲/…)
+   ۲) پیام تشخیصی فارسی دقیق اگر کلید 401/403/400 داد — دیگر چرخهٔ بی‌فایدهٔ 401 نداریم
+   ۳) fallback گیت‌هاب مدلز به endpoint جدید models.github.ai منتقل شد
+   از v4:
+   ۱) چهار فیلد desc_fa ، region ، substitutions هم پر می‌شوند
    ۲) اولویت‌بندی: رسپی‌هایی که فیلد خالی بیشتری دارند زودتر پردازش می‌شوند
-   ۳) region از فهرست کشور/استان معتبر انتخاب می‌شود
-   ۴) substitutions با ساختار {from,to} هماهنگ با app.js
-   اصلاحات v3:
-   ۱) صفحه‌بندی کامل خواندن رسپی‌ها (قبلاً سقف ۲۰۰۰ بود و بی‌سروصدا می‌بُرید)
-   ۲) فیلد protein و kcal هم اگر خالی بود پر می‌شوند (پروتئین عدد کلیدی کارت‌هاست)
-   ۳) اگر kcal خالی بماند اما ماکروها باشند، از فرمول ۴/۴/۴/۹ تخمین زده می‌شود
+   ۳) صفحه‌بندی کامل خواندن رسپی‌ها + پر کردن protein/kcal خالی (فرمول ۴/۴/۴/۹)
    ۴) اعتبارسنجی LIMIT (بین ۵ تا ۱۰۰) */
+import { geminiInit, geminiText } from './_gemini.mjs';
 const SB_URL = 'https://hvqchqqlfcjxsohxywbd.supabase.co';
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const GEMINI = process.env.GEMINI_API_KEY || '';
 const GH_TOKEN = process.env.GITHUB_TOKEN || '';
-const API = 'https://generativelanguage.googleapis.com/v1beta';
-const TEXT_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
-const GH_MODELS = ['gpt-4o-mini', 'gpt-4o'];
 const LIMIT = Math.min(Math.max(parseInt(process.env.LIMIT || '20', 10) || 20, 5), 100);
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -39,72 +35,42 @@ async function loadAll() {
   return out;
 }
 
-/* ---------- دروازه Gemini: فاصله ۶ث + بک‌آف ۶۰ث ---------- */
-let lastGeminiAt = 0;
-async function geminiFetch(model, body) {
-  for (let back = 0; back < 2; back++) {
-    const gap = Date.now() - lastGeminiAt;
-    if (gap < 6000) await sleep(6000 - gap);
-    lastGeminiAt = Date.now();
-    try {
-      const r = await fetch(API + '/models/' + model + ':generateContent?key=' + GEMINI, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(60000)
-      });
-      if (r.status === 429) { console.log('   ⏳ 429 — صبر ۶۰ث…'); await sleep(60000); continue; }
-      return r;
-    } catch (e) { return null; }
-  }
-  return null;
-}
-
-async function geminiText(prompt) {
-  if (!GEMINI) return '';
-  for (const model of TEXT_MODELS) {
-    const r = await geminiFetch(model, {
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.6, responseMimeType: 'application/json' }
-    });
-    if (!r) continue;
-    if (!r.ok) { console.log('   ⚠ ' + model + ' → ' + r.status); continue; }
-    const j = await r.json();
-    const t = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0].text) || '';
-    if (t) { console.log('   🧠 ' + model); return t; }
-  }
-  return '';
-}
-
-/* ---------- موتور پشتیبان: GitHub Models (بدون کلید اضافه) ---------- */
+/* ---------- موتور پشتیبان: GitHub Models (بدون کلید اضافه — GITHUB_TOKEN خودِ Actions) ---------- */
+const GH_MODELS = ['openai/gpt-4o-mini', 'openai/gpt-4.1-mini', 'openai/gpt-4o'];
 async function ghText(prompt) {
   if (!GH_TOKEN) return '';
-  for (const model of GH_MODELS) {
-    try {
-      const r = await fetch('https://models.inference.ai.azure.com/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + GH_TOKEN },
-        body: JSON.stringify({
-          model: model,
-          temperature: 0.6,
-          messages: [
-            { role: 'system', content: 'You are a chef & nutritionist. Return ONLY valid JSON, no extra text.' },
-            { role: 'user', content: prompt }
-          ]
-        }),
-        signal: AbortSignal.timeout(60000)
-      });
-      if (!r.ok) { console.log('   ⚠ gh-models ' + model + ' → ' + r.status); continue; }
-      const j = await r.json();
-      const t = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
-      if (t) { console.log('   🐙 text via GitHub Models (' + model + ')'); return t; }
-    } catch (e) {}
+  const endpoints = [
+    { url: 'https://models.github.ai/inference/chat/completions', models: GH_MODELS },
+    { url: 'https://models.inference.ai.azure.com/chat/completions', models: ['gpt-4o-mini', 'gpt-4o'] },
+  ];
+  for (const ep of endpoints) {
+    for (const model of ep.models) {
+      try {
+        const r = await fetch(ep.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + GH_TOKEN },
+          body: JSON.stringify({
+            model: model,
+            temperature: 0.6,
+            messages: [
+              { role: 'system', content: 'You are a chef & nutritionist. Return ONLY valid JSON, no extra text.' },
+              { role: 'user', content: prompt }
+            ]
+          }),
+          signal: AbortSignal.timeout(60000)
+        });
+        if (!r.ok) { console.log('   ⚠ gh-models ' + model + ' → ' + r.status); continue; }
+        const j = await r.json();
+        const t = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
+        if (t) { console.log('   🐙 text via GitHub Models (' + model + ')'); return t; }
+      } catch (e) {}
+    }
   }
   return '';
 }
 
 async function aiText(prompt) {
-  const t = await geminiText(prompt);
+  const t = await geminiText(prompt, { generationConfig: { temperature: 0.6 } });
   if (t) return t;
   return await ghText(prompt);
 }
@@ -129,6 +95,7 @@ const ENRICH_PROMPT = (r, ings) => `تو سرآشپز و متخصص تغذیه �
 region را فقط یکی از این‌ها بگذار (یا استان ایرانی اگر غذا ایرانی است): ایران، ایتالیا، ژاپن، تایلند، اسپانیا، مراکش، فرانسه، چین، هند، ترکیه، مکزیک، انگلستان، یونان، کره، لبنان، آمریکا، آرژانتین، برزیل، بین‌المللی. اعداد ماکرو منطقی و هماهنگ با کالری حدود ${r.kcal || 400}. فقط JSON.`;
 
 (async () => {
+  await geminiInit();
   console.log('📖 خواندن همه رسپی‌ها…');
   const all = await loadAll();
   console.log('   کل: ' + all.length);

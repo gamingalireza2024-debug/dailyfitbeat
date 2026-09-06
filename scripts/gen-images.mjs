@@ -8,15 +8,13 @@
 import sharp from "sharp";
 import fs from "fs";
 import { execSync } from "child_process";
+import { geminiInit, geminiText, geminiVision } from "./_gemini.mjs";
 
 const SB_URL = "https://hvqchqqlfcjxsohxywbd.supabase.co";
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const GEMINI = process.env.GEMINI_API_KEY || "";
 const FORCE = (process.env.FORCE || "0") === "1";
 const LIMIT = Math.min(Math.max(parseInt(process.env.LIMIT || "40", 10) || 40, 1), 100);
 const H = { apikey: SERVICE, Authorization: "Bearer " + SERVICE };
-const API = "https://generativelanguage.googleapis.com/v1beta";
-const TEXT_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
 const IMG_DIR = "img/recipes"; // ← همیشه همین مسیر (هماهنگ با import-recipes.mjs)
 
 const STYLE = "Ultra-realistic professional food photography, bright natural daylight from a side window, rustic light oak wooden table, warm white and orange ceramic dishes, gentle steam rising, shallow depth of field, 45-degree angle, vibrant warm appetizing tones, consistent series look, high resolution. No text, no watermark, no people, no logo.";
@@ -32,29 +30,10 @@ function push() {
   catch (e) { console.log("push err", String(e).slice(0, 200)); }
 }
 
-/* ---------- Gemini: توصیف ظاهری اختصاصی هر غذا ---------- */
-async function geminiText(prompt) {
-  if (!GEMINI) return "";
-  for (const model of TEXT_MODELS) {
-    try {
-      const r = await fetch(API + "/models/" + model + ":generateContent?key=" + GEMINI, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-        signal: AbortSignal.timeout(60000)
-      });
-      if (!r.ok) { console.log("⚠ text", model, r.status); continue; }
-      const j = await r.json();
-      const t = (j.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
-      if (t) return t;
-    } catch (e) {}
-  }
-  return "";
-}
-
+/* ---------- Gemini: توصیف ظاهری اختصاصی هر غذا (دروازهٔ مشترک) ---------- */
 async function describeDish(r) {
   const ings = Array.isArray(r.ingredients) ? r.ingredients.slice(0, 6).map(i => i.fa).join("، ") : "";
-  const out = await geminiText(`تو یک عکاس حرفه‌ای غذا هستی. برای غذای «${r.name_fa}» (${r.name_en || ""}) از دسته ${r.category} با مواد اصلی: ${ings || "نامشخص"}، فقط یک جمله انگلیسی بنویس که ظاهر دقیق غذای پخته‌شده را توصیف کند (رنگ، بافت، گارنیش، نحوه سرو در بشقاب). فقط همان جمله.`);
+  const out = await geminiText(`تو یک عکاس حرفه‌ای غذا هستی. برای غذای «${r.name_fa}» (${r.name_en || ""}) از دسته ${r.category} با مواد اصلی: ${ings || "نامشخص"}، فقط یک جمله انگلیسی بنویس که ظاهر دقیق غذای پخته‌شده را توصیف کند (رنگ، بافت، گارنیش، نحوه سرو در بشقاب). فقط همان جمله.`, { quiet: true });
   if (out && out.length < 400) { console.log("   🧠 desc:", out.slice(0, 90)); return out; }
   return (r.name_en || r.name_fa) + ": " + (DISH[r.category] || "a delicious healthy dish") + ". " + (r.desc_en || "");
 }
@@ -72,24 +51,10 @@ async function genPollinations(prompt) {
 
 /* ---------- کنترل بینایی (روی نسخه کوچک ۵۱۲px) ---------- */
 async function visionCheck(buf, nameFa) {
-  if (!GEMINI) return { ok: true, reason: "no-key — accepted" };
-  try {
-    const small = await sharp(buf).resize(512, 512, { fit: "cover" }).jpeg({ quality: 60 }).toBuffer();
-    const r = await fetch(API + "/models/" + TEXT_MODELS[0] + ":generateContent?key=" + GEMINI, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [
-        { inline_data: { mime_type: "image/jpeg", data: small.toString("base64") } },
-        { text: "آیا تصویر دقیقاً غذای «" + nameFa + "» را نشان می‌دهد؟ فقط YES یا NO به همراه یک جمله توضیح." }
-      ]}] }),
-      signal: AbortSignal.timeout(60000)
-    });
-    if (!r.ok) return { ok: true, reason: "vision http " + r.status + " — accepted" };
-    const j = await r.json();
-    const txt = j.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    if (!txt) return { ok: true, reason: "vision unavailable — accepted" };
-    return { ok: /^\s*YES/i.test(txt), reason: txt.trim().split("\n").pop() };
-  } catch (e) { return { ok: true, reason: "vision err — accepted" }; }
+  const small = await sharp(buf).resize(512, 512, { fit: "cover" }).jpeg({ quality: 60 }).toBuffer();
+  const txt = await geminiVision(small.toString("base64"), "آیا تصویر دقیقاً غذای «" + nameFa + "» را نشان می‌دهد؟ فقط YES یا NO به همراه یک جمله توضیح.");
+  if (!txt) return { ok: true, reason: "vision unavailable — accepted" };
+  return { ok: /^\s*YES/i.test(txt), reason: txt.trim().split("\n").pop() };
 }
 
 async function produceImage(r, styleDesc) {
@@ -118,6 +83,7 @@ async function patchImage(slug, path) {
 }
 
 /* ---------- main ---------- */
+await geminiInit();
 const recipes = await (await fetch(SB_URL + "/rest/v1/recipes?select=slug,name_fa,name_en,desc_en,category,image,ingredients&limit=2000", { headers: H })).json();
 console.log("recipes:", recipes.length, "| FORCE:", FORCE, "| LIMIT:", LIMIT);
 
