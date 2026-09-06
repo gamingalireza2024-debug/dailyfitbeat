@@ -1,0 +1,46 @@
+name: cleanup-images
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "برای اجرای واقعی حذف، عبارت DELETE را بنویس"
+        required: true
+        default: "REPORT"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cleanup-images
+  cancel-in-progress: false
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Audit (report + optional clean)
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CLEAN: ${{ github.event.inputs.confirm == 'DELETE' && '1' || '0' }}
+        run: node scripts/audit-images.mjs
+
+      - name: Commit deletions
+        if: always()
+        run: |
+          git config user.name "dfb-bot"
+          git config user.email "bot@dailyfitbeat.ir"
+          git add -A img
+          if git diff --staged --quiet; then
+            echo "چیزی برای حذف نبود"
+            exit 0
+          fi
+          git commit -m "cleanup: remove unused images [skip ci]"
+          git pull --rebase origin main
+          git push

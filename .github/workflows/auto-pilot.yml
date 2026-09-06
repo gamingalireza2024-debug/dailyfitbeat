@@ -1,0 +1,82 @@
+name: auto-pilot
+
+on:
+  schedule:
+    # هر ۲ روز یک‌بار ساعت ۰۵:۰۰ UTC (۸:۳۰ صبح ایران)
+    - cron: "0 5 */2 * *"
+  workflow_dispatch:
+    inputs:
+      enrich_limit:
+        description: "تکمیل اطلاعات چند رسپی قدیمی (۵ تا ۱۰۰)"
+        default: "15"
+      images_limit:
+        description: "ساخت عکس چند رسپی بدون عکس (۵ تا ۱۰۰)"
+        default: "15"
+      import_limit:
+        description: "چند غذای جدید اضافه شود"
+        default: "3"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-pilot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install sharp
+        run: npm i sharp@0.33.5 --no-fund --no-audit
+
+      - name: "۱) پر کردن صف غذای جدید (کشف خودکار)"
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/discover-dishes.mjs
+
+      - name: "۲) تکمیل فیلدهای خالی رسپی‌های قدیمی"
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+          LIMIT: ${{ github.event.inputs.enrich_limit || '15' }}
+        run: node scripts/enrich-recipes.mjs
+
+      - name: "۳) ساخت عکس رسپی‌های بدون عکس"
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          LIMIT: ${{ github.event.inputs.images_limit || '15' }}
+        run: node scripts/gen-images.mjs
+
+      - name: "۴) افزودن غذاهای جدید"
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          LIMIT: ${{ github.event.inputs.import_limit || '3' }}
+        run: node scripts/import-recipes.mjs
+
+      - name: "۵) فشرده‌سازی عکس‌های سنگین"
+        run: node scripts/optimize-images.mjs
+
+      - name: Commit results
+        if: always()
+        run: |
+          git config user.name "dfb-bot"
+          git config user.email "bot@dailyfitbeat.ir"
+          git add img import 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "چیزی برای کامیت نبود"
+            exit 0
+          fi
+          git commit -m "auto-pilot: enrich + images + new recipes [skip ci]"
+          git pull --rebase origin main
+          git push
