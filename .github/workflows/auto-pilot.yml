@@ -8,7 +8,7 @@ on:
     inputs:
       enrich_limit:
         description: "تکمیل اطلاعات چند رسپی قدیمی (۵ تا ۱۰۰)"
-        default: "15"
+        default: "30"
       images_limit:
         description: "ساخت عکس چند رسپی بدون عکس (۵ تا ۱۰۰)"
         default: "15"
@@ -36,6 +36,12 @@ jobs:
       - name: Install sharp
         run: npm i sharp@0.33.5 --no-fund --no-audit
 
+      - name: "۰) بررسی سلامت کلیدها (گزارش)"
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/check-keys.mjs
+
       - name: "۱) پر کردن صف غذای جدید (کشف خودکار)"
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -47,7 +53,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
-          LIMIT: ${{ github.event.inputs.enrich_limit || '15' }}
+          LIMIT: ${{ github.event.inputs.enrich_limit || '30' }}
         run: node scripts/enrich-recipes.mjs
 
       - name: "۳) ساخت عکس رسپی‌های بدون عکس"
