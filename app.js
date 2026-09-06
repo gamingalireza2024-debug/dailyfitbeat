@@ -167,7 +167,7 @@ function hay(r) {
   return [r.name_fa, r.name_en, r.region, countryFa(r.region), r.desc_fa, r.category, (r.tags || []).join(' ')].map(norm).join(' | ');
 }
 function card(r, big) {
-  return '<a class="card' + (big ? ' big' : '') + '" href="recipe.html?slug=' + encodeURIComponent(r.slug) + '"><div class="c-img"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" loading="lazy" decoding="async" alt="' + esc(r.name_fa) + '"></div><div class="c-body"><h3>' + esc(r.name_fa) + '</h3><div class="c-meta"><span>پخت: ' + r.time_min + ' دقیقه</span><span>' + r.kcal + ' کالری</span><span>پروتئین ' + r.protein + 'g</span></div><div class="c-tags"><i>' + diff(r.time_min) + '</i><i>' + esc(countryFa(r.region)) + '</i></div></div></a>';
+  return '<a class="card' + (big ? ' big' : '') + '" href="/recipes/' + encodeURIComponent(r.slug) + '"><div class="c-img"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" loading="lazy" decoding="async" alt="' + esc(r.name_fa) + '"></div><div class="c-body"><h3>' + esc(r.name_fa) + '</h3><div class="c-meta"><span>پخت: ' + r.time_min + ' دقیقه</span><span>' + r.kcal + ' کالری</span><span>پروتئین ' + r.protein + 'g</span></div><div class="c-tags"><i>' + diff(r.time_min) + '</i><i>' + esc(countryFa(r.region)) + '</i></div></div></a>';
 }
 function initSearch() {
   var inp = document.getElementById('searchInput'), box = document.getElementById('searchRes');
@@ -184,16 +184,26 @@ async function loadChips() {
   ING = await r.json();
   renderChips();
 }
+/* Home v3: ایموجی هر ماده + شمارنده انتخاب */
+var ING_EMOJI = { chicken:'🍗', beef:'🥩', egg:'🥚', tomato:'🍅', rice:'🍚', potato:'🥔', onion:'🧅', garlic:'🧄', mushroom:'🍄', spinach:'🥬', avocado:'🥑', bread:'🍞', 'greek-yogurt':'🥣', salmon:'🐟', chickpea:'🫛', lentil:'🫘', fish:'🐠', shrimp:'🦐', eggplant:'🍆', kashk:'🥛', walnut:'🥜', 'pomegranate-molasses':'🍯' };
+function frSync() {
+  var n = document.getElementById('frCount');
+  if (n) { n.hidden = !have.length; var b = n.querySelector('b'); if (b) b.textContent = have.length.toLocaleString('fa-IR'); }
+  var h = document.getElementById('frHint');
+  if (h) h.hidden = !!have.length;
+}
 function renderChips() {
   var c = document.getElementById('chips');
   if (!c) return;
-  c.innerHTML = ING.map(function (i) { return '<button class="chip' + (have.indexOf(i.key) !== -1 ? ' on' : '') + '" data-key="' + esc(i.key) + '">' + esc(lang === 'fa' ? i.fa : i.en) + '</button>'; }).join('');
+  c.innerHTML = ING.map(function (i, ix) { return '<button class="chip' + (have.indexOf(i.key) !== -1 ? ' on' : '') + '" style="--i:' + ix + '" data-key="' + esc(i.key) + '"><i class="ci" aria-hidden="true">' + (ING_EMOJI[i.key] || '🥄') + '</i>' + esc(lang === 'fa' ? i.fa : i.en) + '</button>'; }).join('');
   c.querySelectorAll('.chip').forEach(function (x) {
     x.onclick = function () {
       x.classList.toggle('on');
       have = [].slice.call(c.querySelectorAll('.chip.on')).map(function (y) { return y.dataset.key; });
+      frSync();
     };
   });
+  frSync();
 }
 function initFinder() {
   if (!document.getElementById('chips')) return;
@@ -207,10 +217,26 @@ function initFinder() {
   };
   var go = document.getElementById('goBtn');
   if (go) go.onclick = async function () {
-    if (!have.length) return alert('اول چند تا ماده رو انتخاب کن');
-    var r = await fetch('/api/db?t=match&a=' + have.join(','));
-    var data = await r.json();
-    document.getElementById('results').innerHTML = Array.isArray(data) ? data.map(function (x) { return card(x); }).join('') : '';
+    var box = document.getElementById('results');
+    if (!box) return;
+    if (!have.length) {
+      var h = document.getElementById('frHint');
+      if (h) h.hidden = false;
+      var fc = document.getElementById('frCard');
+      if (fc) { fc.classList.remove('fr-shake'); void fc.offsetWidth; fc.classList.add('fr-shake'); }
+      try { window.dfbTrack('fridge_empty_click', {}); } catch (e) {}
+      return;
+    }
+    try { window.dfbTrack('fridge_search', { items: have.length }); } catch (e) {}
+    box.innerHTML = '<div class="fr-sk"></div><div class="fr-sk"></div><div class="fr-sk"></div><div class="fr-sk"></div>';
+    try {
+      var r = await fetch('/api/db?t=match&a=' + encodeURIComponent(have.join(',')));
+      var data = await r.json();
+      var list = Array.isArray(data) ? data : [];
+      box.innerHTML = '<p class="fr-resn">' + list.length.toLocaleString('fa-IR') + ' رسپی با این مواد پیدا شد:</p>' + list.map(function (x) { return card(x); }).join('');
+    } catch (e) {
+      box.innerHTML = '';
+    }
   };
 }
 async function loadPopular() {

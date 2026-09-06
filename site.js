@@ -43,7 +43,7 @@
   window.SITE = SITE;
 
   var PAGES = {
-    home:    { path: "/",             title: "",           desc: SITE.defaultDesc },
+    home:    { path: "/",             title: "دستور پخت غذای سالم و رژیمی با کالری دقیق", desc: "مواد یخچالت را انتخاب کن و دستور پخت غذای سالم و رژیمی ایرانی و جهانی با کالری و ماکروهای دقیق پیدا کن؛ به‌همراه برنامه غذایی شخصی و دستیار هوش مصنوعی تغذیه — کاملاً رایگان." },
     recipes: { path: "/recipes.html", title: "رسپی‌ها",     desc: "رسپی‌های سالم ایرانی و جهانی با ارزش غذایی دقیق، فیلتر بر اساس هدف و دسته" },
     recipe:  { path: null,            title: null,         desc: SITE.defaultDesc },
     planner: { path: "/planner.html", title: "برنامه غذایی", desc: "محاسبه‌گر هوشمند کالری و ریزمغذی‌ها + برنامه غذایی هفتگی شخصی‌سازی‌شده" },
