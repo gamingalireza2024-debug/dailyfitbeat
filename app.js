@@ -51,16 +51,20 @@ window.DFB = {
 function injectHeader() {
   var hdr = document.getElementById('hdr');
   if (!hdr) return;
-  var links = NAV.map(function (n) {
-    return '<a href="' + n[1] + '" class="' + (page === n[0] ? 'on' : '') + '" data-fa="' + n[2] + '" data-en="' + n[3] + '">' + (lang === 'fa' ? n[2] : n[3]) + '</a>';
-  }).join('');
-  hdr.innerHTML = '<a class="logo" href="index.html"><img src="img/logo.png" alt="DailyFitBeat"></a>' +
-    '<nav>' + links + '</nav>' +
-    '<div class="hactions"><span id="authBox"></span>' +
-    '<button id="langBtn" class="lang">' + (lang === 'fa' ? 'EN' : 'فا') + '</button>' +
-    '<a class="btn small" href="pro.html" data-fa="شروع رایگان" data-en="Start Free">' + (lang === 'fa' ? 'شروع رایگان' : 'Start Free') + '</a>' +
-    '<button id="burger" class="burger" aria-label="menu"><span></span><span></span><span></span></button></div>' +
-    '<div id="mnav" class="mnav">' + links + '</div>';
+  /* ساخت یک‌بار برای هر زبان — هدر در HTML استاتیک است تا اولین رندر بدون پرش باشد */
+  if (hdr.dataset.built !== lang) {
+    var links = NAV.map(function (n) {
+      return '<a href="' + n[1] + '" class="' + (page === n[0] ? 'on' : '') + '" data-fa="' + n[2] + '" data-en="' + n[3] + '">' + (lang === 'fa' ? n[2] : n[3]) + '</a>';
+    }).join('');
+    hdr.innerHTML = '<a class="logo" href="index.html"><img src="img/logo.png" alt="DailyFitBeat"></a>' +
+      '<nav>' + links + '</nav>' +
+      '<div class="hactions"><span id="authBox"></span>' +
+      '<button id="langBtn" class="lang">' + (lang === 'fa' ? 'EN' : 'فا') + '</button>' +
+      '<a class="btn small" href="pro.html" data-fa="شروع رایگان" data-en="Start Free">' + (lang === 'fa' ? 'شروع رایگان' : 'Start Free') + '</a>' +
+      '<button id="burger" class="burger" aria-label="menu"><span></span><span></span><span></span></button></div>' +
+      '<div id="mnav" class="mnav">' + links + '</div>';
+    hdr.dataset.built = lang;
+  }
   var bg = document.getElementById('burger');
   if (bg) bg.onclick = function () { var m = document.getElementById('mnav'); if (m) m.classList.toggle('open'); };
   var lb = document.getElementById('langBtn');
@@ -70,13 +74,16 @@ function injectHeader() {
 function renderAuth() {
   var box = document.getElementById('authBox');
   if (!box) return;
+  var sig = USER ? (USER.id + (isAdmin() ? ':a' : '')) : 'guest';
+  if (box.dataset.sig === sig) return; /* بدون تغییر → بدون فلیکر */
+  box.dataset.sig = sig;
   if (!USER) {
     box.innerHTML = '<button id="loginBtn" class="auth-chip">ورود با گوگل</button>';
     var lb = document.getElementById('loginBtn');
     if (lb) lb.onclick = doLogin;
   } else {
     var name = (USER.user_metadata && USER.user_metadata.name) ? USER.user_metadata.name.split(' ')[0] : 'پنل من';
-    var html = '<a href="user.html" class="auth-chip user-on" title="پنل کاربری">' + name + '</a>';
+    var html = '<a href="user.html" class="auth-chip user-on" title="پنل کاربری">' + esc(name) + '</a>';
     if (isAdmin()) html += '<a href="admin.html" class="auth-chip admin-on" title="پنل ادمین">ادمین</a>';
     html += '<button id="logoutBtn" class="auth-chip">خروج</button>';
     box.innerHTML = html;
@@ -138,7 +145,8 @@ async function bootAuth() {
 }
 function injectFooter() {
   var f = document.getElementById('ftr');
-  if (!f) return;
+  if (!f || f.dataset.done) return;
+  f.dataset.done = '1';
   f.innerHTML = '<div class="f-min">' +
     '<div class="f-brand"><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><span>خوب بخور، بهتر زندگی کن</span></div>' +
     '<nav class="f-links">' +
@@ -184,8 +192,6 @@ async function loadChips() {
   ING = await r.json();
   renderChips();
 }
-/* Home v3: ایموجی هر ماده + شمارنده انتخاب */
-var ING_EMOJI = { chicken:'🍗', beef:'🥩', egg:'🥚', tomato:'🍅', rice:'🍚', potato:'🥔', onion:'🧅', garlic:'🧄', mushroom:'🍄', spinach:'🥬', avocado:'🥑', bread:'🍞', 'greek-yogurt':'🥣', salmon:'🐟', chickpea:'🫛', lentil:'🫘', fish:'🐠', shrimp:'🦐', eggplant:'🍆', kashk:'🥛', walnut:'🥜', 'pomegranate-molasses':'🍯' };
 function frSync() {
   var n = document.getElementById('frCount');
   if (n) { n.hidden = !have.length; var b = n.querySelector('b'); if (b) b.textContent = have.length.toLocaleString('fa-IR'); }
@@ -195,7 +201,7 @@ function frSync() {
 function renderChips() {
   var c = document.getElementById('chips');
   if (!c) return;
-  c.innerHTML = ING.map(function (i, ix) { return '<button class="chip' + (have.indexOf(i.key) !== -1 ? ' on' : '') + '" style="--i:' + ix + '" data-key="' + esc(i.key) + '"><i class="ci" aria-hidden="true">' + (ING_EMOJI[i.key] || '🥄') + '</i>' + esc(lang === 'fa' ? i.fa : i.en) + '</button>'; }).join('');
+  c.innerHTML = ING.map(function (i, ix) { return '<button class="chip' + (have.indexOf(i.key) !== -1 ? ' on' : '') + '" style="--i:' + ix + '" data-key="' + esc(i.key) + '">' + esc(lang === 'fa' ? i.fa : i.en) + '</button>'; }).join('');
   c.querySelectorAll('.chip').forEach(function (x) {
     x.onclick = function () {
       x.classList.toggle('on');
@@ -463,7 +469,7 @@ async function initDetail() {
   var tipsHtml = Array.isArray(r.tips) && r.tips.length ? '<div class="tips-section"><h3>نکات پخت</h3><ul class="tips-list">' + r.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' : '';
   var subsHtml = Array.isArray(r.substitutions) && r.substitutions.length ? '<div class="subs-section"><h3>جایگزین‌ها</h3><div class="subs-grid">' + r.substitutions.map(function (s) { return '<div class="sub-card"><b>' + esc(s.from) + '</b><span>→</span><b>' + esc(s.to) + '</b></div>'; }).join('') + '</div></div>' : '';
   var videoHtml = r.video_url ? '<div class="video-section"><h3>ویدیوی پخت</h3><a href="' + esc(r.video_url) + '" target="_blank" rel="noopener" class="video-card"><div class="video-thumb"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" data-fb="' + esc(FALL[r.category] || 'img/cat-main.jpg') + '" onerror="this.onerror=null;this.src=this.dataset.fb;" alt="' + esc(r.name_fa) + '"><span class="play-btn">▶</span></div><p>تماشای ویدیو در اینستاگرام</p></a></div>' : '';
-  el.innerHTML = '<div class="container rd-wrap"><div class="rd-img"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" data-fb="' + esc(FALL[r.category] || 'img/cat-main.jpg') + '" onerror="this.onerror=null;this.src=this.dataset.fb;" alt="' + esc(r.name_fa) + '" fetchpriority="high" decoding="async"><button id="favBtn" class="heart' + (favOn ? ' on' : '') + '">♥</button></div><div class="rd-info"><span class="rd-region">' + esc(countryFa(r.region)) + '</span><h1>' + esc(r.name_fa) + '</h1><p class="rd-en">' + esc(r.name_en || '') + '</p><p class="rd-desc">' + esc(r.desc_fa || '') + '</p><div class="rd-stats"><div><b>' + r.time_min + '</b><span>زمان پخت (دقیقه)</span></div><div><b>' + diff(r.time_min) + '</b><span>سطح دشواری</span></div></div>' + nutritionBars + '<h3>مواد لازم</h3><ul class="ing-list">' + ings.map(function (i) { return '<li>' + esc(i.fa) + '<span>' + esc(i.q) + '</span></li>'; }).join('') + '</ul>' + stepsHtml + tipsHtml + subsHtml + videoHtml + '<div class="f-cta"><a class="btn" href="planner.html">افزودن به برنامه</a><a class="btn ghost" href="recipes.html">همه رسپی‌ها</a></div></div></div><div id="cmBox" class="cm-box"></div>';
+  el.innerHTML = '<div class="container rd-wrap"><div class="rd-img"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" data-fb="' + esc(FALL[r.category] || 'img/cat-main.jpg') + '" onerror="this.onerror=null;this.src=this.dataset.fb;" alt="' + esc(r.name_fa) + '" fetchpriority="high" decoding="async"><button id="favBtn" class="heart' + (favOn ? ' on' : '') + '" aria-label="ذخیره"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button></div><div class="rd-info"><span class="rd-region">' + esc(countryFa(r.region)) + '</span><h1>' + esc(r.name_fa) + '</h1><p class="rd-en">' + esc(r.name_en || '') + '</p><p class="rd-desc">' + esc(r.desc_fa || '') + '</p><div class="rd-stats"><div><b>' + r.time_min + '</b><span>زمان پخت (دقیقه)</span></div><div><b>' + diff(r.time_min) + '</b><span>سطح دشواری</span></div></div>' + nutritionBars + '<h3>مواد لازم</h3><ul class="ing-list">' + ings.map(function (i) { return '<li>' + esc(i.fa) + '<span>' + esc(i.q) + '</span></li>'; }).join('') + '</ul>' + stepsHtml + tipsHtml + subsHtml + videoHtml + '<div class="f-cta"><a class="btn" href="planner.html">افزودن به برنامه</a><a class="btn ghost" href="recipes.html">همه رسپی‌ها</a></div></div></div><div id="cmBox" class="cm-box"></div>';
   document.getElementById('favBtn').onclick = async function () {
     if (!USER) { alert('برای ذخیره علاقه‌مندی، اول با گوگل وارد شو'); doLogin(); return; }
     if (favOn) {
@@ -518,7 +524,7 @@ async function initDetail() {
           try {
             var res = await fetch('/api/db?t=comment_post', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + histTok }, body: JSON.stringify({ slug: r.slug, body: txt }) });
             var j = await res.json().catch(function () { return {}; });
-            if (res.ok) { alert(j.status === 'approved' ? 'نظرت منتشر شد ✓' : 'نظرت ثبت شد و بعد از تأیید نمایش داده می‌شود'); renderComments(); }
+            if (res.ok) { alert(j.status === 'approved' ? 'نظرت منتشر شد' : 'نظرت ثبت شد و بعد از تأیید نمایش داده می‌شود'); renderComments(); }
             else alert(j.error || 'خطا در ثبت نظر');
           } catch (e) { alert('خطا در ثبت نظر'); }
           snd.disabled = false; snd.textContent = 'ثبت نظر';
@@ -554,7 +560,7 @@ async function initMarket() {
   else {
     grid.innerHTML = data.map(function (p) {
       var pl = '/market/p/' + encodeURIComponent(p.id);
-      return '<div class="pcard"><a class="p-link" href="' + pl + '"><div class="p-img"><img src="' + esc(p.image || 'img/prod-fallback.jpg') + '" alt="' + esc(p.title_fa) + '"><span class="p-rate">★ ' + Number(p.rating).toLocaleString('fa-IR') + '</span>' + (p.off_percent ? '<span class="p-badge" style="background:#d33">' + Number(p.off_percent).toLocaleString('fa-IR') + '٪ تخفیف</span>' : (p.badge ? '<span class="p-badge">' + esc(p.badge) + '</span>' : '')) + '</div><h4>' + esc(p.title_fa) + '</h4></a><div class="p-body"><p>' + esc(p.desc_fa || '') + '</p><div class="p-price">' + rial(p.price_rial) + (p.old_price_rial ? '<s>' + rial(p.old_price_rial) + '</s>' : '') + '</div><button class="btn p-cart" data-id="' + esc(p.id) + '" data-t="' + esc(p.title_fa) + '">خرید</button></div></div>';
+      return '<div class="pcard"><a class="p-link" href="' + pl + '"><div class="p-img"><img src="' + esc(p.image || 'img/prod-fallback.jpg') + '" alt="' + esc(p.title_fa) + '" loading="lazy" decoding="async"><span class="p-rate"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> ' + Number(p.rating).toLocaleString('fa-IR') + '</span>' + (p.off_percent ? '<span class="p-badge" style="background:#d33">' + Number(p.off_percent).toLocaleString('fa-IR') + '٪ تخفیف</span>' : (p.badge ? '<span class="p-badge">' + esc(p.badge) + '</span>' : '')) + '</div><h4>' + esc(p.title_fa) + '</h4></a><div class="p-body"><p>' + esc(p.desc_fa || '') + '</p><div class="p-price">' + rial(p.price_rial) + (p.old_price_rial ? '<s>' + rial(p.old_price_rial) + '</s>' : '') + '</div><button class="btn p-cart" data-id="' + esc(p.id) + '" data-t="' + esc(p.title_fa) + '">خرید</button></div></div>';
     }).join('');
   }
   var sel = document.getElementById('oProduct');
@@ -584,7 +590,7 @@ async function initPro() {
   var data = await (await fetch('/api/db?t=plans')).json();
   if (!Array.isArray(data)) return;
   box.innerHTML = data.map(function (pl) {
-    return '<div class="price-card' + (pl.key === 'yearly' ? ' hot' : '') + '" data-key="' + esc(pl.key) + '" data-id="' + esc(pl.id) + '">' + (pl.key === 'yearly' ? '<span class="ribbon">پیشنهاد ویژه</span>' : '') + '<h3>' + esc(pl.title_fa) + '</h3><div class="p">' + rial(pl.price_rial) + '<small> / ' + esc(pl.period) + '</small></div>' + (pl.old_price_rial ? '<s class="oldp">' + rial(pl.old_price_rial) + '</s>' : '') + '<ul>' + (pl.features || []).map(function (f) { return '<li>✔ ' + esc(f) + '</li>'; }).join('') + '</ul><a class="btn" data-id="' + esc(pl.id) + '" href="pro.html#buy">انتخاب پلان</a></div>';
+    return '<div class="price-card' + (pl.key === 'yearly' ? ' hot' : '') + '" data-key="' + esc(pl.key) + '" data-id="' + esc(pl.id) + '">' + (pl.key === 'yearly' ? '<span class="ribbon">پیشنهاد ویژه</span>' : '') + '<h3>' + esc(pl.title_fa) + '</h3><div class="p">' + rial(pl.price_rial) + '<small> / ' + esc(pl.period) + '</small></div>' + (pl.old_price_rial ? '<s class="oldp">' + rial(pl.old_price_rial) + '</s>' : '') + '<ul>' + (pl.features || []).map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul><a class="btn" data-id="' + esc(pl.id) + '" href="pro.html#buy">انتخاب پلان</a></div>';
   }).join('');
   document.querySelectorAll('.plan-tog button').forEach(function (b) {
     b.onclick = function () {

@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://www.googletagmanager.com">
+<link rel="dns-prefetch" href="https://hvqchqqlfcjxsohxywbd.supabase.co">
 <title>دستیار تغذیه | DailyFitBeat</title>
 <meta name="description" content="دستیار هوشمند تغذیه DailyFitBeat — پیشنهاد رسپی واقعی، کالری و ماکرو">
 <meta name="robots" content="noindex, nofollow">
@@ -16,18 +18,19 @@
 :root{ --warm:#fbf5ec; --warm2:#f6ecdd; --ai-ink:#241d15; --ai-soft:#8a7c6b; }
 body[data-page="ai"]{background:var(--warm)}
 /* ---------- HERO ---------- */
-.ai-hero{position:relative;min-height:600px;display:flex;flex-direction:column;align-items:center;padding:34px 16px 30px;overflow:hidden;background:#f3e7d7}
-.ai-hero::before{content:"";position:absolute;inset:0;background:url('img/ai-hero.jpg') center 24%/cover no-repeat}
-.ai-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(251,245,236,0) 0%,rgba(251,245,236,.28) 46%,var(--warm) 96%)}
+.ai-hero{position:relative;display:flex;flex-direction:column;align-items:center;padding:30px 16px 40px;overflow:hidden;background:radial-gradient(1100px 480px at 88% -8%,#f8e7cf 0%,transparent 60%),radial-gradient(800px 420px at -5% 30%,#f6ecdd 0%,transparent 55%),var(--warm)}
 .ai-hero-in{position:relative;z-index:2;width:100%;max-width:700px;display:flex;flex-direction:column;align-items:center;text-align:center}
 .ai-hello{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.75);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.9);border-radius:999px;padding:8px 18px;font-size:12.5px;font-weight:800;color:var(--ai-ink);box-shadow:0 6px 18px rgba(120,80,30,.12);animation:aiBob 3.4s ease-in-out infinite}
-.ai-hello i{color:var(--accent);font-style:normal}
+.ai-hello svg{width:13px;height:13px;fill:var(--accent)}
 @keyframes aiBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-.ai-hero h1{margin:18px 0 10px;font-size:clamp(26px,5vw,40px);font-weight:900;color:var(--ai-ink);letter-spacing:-.5px;text-shadow:0 2px 20px rgba(255,255,255,.65)}
+.ai-hero h1{margin:18px 0 10px;font-size:clamp(26px,5vw,40px);font-weight:900;color:var(--ai-ink);letter-spacing:-.5px}
 .ai-hero h1 .ai-hl{color:var(--accent)}
-.ai-hero .ai-sub{margin:0;font-size:14px;line-height:2.1;color:var(--ai-soft);max-width:430px;font-weight:600;text-shadow:0 1px 12px rgba(255,255,255,.7)}
+.ai-hero .ai-sub{margin:0;font-size:14px;line-height:2.1;color:var(--ai-soft);max-width:430px;font-weight:600}
+/* ---------- صحنهٔ ربات + کارت چت ---------- */
+.ai-scene{position:relative;z-index:2;width:100%;max-width:1120px;min-height:620px;margin:24px auto 0;border-radius:36px;overflow:hidden;box-shadow:0 34px 80px rgba(120,80,30,.2);background:url('img/ai-hero.jpg') right 22%/cover no-repeat #f3e7d7;display:flex;align-items:center}
+.ai-scene::after{content:"";position:absolute;inset:0;background:linear-gradient(to left,rgba(251,245,236,0) 42%,rgba(251,245,236,.38) 72%,rgba(251,245,236,.72) 100%);pointer-events:none}
 /* ---------- کارت چت ---------- */
-.ai-card{position:relative;z-index:2;width:100%;max-width:640px;margin:26px auto 0;background:rgba(255,255,255,.86);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.95);border-radius:26px;box-shadow:0 24px 60px rgba(120,80,30,.16);padding:20px 20px 18px;text-align:right}
+.ai-card{position:relative;z-index:3;width:100%;max-width:500px;margin:24px 24px;margin-inline-start:auto;background:rgba(255,255,255,.88);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.95);border-radius:26px;box-shadow:0 24px 60px rgba(120,80,30,.18);padding:18px 18px 16px;text-align:right}
 .ai-card-head{display:flex;align-items:center;gap:12px;padding:0 2px 14px}
 .ai-card-head img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2.5px solid #ffe1c4;box-shadow:0 4px 12px rgba(249,115,22,.18);flex:0 0 auto}
 .ai-card-head .t b{display:block;font-size:15px;font-weight:900;color:var(--ai-ink)}
@@ -38,7 +41,7 @@ body[data-page="ai"]{background:var(--warm)}
 .ai-tog input{accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
 .btn-ghost-sm{border:1px solid #f0e4d4;background:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;color:var(--ai-ink);transition:.15s}
 .btn-ghost-sm:hover{border-color:var(--accent);color:var(--accent)}
-#chat{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:16px;background:#fff;border:1px solid #f3ead9;border-radius:20px;min-height:220px;max-height:340px;scrollbar-width:thin}
+#chat{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:14px;background:#fff;border:1px solid #f3ead9;border-radius:20px;min-height:180px;max-height:300px;scrollbar-width:thin}
 .bub{max-width:84%;padding:11px 15px;border-radius:17px;font-size:13px;line-height:2;white-space:pre-wrap;word-break:break-word}
 .bub.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-left-radius:6px}
 .bub.bot{align-self:flex-start;background:var(--warm);color:var(--ai-ink);border:1px solid #f3ead9;border-bottom-right-radius:6px}
@@ -61,7 +64,8 @@ body[data-page="ai"]{background:var(--warm)}
 /* ---------- امکانات ---------- */
 .ai-feats{position:relative;z-index:2;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;width:100%;max-width:700px;margin:22px auto 0}
 .ai-feat{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.95);border-radius:16px;padding:11px 16px;box-shadow:0 6px 18px rgba(120,80,30,.09)}
-.ai-feat .ic{width:34px;height:34px;border-radius:11px;background:#fff3e6;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
+.ai-feat .ic{width:34px;height:34px;border-radius:11px;background:#fff3e6;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.ai-feat .ic svg{width:17px;height:17px;fill:var(--accent)}
 .ai-feat b{font-size:12px;color:var(--ai-ink);display:block}
 .ai-feat small{font-size:10.5px;color:var(--ai-soft)}
 /* ---------- نمونه سوال‌ها ---------- */
@@ -93,30 +97,34 @@ body[data-page="ai"]{background:var(--warm)}
 .pf-msg{display:none;border-radius:12px;padding:10px 14px;font-size:12px;margin-top:12px}
 .pf-msg.ok{display:block;background:#e8f4e9;color:#2d6a35}
 .pf-msg.err{display:block;background:#fdeaea;color:#c22}
-@media(max-width:900px){.ai-q-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.ai-q-grid{grid-template-columns:1fr 1fr}.ai-scene{min-height:540px}}
+@media(max-width:760px){
+  .ai-scene{display:block;min-height:0;border-radius:28px;background:none;box-shadow:none}
+  .ai-scene::before{content:"";display:block;height:260px;border-radius:28px;background:url('img/ai-hero.jpg') 62% 10%/auto 250% no-repeat #f3e7d7;box-shadow:0 18px 40px rgba(120,80,30,.16)}
+  .ai-scene::after{display:none}
+  .ai-card{max-width:100%;margin:14px 0 0;padding:15px 13px 14px}
+}
 @media(max-width:600px){
   .pf-grid{grid-template-columns:1fr}
   .bub{max-width:92%}
-  .ai-hero{min-height:0;padding:22px 14px 26px}
-  .ai-hero::before{background-position:center 18%;background-size:cover}
-  .ai-hero::after{background:linear-gradient(180deg,rgba(251,245,236,.05) 0%,rgba(251,245,236,.55) 34%,var(--warm) 72%)}
-  .ai-card{margin-top:190px;padding:15px 13px 14px}
+  .ai-hero{padding:22px 14px 28px}
   .ai-feat small{display:none}
   .ai-q .im{height:96px}
-  #chat{min-height:160px;max-height:280px}
+  #chat{min-height:150px;max-height:260px}
 }
 </style>
 </head>
 <body data-page="ai">
-<header id="hdr"></header>
+<header id="hdr" data-built="fa"><a class="logo" href="index.html"><img src="img/logo.png" alt="DailyFitBeat"></a><nav><a href="index.html" class="" data-fa="خانه" data-en="Home">خانه</a><a href="recipes.html" class="" data-fa="رسپی‌ها" data-en="Recipes">رسپی‌ها</a><a href="planner.html" class="" data-fa="استودیو تغذیه" data-en="Nutrition Studio">استودیو تغذیه</a><a href="market.html" class="" data-fa="فیت مارکت" data-en="Fit Market">فیت مارکت</a><a href="ai.html" class="on" data-fa="دستیار AI" data-en="AI Assistant">دستیار AI</a><a href="pro.html" class="" data-fa="PRO" data-en="PRO">PRO</a></nav><div class="hactions"><span id="authBox"><i class="auth-skel" aria-hidden="true"></i></span><button id="langBtn" class="lang">EN</button><a class="btn small" href="pro.html" data-fa="شروع رایگان" data-en="Start Free">شروع رایگان</a><button id="burger" class="burger" aria-label="menu"><span></span><span></span><span></span></button></div><div id="mnav" class="mnav"><a href="index.html" class="" data-fa="خانه" data-en="Home">خانه</a><a href="recipes.html" class="" data-fa="رسپی‌ها" data-en="Recipes">رسپی‌ها</a><a href="planner.html" class="" data-fa="استودیو تغذیه" data-en="Nutrition Studio">استودیو تغذیه</a><a href="market.html" class="" data-fa="فیت مارکت" data-en="Fit Market">فیت مارکت</a><a href="ai.html" class="on" data-fa="دستیار AI" data-en="AI Assistant">دستیار AI</a><a href="pro.html" class="" data-fa="PRO" data-en="PRO">PRO</a></div></header>
 
 <section class="ai-hero">
   <div class="ai-hero-in">
-    <span class="ai-hello">سلام! با هم سلامت‌تر زندگی کنیم <i>♥</i></span>
-    <h1>دستیار تغذیه <span class="ai-hl">هوشمند</span> ✨</h1>
+    <span class="ai-hello">سلام! با هم سلامت‌تر زندگی کنیم <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span>
+    <h1>دستیار تغذیه <span class="ai-hl">هوشمند</span></h1>
     <p class="ai-sub">هر سؤال دربارهٔ تغذیه، رسپی و کالری داری بپرس — جواب‌ها بر پایهٔ رسپی‌های واقعی دیلی‌بیت است</p>
   </div>
 
+  <div class="ai-scene">
   <div class="ai-card">
     <div class="ai-card-head">
       <img src="img/ai-bot.jpg" alt="ربات دستیار دیلی‌بیت" width="46" height="46" onerror="this.onerror=null;this.src='img/logo.png';">
@@ -142,11 +150,12 @@ body[data-page="ai"]{background:var(--warm)}
       <button id="send" aria-label="ارسال پیام"><svg viewBox="0 0 24 24"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
     </div>
   </div>
+  </div>
 
   <div class="ai-feats">
-    <div class="ai-feat"><span class="ic">🤖</span><span><b>قدرت هوش مصنوعی</b><small>با پاسخ‌های دقیق و شخصی‌سازی‌شده</small></span></div>
-    <div class="ai-feat"><span class="ic">📚</span><span><b>رسپی‌های واقعی</b><small>دسترسی به رسپی‌های دیلی‌بیت</small></span></div>
-    <div class="ai-feat"><span class="ic">👤</span><span><b>پروفایل تغذیه</b><small>پیشنهاد متناسب با بدن تو</small></span></div>
+    <div class="ai-feat"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l1.9 5.5L19.5 9l-5.6 1.5L12 16l-1.9-5.5L4.5 9l5.6-1.5L12 2zm7 12l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9L19 14zM5 14l.7 2.1 2.1.7-2.1.7L5 19.6l-.7-2.1-2.1-.7 2.1-.7L5 14z"/></svg></span><span><b>قدرت هوش مصنوعی</b><small>با پاسخ‌های دقیق و شخصی‌سازی‌شده</small></span></div>
+    <div class="ai-feat"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 4h5v8l-2.5-1.6L6 12V4z"/></svg></span><span><b>رسپی‌های واقعی</b><small>دسترسی به رسپی‌های دیلی‌بیت</small></span></div>
+    <div class="ai-feat"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg></span><span><b>پروفایل تغذیه</b><small>پیشنهاد متناسب با بدن تو</small></span></div>
   </div>
 </section>
 
@@ -196,7 +205,7 @@ body[data-page="ai"]{background:var(--warm)}
   </div>
 </div></div>
 
-<footer id="ftr"></footer>
+<footer id="ftr" data-done="1"><div class="f-min"><div class="f-brand"><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><span>خوب بخور، بهتر زندگی کن</span></div><nav class="f-links"><a href="recipes.html">رسپی‌ها</a><a href="planner.html">برنامه غذایی</a><a href="ai-assistant.html">دستیار AI</a><a href="market.html">فیت مارکت</a><a href="pro.html">PRO</a><a href="about.html">درباره ما</a></nav><a class="f-ig" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.8.1-1.1.1-1.5.2-1.8.3-.4.2-.7.3-1 .6-.3.3-.5.6-.6 1-.1.3-.3.7-.3 1.8-.1 1.3-.1 1.7-.1 4.8s0 3.5.1 4.8c.1 1.1.2 1.5.3 1.8.2.4.3.7.6 1 .3.3.6.5 1 .6.3.1.7.3 1.8.3 1.3.1 1.7.1 4.8.1s3.5 0 4.8-.1c1.1-.1 1.5-.2 1.8-.3.4-.2.7-.3 1-.6.3-.3.5-.6.6-1 .1-.3.3-.7.3-1.8.1-1.3.1-1.7.1-4.8s0-3.5-.1-4.8c-.1-1.1-.2-1.5-.3-1.8-.2-.4-.3-.7-.6-1-.3-.3-.6-.5-1-.6-.3-.1-.7-.3-1.8-.3-1.3-.1-1.7-.1-4.8-.1zm0 3.1a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zm5.2-2.9a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>اینستاگرام</a></div><div class="f-bottom">© 2026 DailyFitBeat — همه حقوق محفوظ است.</div></footer>
 <script src="site.js"></script>
 <script src="app.js"></script>
 <script src="ai.js"></script>

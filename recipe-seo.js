@@ -79,7 +79,7 @@
     const rel = list.slice().sort((a,b) => score(b) - score(a)).slice(0, 4);
     const relHtml = `<div class="rel-sec">
       <div class="rel-head"><h2>رسپی‌های مرتبط</h2>
-      <a class="btn ghost" href="${window.SITE ? SITE.social.instagram : '#'}" target="_blank" rel="noopener">📸 ویدیوی این رسپی در اینستاگرام</a></div>
+      <a class="btn ghost" href="${window.SITE ? SITE.social.instagram : '#'}" target="_blank" rel="noopener">ویدیوی این رسپی در اینستاگرام</a></div>
       <div class="cards">${rel.map(x => `<a class="card" href="/recipes/${x.slug}">
         <div class="c-img"><img src="${x.image || '/img/hero-home.jpg'}" loading="lazy" decoding="async" alt="${x.name_fa}"></div>
         <div class="c-body"><h3>${x.name_fa}</h3>

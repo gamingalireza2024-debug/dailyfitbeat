@@ -841,7 +841,7 @@
       return '<div class="media-item"><img src="' + esc(m.path) + '" loading="lazy" alt="" onerror="this.classList.add(\'bad\')"><small dir="ltr">' + esc(m.path) + '</small><span>' + esc(m.owner) + '</span><button class="btn small" data-p="' + esc(m.path) + '">کپی مسیر</button></div>';
     }).join('') || '<p class="no-res">تصویری پیدا نشد</p>';
     box.querySelectorAll('button[data-p]').forEach(function (b) {
-      b.onclick = function () { try { navigator.clipboard.writeText(b.dataset.p); b.textContent = 'کپی شد ✓'; setTimeout(function () { b.textContent = 'کپی مسیر'; }, 1200); } catch (e) {} };
+      b.onclick = function () { try { navigator.clipboard.writeText(b.dataset.p); b.textContent = 'کپی شد'; setTimeout(function () { b.textContent = 'کپی مسیر'; }, 1200); } catch (e) {} };
     });
   }
 
@@ -966,7 +966,7 @@
         if (cur) { try { await api('version_save', { method: 'POST', body: JSON.stringify({ slug: slug, snapshot: cur }) }); } catch (e) {} }
         var r2 = await api('version_restore', { method: 'POST', body: JSON.stringify({ id: Number(btn.dataset.id) }) });
         var j2 = await r2.json().catch(function () { return {}; });
-        if (r2.ok) { alert('بازیابی شد ✓'); await refreshREC(); fillForm(REC.find(function (x) { return x.slug === slug; })); }
+        if (r2.ok) { alert('بازیابی شد'); await refreshREC(); fillForm(REC.find(function (x) { return x.slug === slug; })); }
         else alert(j2.error || 'خطا');
       };
     });

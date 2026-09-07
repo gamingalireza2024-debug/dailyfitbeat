@@ -139,7 +139,7 @@
       el.innerHTML = prods.length ? prods.map(function (p) {
         var fp = (p.products && p.products.file_path) || p.file_path || '';
         return '<div class="u-item"><b>' + esc(p.products ? p.products.title_fa : (p.title_fa || 'محصول')) + '</b><br><small>خرید: ' + faDate(p.granted_at) + (p.expires_at ? ' — تا ' + faDate(p.expires_at) : '') + '</small><br><a class="dl-btn" data-e="' + esc(p.id) + '" data-path="' + esc(fp) + '" href="#">دانلود</a></div>';
-      }).join('') : '<div class="u-empty">هنوز محصولی نخریدی — <a href="market.html">فیت مارکت</a></div>';
+      }).join('') : '<div class="u-photo"><img src="img/market-hero.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\'"><span><b>هنوز محصولی نخریدی</b><small>پک‌ها و برنامه‌های دیجیتال — دانلود آنی بعد از خرید</small><a href="market.html">رفتن به فیت مارکت</a></span></div>';
       el.querySelectorAll('.dl-btn').forEach(function (a) {
         if (a.dataset.boundDl) return;
         a.dataset.boundDl = '1';
@@ -164,7 +164,7 @@
       if (!Array.isArray(diets)) diets = [];
       el.innerHTML = diets.length ? diets.map(function (d) {
         return '<div class="u-item"><b>' + esc(d.title || 'برنامه غذایی') + '</b> — ' + esc(d.status === 'published' ? 'منتشر شده' : 'پیش‌نویس') + '<br><small>هدف: ' + esc(d.goal || '—') + ' | کالری: ' + faN(d.kcal_target || 0) + '</small><br>' + (d.pdf_path ? '<a class="dl-btn dl-pdf" data-d="' + esc(d.id) + '" data-path="' + esc(d.pdf_path) + '" href="#">دانلود PDF</a>' : '<small>در انتظار PDF</small>') + '</div>';
-      }).join('') : '<div class="u-empty">هنوز برنامه غذایی نداری. با PRO، ادمین برات برنامه اختصاصی می‌سازد.</div>';
+      }).join('') : '<div class="u-photo"><img src="img/u-empty-plan.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\'"><span><b>هنوز برنامه غذایی نداری</b><small>با استودیو تغذیه خودت بساز، یا با PRO اختصاصی بگیر</small><a href="planner.html">ساخت برنامه</a></span></div>';
       el.querySelectorAll('.dl-pdf').forEach(function (a) {
         if (a.dataset.boundPdf) return;
         a.dataset.boundPdf = '1';
@@ -197,8 +197,8 @@
         el.innerHTML = f.map(function (x) {
           var rec = (Array.isArray(all) ? all : []).find(function (a) { return a.slug === x.recipe_slug; });
           return rec ? '<div class="u-item"><a href="recipe.html?slug=' + esc(rec.slug) + '">' + esc(rec.name_fa) + '</a></div>' : '';
-        }).join('') || '<div class="u-empty">هنوز رسپی ذخیره نکردی</div>';
-      } else el.innerHTML = '<div class="u-empty">هنوز رسپی ذخیره نکردی</div>';
+        }).join('') || '<div class="u-photo"><img src="img/u-empty-recipes.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\'"><span><b>هنوز رسپی ذخیره نکردی</b><small>روی هر رسپی قلب بزن تا اینجا ذخیره شود</small><a href="recipes.html">دیدن رسپی‌ها</a></span></div>';
+      } else el.innerHTML = '<div class="u-photo"><img src="img/u-empty-recipes.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\'"><span><b>هنوز رسپی ذخیره نکردی</b><small>روی هر رسپی قلب بزن تا اینجا ذخیره شود</small><a href="recipes.html">دیدن رسپی‌ها</a></span></div>';
     });
 
     await safe('notifs', async function () {
@@ -224,9 +224,9 @@
       var r = await api('streak');
       if (!r.ok) { el.innerHTML = '<div class="u-empty">برای استریک وارد شو</div>'; return; }
       var s = await r.json();
-      var ch = s.current >= 7 ? 'چالش ۷ روزه را بردی! حالا برو سراغ ۱۴ روز ⚡' : 'چالش ۷ روزه: ' + Math.min(s.current, 7) + ' از ۷ روز';
-      el.innerHTML = '<div class="streak-box"><span class="flame">🔥</span><div><b>' + faN(s.current) + ' روز پیوسته</b><br><small>رکورد تو: ' + faN(s.best) + ' روز</small></div></div><small class="cm-hint">' + esc(ch) + '</small>';
-      if (s.new_badges && s.new_badges.length) alert('🎉 نشان جدید گرفتی: ' + s.new_badges.join('، '));
+      var ch = s.current >= 7 ? 'چالش ۷ روزه را بردی! حالا برو سراغ ۱۴ روز' : 'چالش ۷ روزه: ' + Math.min(s.current, 7) + ' از ۷ روز';
+      el.innerHTML = '<div class="streak-box"><span class="flame"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 23c-4.4 0-8-3.6-8-8 0-3.5 2-6.5 4-8.5.3 1.5 1 2.9 2.2 3.7C10.5 7 11.5 3.7 14 1c-.3 2.7.7 4.6 2 6.4 1.6 2.1 4 4.1 4 7.6 0 4.4-3.6 8-8 8z"/></svg></span><div><b>' + faN(s.current) + ' روز پیوسته</b><br><small>رکورد تو: ' + faN(s.best) + ' روز</small></div></div><small class="cm-hint">' + esc(ch) + '</small>';
+      if (s.new_badges && s.new_badges.length) alert('نشان جدید گرفتی: ' + s.new_badges.join('، '));
     });
 
     await safe('badges', async function () {
@@ -238,19 +238,19 @@
       var have = {};
       arr.forEach(function (b) { have[b.badge_key] = true; });
       var CATALOG = [
-        { k: 'streak_3', t: '۳ روز پیوسته', i: '🔥' },
-        { k: 'streak_7', t: '۷ روز پیوسته', i: '🔥' },
-        { k: 'streak_14', t: '۱۴ روز پیوسته', i: '⚡' },
-        { k: 'streak_30', t: '۳۰ روز پیوسته', i: '👑' },
-        { k: 'first_comment', t: 'اولین نظر', i: '💬' },
-        { k: 'fav_10', t: '۱۰ ذخیره', i: '❤️' },
-        { k: 'referred', t: 'با دعوت آمدم', i: '🤝' },
-        { k: 'referral_5', t: 'دعوت‌گر طلایی', i: '🌟' },
-        { k: 'referral_10', t: 'سفیر دیلی‌بیت', i: '🏆' }
+        { k: 'streak_3', t: '۳ روز پیوسته', i: 'M12 23c-4.4 0-8-3.6-8-8 0-3.5 2-6.5 4-8.5.3 1.5 1 2.9 2.2 3.7C10.5 7 11.5 3.7 14 1c-.3 2.7.7 4.6 2 6.4 1.6 2.1 4 4.1 4 7.6 0 4.4-3.6 8-8 8z' },
+        { k: 'streak_7', t: '۷ روز پیوسته', i: 'M12 23c-4.4 0-8-3.6-8-8 0-3.5 2-6.5 4-8.5.3 1.5 1 2.9 2.2 3.7C10.5 7 11.5 3.7 14 1c-.3 2.7.7 4.6 2 6.4 1.6 2.1 4 4.1 4 7.6 0 4.4-3.6 8-8 8z' },
+        { k: 'streak_14', t: '۱۴ روز پیوسته', i: 'M11 21h-1l1-7H7.5c-.6 0-.6-.4-.4-.7L13 3h1l-1 7h3.5c.5 0 .7.3.4.8L11 21z' },
+        { k: 'streak_30', t: '۳۰ روز پیوسته', i: 'M2 19h20v-2H2v2zm2-4l-2-9 5.5 3L12 3l4.5 6L22 6l-2 9H4z' },
+        { k: 'first_comment', t: 'اولین نظر', i: 'M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z' },
+        { k: 'fav_10', t: '۱۰ ذخیره', i: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' },
+        { k: 'referred', t: 'با دعوت آمدم', i: 'M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm0 2c-2.3 0-7 1.2-7 3.5V19h14v-2.5C15 14.2 10.3 13 8 13zm8 0c-.3 0-.7 0-1 .1a4.2 4.2 0 0 1 2 3.4V19h6v-2.5c0-2.3-4.7-3.5-7-3.5z' },
+        { k: 'referral_5', t: 'دعوت‌گر طلایی', i: 'M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17l-6.1 3.6 1.4-6.8L2.2 9.1l6.9-.8L12 2z' },
+        { k: 'referral_10', t: 'سفیر دیلی‌بیت', i: 'M18 5V2H6v3H2v3a5 5 0 0 0 4.6 5A6 6 0 0 0 11 16.9V19H8v3h8v-3h-3v-2.1A6 6 0 0 0 17.4 13 5 5 0 0 0 22 8V5h-4zM4 8V7h2v3.8A3 3 0 0 1 4 8zm16 0a3 3 0 0 1-2 2.8V7h2v1z' }
       ];
       el.innerHTML = CATALOG.map(function (b) {
         var on = !!have[b.k];
-        return '<div class="badge' + (on ? ' on' : '') + '" title="' + esc(b.t) + (on ? '' : ' — هنوز قفل') + '"><span>' + b.i + '</span><small>' + esc(b.t) + '</small></div>';
+        return '<div class="badge' + (on ? ' on' : '') + '" title="' + esc(b.t) + (on ? '' : ' — هنوز قفل') + '"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + b.i + '"/></svg></span><small>' + esc(b.t) + '</small></div>';
       }).join('');
     });
 
@@ -300,7 +300,7 @@
         '<div class="ref-apply"><input id="refApplyIn" placeholder="کد دعوت دوستت را بزن" maxlength="20" value="' + esc(prefill) + '"><button class="dl-btn" id="refApplyBtn">اعمال</button></div>';
       var cp = $('refCopy');
       cp.onclick = function () {
-        try { navigator.clipboard.writeText(url); cp.textContent = 'کپی شد ✓'; setTimeout(function () { cp.textContent = 'کپی'; }, 2000); } catch (e) { prompt('این را کپی کن:', url); }
+        try { navigator.clipboard.writeText(url); cp.textContent = 'کپی شد'; setTimeout(function () { cp.textContent = 'کپی'; }, 2000); } catch (e) { prompt('این را کپی کن:', url); }
       };
       var ab = $('refApplyBtn');
       if (ab) ab.onclick = async function () {
@@ -308,7 +308,7 @@
         if (!code) { alert('کد را وارد کن'); return; }
         var res = await api('referral_apply', { method: 'POST', body: JSON.stringify({ code: code }) });
         var jj = await res.json().catch(function () { return {}; });
-        alert(res.ok ? 'اعمال شد! 🤝' : (jj.error || 'خطا'));
+        alert(res.ok ? 'اعمال شد!' : (jj.error || 'خطا'));
         if (res.ok) { try { localStorage.removeItem('dfb-ref'); } catch (e) {} main(USER); }
       };
     });

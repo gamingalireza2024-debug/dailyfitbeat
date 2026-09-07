@@ -1,4 +1,4 @@
-const CARD_NUMBER = "6037-9975-0000-0000"; // ⚠️ شماره کارت واقعی خودت رو اینجا بذار
+const CARD_NUMBER = "6037-9975-0000-0000"; // شماره کارت واقعی خودت رو اینجا بذار
 (function () {
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const rialFa = n => (Number(n) || 0).toLocaleString('fa-IR') + ' ریال';
@@ -22,7 +22,7 @@ const CARD_NUMBER = "6037-9975-0000-0000"; // ⚠️ شماره کارت واق�
     return fetch('/api/db?t=' + t, Object.assign({ headers: hd }, opts || {}));
   }
   window.DFB_buy = async function (payload, title) {
-    if (!DFB.user) { alert('اول با گوگل وارد شو 👤'); if (window.doLogin) doLogin(); return; }
+    if (!DFB.user) { alert('اول با گوگل وارد شو'); if (window.doLogin) doLogin(); return; }
     const m = modal();
     m.style.display = 'flex';
     document.getElementById('smTitle').textContent = 'خرید: ' + title;
@@ -36,16 +36,16 @@ const CARD_NUMBER = "6037-9975-0000-0000"; // ⚠️ شماره کارت واق�
       const j = await r.json();
       if (!r.ok) { alert(j.error === 'invalid coupon' ? 'کد تخفیف معتبر نیست' : (j.error || 'خطا')); return; }
       document.getElementById('smBody').innerHTML = `
-        <div style="background:#e8f4e9;border-radius:14px;padding:14px;text-align:center;margin-bottom:12px"><b style="font-size:18px;color:#2d6a35">${rialFa(j.total)}</b>${j.discount ? `<br><small>تخفیف: ${rialFa(j.discount)} 🎉</small>` : ''}</div>
+        <div style="background:#e8f4e9;border-radius:14px;padding:14px;text-align:center;margin-bottom:12px"><b style="font-size:18px;color:#2d6a35">${rialFa(j.total)}</b>${j.discount ? `<br><small>تخفیف: ${rialFa(j.discount)}</small>` : ''}</div>
         <p style="font-size:13px;line-height:2">۱) مبلغ رو به کارت <b dir="ltr">${CARD_NUMBER}</b> واریز کن<br>۲) کد پیگیری رو اینجا بذار:</p>
         <input id="smRef" placeholder="کد پیگیری واریز" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;font:inherit">
-        <button id="smSub" class="btn" style="margin-top:10px;width:100%">ثبت پرداخت ✅</button>` + closeBtn();
+        <button id="smSub" class="btn" style="margin-top:10px;width:100%">ثبت پرداخت</button>` + closeBtn();
       bindClose();
       document.getElementById('smSub').onclick = async () => {
         const ref = document.getElementById('smRef').value.trim();
         const r2 = await api('submit_payment', { method: 'POST', body: JSON.stringify({ payment_id: j.payment_id, ref }) });
         if (!r2.ok) { alert('خطا در ثبت'); return; }
-        document.getElementById('smBody').innerHTML = `<p style="text-align:center;line-height:2">✅ پرداختت ثبت شد و برای تأیید به ادمین رفت.<br>بعد از تأیید، محصول/PRO در <b>پنل کاربری</b> فعال می‌شه و اعلان می‌گیری. 🎉</p>` + closeBtn();
+    document.getElementById('smBody').innerHTML = `<p style="text-align:center;line-height:2">پرداختت ثبت شد و برای تأیید به ادمین رفت.<br>بعد از تأیید، محصول/PRO در <b>پنل کاربری</b> فعال می‌شه و اعلان می‌گیری. </p>` + closeBtn();
         bindClose();
       };
     };
