@@ -534,47 +534,6 @@ async function initDetail() {
     renderComments();
   }
 }
-function initOrder() {
-  var f = document.getElementById('orderForm');
-  if (!f) return;
-  var t0 = Date.now(); /* تله زمان ضدربات: ارسال سریع‌تر از ۲.۵ ثانیه = ربات */
-  f.onsubmit = async function (e) {
-    e.preventDefault();
-    /* honeypot: فیلد مخفی — ربات‌ها آن را پر می‌کنند */
-    var hp = f.querySelector('input[name="website"]');
-    var terms = document.getElementById('oTerms');
-    if (!terms || !terms.checked) {
-      var okE = document.getElementById('orderOk');
-      okE.style.display = 'block';
-      okE.innerHTML = '<b>اول قوانین و مقررات را بپذیر.</b> برای ثبت سفارش باید تیک پذیرش قوانین را بزنی — <a href="terms.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:800">خواندن قوانین</a>';
-      return;
-    }
-    var btn = f.querySelector('button[type="submit"]');
-    if (btn) { btn.disabled = true; btn.textContent = 'در حال ثبت…'; }
-    var o = { name: document.getElementById('oName').value, phone: document.getElementById('oPhone').value, email: document.getElementById('oEmail').value, product: document.getElementById('oProduct').value, note: document.getElementById('oNote').value, ref: document.getElementById('oRef').value, user_id: USER ? USER.id : null, website: hp ? hp.value : '', accept_terms: true, form_time: Date.now() - t0 };
-    try {
-      var r = await fetch('/api/db?t=order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(o) });
-      var res = await r.json();
-      var ok = document.getElementById('orderOk');
-      ok.style.display = 'block';
-      if (!r.ok || (!res.id && res.error)) {
-        ok.innerHTML = '<b>ثبت نشد:</b> ' + esc(res.error || 'خطای موقت — دوباره تلاش کن');
-      } else if (!res.id) {
-        ok.innerHTML = 'سفارش ثبت نشد — اطلاعات فرم را بررسی کن و دوباره تلاش کن.';
-      } else {
-        ok.innerHTML = 'سفارش تو با کد <b>' + (res.id || '—') + '</b> ثبت شد<br>تلگرام: ' + (res.tg ? 'بله' : 'خیر') + ' — ایمیل: ' + (res.mail === 'ok' ? 'بله' : 'خیر') + (USER ? '<br>در پنل کاربری قابل پیگیریه' : '');
-        f.reset();
-        var t2 = document.getElementById('oTerms'); if (t2) t2.checked = false;
-        t0 = Date.now();
-      }
-    } catch (err2) {
-      var ok2 = document.getElementById('orderOk');
-      ok2.style.display = 'block';
-      ok2.innerHTML = '<b>اتصال برقرار نشد.</b> اینترنت را چک کن و دوباره تلاش کن.';
-    }
-    if (btn) { btn.disabled = false; btn.textContent = 'ثبت سفارش'; }
-  };
-}
 async function initMarket() {
   var grid = document.getElementById('prodGrid');
   if (!grid) return;
@@ -588,8 +547,6 @@ async function initMarket() {
       return '<div class="pcard"><a class="p-link" href="' + pl + '"><div class="p-img"><img src="' + esc(p.image || 'img/prod-fallback.jpg') + '" alt="' + esc(p.title_fa) + '" loading="lazy" decoding="async"><span class="p-rate"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> ' + Number(p.rating).toLocaleString('fa-IR') + '</span>' + (p.off_percent ? '<span class="p-badge" style="background:#d33">' + Number(p.off_percent).toLocaleString('fa-IR') + '٪ تخفیف</span>' : (p.badge ? '<span class="p-badge">' + esc(p.badge) + '</span>' : '')) + '</div><h4>' + esc(p.title_fa) + '</h4></a><div class="p-body"><p>' + esc(p.desc_fa || '') + '</p><div class="p-price">' + rial(p.price_rial) + (p.old_price_rial ? '<s>' + rial(p.old_price_rial) + '</s>' : '') + '</div><button class="btn p-cart" data-id="' + esc(p.id) + '" data-t="' + esc(p.title_fa) + '">خرید</button></div></div>';
     }).join('');
   }
-  var sel = document.getElementById('oProduct');
-  if (sel) sel.innerHTML = data.map(function (p) { return '<option>' + esc(p.title_fa) + '</option>'; }).join('');
 }
 /* ---------- صفحه اختصاصی محصول + اسکیمای Product ---------- */
 function renderProductPage(data, pid, grid) {
@@ -671,6 +628,6 @@ bindScroll();
 bootAuth();
 document.documentElement.lang = lang;
 document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
-initSearch(); initFinder(); initRecipes(); initDetail(); initOrder(); initMarket(); initPro();
+initSearch(); initFinder(); initRecipes(); initDetail(); initMarket(); initPro();
 if (page === 'home') loadPopular();
 if (page === 'recipes') loadAll().then(function () { renderCatCards(); renderTiles(); renderRecipes(); });

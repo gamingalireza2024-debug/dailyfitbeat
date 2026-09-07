@@ -49,6 +49,7 @@ async function awardBadges(uid, keys) {
   return fresh;
 }
 const SLUG_RE = /^[a-z0-9-]{1,120}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CAT_WHITELIST = ["iranian", "main", "salad", "sandwich", "breakfast", "soup"];
 const RECIPE_FIELDS = ["name_fa", "name_en", "category", "region", "time_min", "kcal", "protein", "carbs", "fat", "fiber", "sugar", "image", "video_url", "desc_fa", "tags", "keys", "ingredients", "steps", "tips", "substitutions", "meta_title", "meta_description", "status", "noindex"];
 import { generatePlan as pbGenerate } from "../lib/planbuilder.js";
@@ -57,7 +58,30 @@ async function sendTelegram(text) {
   if (!TG || !CH) return false;
   try { const r = await fetch("https://api.telegram.org/bot" + TG + "/sendMessage", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: CH, text }) }); return r.ok; } catch (e) { return false; }
 }
+/* ---------- ایمیل: زنجیره Resend (اصلی) → EmailJS (فال‌بک) ---------- */
+const faBox = (t) => "<div style=\"font-family:Tahoma,Arial;direction:rtl;text-align:right;line-height:2\">" + t + "</div>";
+async function sendResend(to, subject, html) {
+  const K = process.env.RESEND_API_KEY;
+  if (!K || !to) return false;
+  const FROM = process.env.MAIL_FROM || "DailyFitBeat <onboarding@resend.dev>";
+  try {
+    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { "Authorization": "Bearer " + K, "Content-Type": "application/json" }, body: JSON.stringify({ from: FROM, to: [to], subject, html }) });
+    if (r.ok) return true;
+    console.log("resend fail:", r.status, (await r.text().catch(() => "")).slice(0, 200));
+  } catch (e) {}
+  return false;
+}
+async function mailAdmin(subject, text) {
+  const A = process.env.ADMIN_EMAIL;
+  if (!A) return false;
+  return sendResend(A, subject, faBox(text));
+}
 async function sendMail(o, id) {
+  /* رسید مشتری: اول Resend؛ اگر نبود/نشد → EmailJS */
+  if (o.email) {
+    const okR = await sendResend(o.email, "سفارش #" + id + " ثبت شد — DailyFitBeat", faBox("<b>سلام " + (o.name || "") + "</b><br>سفارش تو با کد <b>" + id + "</b> ثبت شد.<br>محصول: " + (o.product || "") + "<br>پس از تأیید پرداخت، دسترسی در پنل کاربری فعال می‌شود.<br><br>— DailyFitBeat"));
+    if (okR) return "ok";
+  }
   const S = process.env.EJ_SERVICE, T = process.env.EJ_TEMPLATE, U = process.env.EJ_USER, P = process.env.EJ_PRIVATE;
   if (!S || !T || !U || !o.email) return "no-config";
   try {
@@ -153,14 +177,17 @@ export default async function handler(req, res) {
     /* honeypot: فیلد مخفی فرم؛ ربات‌ها پرش می‌کنند — پاسخ موفقیت جعلی تا لیست را ترک نکنند */
     if (clean(b.website, 200)) { res.status(200).json({ id: null, tg: false, mail: "skipped" }); return; }
     if (!orderRateOk(clientIp(req))) { res.status(429).json({ error: "تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره تلاش کن" }); return; }
+    if (!b.accept_terms) { res.status(400).json({ error: "terms-not-accepted" }); return; } /* تیک قوانین — الزامی سمت سرور */
     const name = clean(b.name, 80), phone = clean(b.phone, 20), email = clean(b.email, 120), product = clean(b.product, 120), note = clean(b.note, 500), ref = clean(b.ref, 60);
     if (!name || !phone || !product) { res.status(400).json({ error: "fields required" }); return; }
     if (!/^[0-9+\-\s]{7,20}$/.test(phone)) { res.status(400).json({ error: "invalid phone" }); return; }
     if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { res.status(400).json({ error: "invalid email" }); return; }
-    const arr = await sbWrite("/rest/v1/orders?select=id", "POST", { name, phone, email, product, note, ref, user_id: b.user_id || null, status: "new" });
+    const gid = UUID_RE.test(String(b.user_id || "")) ? b.user_id : null; /* مهمان: هر رشته‌ای user_id نمی‌شود */
+    const arr = await sbWrite("/rest/v1/orders?select=id", "POST", { name, phone, email, product, note, ref, user_id: gid, status: "new" });
     const id = Array.isArray(arr) && arr[0] ? arr[0].id : null;
-    const tg = await sendTelegram("🛒 سفارش #" + id + "\n" + name + " | " + phone + "\n" + product + "\nکد واریز: " + ref);
+    const tg = await sendTelegram("🛒 سفارش جدید #" + id + "\n👤 " + name + " | " + phone + (email ? "\n✉️ " + email : "") + "\n📦 " + product + (ref ? "\n🔢 کد پیگیری: " + ref : "") + "\n💳 کارت به کارت — در انتظار تأیید");
     const mail = await sendMail({ email, name, product }, id);
+    await mailAdmin("🛒 سفارش جدید #" + id + " — " + product, "<b>" + name + "</b> | " + phone + (email ? " | " + email : "") + "<br>محصول: " + product + (ref ? "<br>کد پیگیری: <b>" + ref + "</b>" : ""));
     res.status(200).json({ id, tg, mail }); return;
   }
 
@@ -169,6 +196,8 @@ export default async function handler(req, res) {
     if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (user === "disabled") { res.status(403).json({ error: "account disabled" }); return; }
     const b = req.body || {};
+    if (!b.accept_terms) { res.status(400).json({ error: "terms-not-accepted" }); return; } /* تیک قوانین — الزامی سمت سرور */
+    if (!rateOk("co:" + user.id, 12, 60 * 60 * 1000)) { res.status(429).json({ error: "تعداد خریدهای زیاد؛ کمی بعد تلاش کن" }); return; }
     let amount, title, productId = null, planId = null;
     if (b.product_id) {
       const p = await sbGet("/rest/v1/products?id=eq." + b.product_id);
@@ -180,8 +209,9 @@ export default async function handler(req, res) {
       amount = p[0].price_rial; title = "PRO — " + p[0].title_fa; planId = p[0].id;
     } else { res.status(400).json({ error: "product_id or plan_id required" }); return; }
     let discount = 0, couponId = null;
-    if (b.coupon) {
-      const c = await sbGet("/rest/v1/coupons?code=eq." + encodeURIComponent(String(b.coupon).toUpperCase()) + "&active=eq.true&select=*");
+    const ccode = clean(b.coupon, 40).toUpperCase();
+    if (ccode) {
+      const c = await sbGet("/rest/v1/coupons?code=eq." + encodeURIComponent(ccode) + "&active=eq.true&select=*");
       const cp = Array.isArray(c) && c[0];
       if (!cp) { res.status(400).json({ error: "invalid coupon" }); return; }
       if (cp.start_date && new Date(cp.start_date) > new Date()) { res.status(400).json({ error: "coupon not started" }); return; }
@@ -194,12 +224,14 @@ export default async function handler(req, res) {
       couponId = cp.id;
     }
     const total = Math.max(0, amount - discount);
-    const ord = await sbWrite("/rest/v1/orders?select=id", "POST", { name: (user.user_metadata && user.user_metadata.name) || "", phone: b.phone || "", email: user.email, product: title, product_id: productId, subtotal: amount, discount, total, currency: "IRR", payment_method: b.method === "GATEWAY" ? "GATEWAY" : "MANUAL", status: "pending", user_id: user.id, note: b.note || "" });
+    const ord = await sbWrite("/rest/v1/orders?select=id", "POST", { name: (user.user_metadata && user.user_metadata.name) || "", phone: clean(b.phone, 20), email: user.email, product: title, product_id: productId, subtotal: amount, discount, total, currency: "IRR", payment_method: b.method === "GATEWAY" ? "GATEWAY" : "MANUAL", status: "pending", user_id: user.id, note: clean(b.note, 500) });
     const orderId = Array.isArray(ord) && ord[0] ? ord[0].id : null;
     if (!orderId) { res.status(500).json({ error: "order failed" }); return; }
     await sbWrite("/rest/v1/order_items", "POST", { order_id: orderId, product_id: productId, qty: 1, unit_price: amount, discount, total });
     const pay = await sbWrite("/rest/v1/payments?select=id", "POST", { order_id: orderId, user_id: user.id, amount: total, currency: "IRR", provider: b.method === "GATEWAY" ? "GATEWAY" : "MANUAL", status: "pending", meta: { plan_id: planId, coupon_id: couponId } });
     const payId = Array.isArray(pay) && pay[0] ? pay[0].id : null;
+    await sendTelegram("🛒 سفارش پنلی #" + orderId + "\n👤 " + ((user.user_metadata && user.user_metadata.name) || user.email) + " | " + user.email + "\n📦 " + title + "\n💵 " + total.toLocaleString("fa-IR") + " ریال" + (discount ? " (تخفیف " + discount.toLocaleString("fa-IR") + ")" : "") + "\n⏳ در انتظار واریز کارت به کارت");
+    await mailAdmin("🛒 سفارش پنلی #" + orderId + " — " + title, user.email + "<br>مبلغ: <b>" + total.toLocaleString("fa-IR") + "</b> ریال" + (discount ? " (تخفیف " + discount + ")" : ""));
     res.status(200).json({ order_id: orderId, payment_id: payId, total, discount }); return;
   }
 
@@ -208,15 +240,20 @@ export default async function handler(req, res) {
     if (!user) { res.status(401).json({ error: "unauthorized" }); return; }
     if (user === "disabled") { res.status(403).json({ error: "account disabled" }); return; }
     const { payment_id, ref } = req.body || {};
-    if (!ref || !String(ref).trim()) { res.status(400).json({ error: "ref required" }); return; }
+    if (!payment_id || isNaN(+payment_id)) { res.status(400).json({ error: "bad payment" }); return; }
+    const refS = clean(ref, 60);
+    if (!refS) { res.status(400).json({ error: "ref required" }); return; }
+    if (!/^[A-Za-z0-9\u06F0-\u06F9\-\.\s]{4,60}$/.test(refS)) { res.status(400).json({ error: "کد پیگیری نامعتبر است" }); return; }
+    if (!rateOk("sp:" + user.id, 8, 60 * 60 * 1000)) { res.status(429).json({ error: "تعداد درخواست‌ها زیاد؛ کمی بعد تلاش کن" }); return; }
     const p = await sbGet("/rest/v1/payments?id=eq." + payment_id + "&select=*,orders!inner(user_id,status)");
     const pay = Array.isArray(p) && p[0];
     if (!pay || pay.orders.user_id !== user.id) { res.status(403).json({ error: "forbidden" }); return; }
     if (pay.status !== "pending") { res.status(400).json({ error: "payment not pending" }); return; }
-    await sbWrite("/rest/v1/payments?id=eq." + pay.id, "PATCH", { reference: String(ref).trim(), status: "submitted" });
+    await sbWrite("/rest/v1/payments?id=eq." + pay.id, "PATCH", { reference: refS, status: "submitted" });
     await sbWrite("/rest/v1/orders?id=eq." + pay.order_id, "PATCH", { status: "payment_submitted", updated_at: new Date().toISOString() });
     if (pay.meta && pay.meta.coupon_id) await lockCouponFor(pay.meta.coupon_id, user.id);
-    await sendTelegram("💳 واریز ثبت شد — سفارش #" + pay.order_id + " کد: " + ref);
+    await sendTelegram("💳 ثبت واریز — سفارش #" + pay.order_id + "\n🔢 کد پیگیری: " + refS + "\n💵 " + (Number(pay.amount) || 0).toLocaleString("fa-IR") + " ریال\n⏳ برای تأیید به پنل ادمین برو");
+    await mailAdmin("💳 ثبت واریز — سفارش #" + pay.order_id, "کد پیگیری: <b>" + refS + "</b><br>مبلغ: " + (Number(pay.amount) || 0).toLocaleString("fa-IR") + " ریال");
     res.status(200).json({ ok: true }); return;
   }
 
@@ -260,6 +297,21 @@ export default async function handler(req, res) {
       if (!sj.signedURL) { res.status(500).json({ error: "sign failed" }); return; }
       res.status(200).json({ url: SB_URL + "/storage/v1" + sj.signedURL }); return;
     }
+    /* فال‌بک دانلود با مسیر فایل — فقط برای صاحب انتظاعِ فعالِ همان محصول */
+    if (t === "file_url") {
+      const fp = String(req.query.path || "");
+      if (!/^[A-Za-z0-9_\-][A-Za-z0-9_\-\/\.]{1,200}$/.test(fp) || fp.includes("..") || fp.includes("//")) { res.status(400).json({ error: "bad path" }); return; }
+      const pr = await sbGet("/rest/v1/products?file_path=eq." + encodeURIComponent(fp) + "&select=id");
+      const pid = Array.isArray(pr) && pr[0] && pr[0].id;
+      if (!pid) { res.status(404).json({ error: "file not found" }); return; }
+      const ents = await sbGet("/rest/v1/entitlements?user_id=eq." + user.id + "&product_id=eq." + pid + "&status=eq.ACTIVE&select=id,expires_at");
+      const ent = Array.isArray(ents) && ents[0];
+      if (!ent || (ent.expires_at && new Date(ent.expires_at) < new Date())) { res.status(403).json({ error: "no entitlement" }); return; }
+      const sign2 = await fetch(SB_URL + "/storage/v1/object/sign/dfb-files/" + fp, { method: "POST", headers: { ...svc, "Content-Type": "application/json" }, body: JSON.stringify({ expiresIn: 300 }) });
+      const sj2 = await sign2.json();
+      if (!sj2.signedURL) { res.status(500).json({ error: "sign failed" }); return; }
+      res.status(200).json({ url: SB_URL + "/storage/v1" + sj2.signedURL }); return;
+    }
   }
 
   if (t === "upload_file" && req.method === "POST") {
@@ -267,6 +319,7 @@ export default async function handler(req, res) {
     if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
     const { path, base64, mime } = req.body || {};
     if (!path || !base64) { res.status(400).json({ error: "path/base64 required" }); return; }
+    if (!/^[A-Za-z0-9_\-][A-Za-z0-9_\-\/\.]{1,200}$/.test(path) || path.includes("..") || path.includes("//")) { res.status(400).json({ error: "bad path" }); return; } /* ضد Path Traversal */
     const buf = Buffer.from(base64, "base64");
     if (buf.length > 15 * 1024 * 1024) { res.status(400).json({ error: "file too large" }); return; }
     const up = await fetch(SB_URL + "/storage/v1/object/dfb-files/" + path, { method: "POST", headers: { ...svc, "Content-Type": mime || "application/octet-stream", "x-upsert": "true" }, body: buf });
@@ -317,7 +370,8 @@ export default async function handler(req, res) {
       if (Array.isArray(c) && c[0]) await sbWrite("/rest/v1/coupons?id=eq." + meta.coupon_id, "PATCH", { used_count: (c[0].used_count || 0) + 1 });
     }
     await audit(user.email, "APPROVE_PAYMENT", "payment", pay.id, { order: pay.order_id, amount: pay.amount });
-    await sendTelegram("✅ پرداخت #" + pay.id + " تأیید شد — سفارش #" + pay.order_id);
+    await sendTelegram("✅ پرداخت سفارش #" + pay.order_id + " تأیید شد" + (order && order.email ? "\n👤 " + order.email : "") + "\n💵 " + (Number(pay.amount) || 0).toLocaleString("fa-IR") + " ریال");
+    if (order && order.email) await sendResend(order.email, "پرداخت سفارش #" + pay.order_id + " تأیید شد — DailyFitBeat", faBox("<b>سلام</b><br>پرداخت سفارش #" + pay.order_id + " تأیید شد.<br>" + (order.product ? "محصول: " + order.product + "<br>" : "") + "دسترسی از <b>پنل کاربری</b> فعال شد.<br><br>— DailyFitBeat"));
     res.status(200).json({ ok: true }); return;
   }
   if (t === "reject_payment" && req.method === "POST") {
@@ -331,6 +385,7 @@ export default async function handler(req, res) {
     await sbWrite("/rest/v1/orders?id=eq." + pay.order_id, "PATCH", { status: "rejected", updated_at: new Date().toISOString() });
     await notify(pay.user_id, "PAYMENT_REJECTED", "پرداخت تأیید نشد", reason || "کد واریز مطابقت نداشت؛ با پشتیبانی تماس بگیر.");
     await audit(user.email, "REJECT_PAYMENT", "payment", pay.id, { reason: reason || "" });
+    await sendTelegram("❌ پرداخت سفارش #" + pay.order_id + " رد شد" + (reason ? "\nدلیل: " + clean(reason, 120) : ""));
     res.status(200).json({ ok: true }); return;
   }
 
@@ -340,7 +395,10 @@ export default async function handler(req, res) {
     const pageN = Math.max(1, +(req.query.page || 1));
     const lim = Math.min(100, +(req.query.limit || 20));
     let q = "/rest/v1/orders?select=*&order=created_at.desc&limit=" + lim + "&offset=" + (pageN - 1) * lim;
-    if (req.query.uid) q += "&user_id=eq." + req.query.uid;
+    if (req.query.uid) {
+      if (!UUID_RE.test(String(req.query.uid))) { res.status(400).json({ error: "bad uid" }); return; }
+      q += "&user_id=eq." + req.query.uid;
+    }
     if (req.query.status && req.query.status !== "all") q += "&status=eq." + req.query.status;
     const r = await fetch(SB_URL + q, { headers: { ...svc, Prefer: "count=exact" } });
     const total = parseInt((r.headers.get("content-range") || "0").split("/").pop() || "0", 10);

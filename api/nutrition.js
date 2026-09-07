@@ -39,6 +39,7 @@ export default async function handler(req, res) {
     let uid = user.id;
     if (req.query.uid && req.query.uid !== user.id) {
       if (!(await isAdminUser(user))) { res.status(403).json({ error: "forbidden" }); return; }
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(req.query.uid))) { res.status(400).json({ error: "bad uid" }); return; }
       uid = req.query.uid;
     }
     const rows = await (await fetch(SB_URL + "/rest/v1/nutrition_profiles?id=eq." + uid + "&select=*", { headers: svc })).json();

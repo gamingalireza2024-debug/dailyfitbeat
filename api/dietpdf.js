@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   const pr = await (await fetch(SB_URL + "/rest/v1/profiles?id=eq." + user.id + "&select=disabled", { headers: svc })).json();
   if (Array.isArray(pr) && pr[0] && pr[0].disabled) { res.status(403).json({ error: "account disabled" }); return; }
   const id = req.query.id;
-  if (!id) { res.status(400).json({ error: "id required" }); return; }
+  if (!id || !/^\d+$/.test(String(id))) { res.status(400).json({ error: "id required" }); return; }
   const p = await (await fetch(SB_URL + "/rest/v1/diet_plans?id=eq." + id + "&select=*", { headers: svc })).json();
   const plan = Array.isArray(p) && p[0];
   if (!plan || plan.user_id !== user.id || plan.status !== "published" || !plan.pdf_path) { res.status(403).json({ error: "forbidden" }); return; }
