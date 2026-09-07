@@ -91,3 +91,13 @@
 کاسه ماست و توت‌های جنگلی | سوئد | breakfast  →  RETRY-next-run
 فرنی چیا و توت‌فرنگی | آمریکا | breakfast  →  OK(strawberry-chia-pudding)
 
+2026-09-07T08:27:08.695Z — 7 ok / 1 skip / 0 retry
+تخم‌مرغ آب‌پز و نان چاودار | دانمارک | breakfast  →  OK(boiled-egg-rye-bread-avocado)
+املت گوجه و پنیر فتا | قبرس | breakfast  →  OK(tomato-feta-omelette)
+پودینگ چیا با نارگیل و انبه | تایلند | breakfast  →  OK(coconut-mango-chia-pudding)
+نان سبوس‌دار با پنیر و خیار | هلند | breakfast  →  OK(whole-wheat-bread-cheese-cucumber)
+کاسه ماست و توت‌های جنگلی | سوئد | breakfast  →  OK(wild-berry-yogurt-bowl)
+فرنی چیا و توت‌فرنگی | آمریکا | breakfast  →  SKIP(duplicate-name)
+کاسه اسموتی میوه و ماست | برزیل | breakfast  →  OK(greek-yogurt-fruit-smoothie-bowl)
+پنکیک جو دوسر و موز | کانادا | breakfast  →  OK(oatmeal-banana-pancakes)
+
