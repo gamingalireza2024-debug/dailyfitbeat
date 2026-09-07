@@ -55,6 +55,38 @@ if (!found) {
       console.log("✅ GEMINI_API_KEY: سالم است — " + models.length + " مدل قابل استفاده.");
       const flashes = models.filter((m) => /flash/i.test(m.name || m)).slice(0, 12);
       console.log("   نمونهٔ مدل‌های flash: " + (flashes.join(" , ") || "—"));
+
+      /* ─── پینگ واقعی: آیا generateContent واقعاً جواب می‌دهد؟ ─── */
+      const pref = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-flash-latest"];
+      const probeList = [...pref.filter((m) => models.includes(m)), ...models.filter((m) => /flash/i.test(m) && !pref.includes(m))].slice(0, 4);
+      let pingOk = false;
+      for (const m of probeList) {
+        try {
+          const pr = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + m + ":generateContent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+            body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }], generationConfig: { maxOutputTokens: 300 } }),
+            signal: AbortSignal.timeout(30000),
+          });
+          if (pr.ok) {
+            const pj = await pr.json().catch(() => null);
+            const blocked = pj && !pj.candidates?.length;
+            if (!blocked) { console.log("✅ پینگ واقعی «" + m + "»: جواب داد — این کلید برای تولید متن آماده است."); pingOk = true; break; }
+            console.log("⚠ پینگ «" + m + "»: پاسخ خالی (احتمالاً فیلتر ایمنی) — مدل بعدی…");
+            continue;
+          }
+          const pb = await pr.text().catch(() => "");
+          let why = ""; try { why = JSON.parse(pb).error?.message || JSON.parse(pb).error?.status || ""; } catch (e) {}
+          console.log("⚠ پینگ «" + m + "» → HTTP " + pr.status + (why ? " | " + String(why).slice(0, 160) : "") + " — مدل بعدی…");
+        } catch (e) { console.log("⚠ پینگ «" + m + "»: خطای شبکه — " + e.message); }
+      }
+      if (!pingOk) {
+        console.log("🚨 مهم: لیست مدل‌ها خوانده شد ولی هیچ مدلی به generateContent جواب نداد!");
+        console.log("   ← یعنی مشکل «سهمیه/فع‌نبودن مدل» است، نه کلید. لاگ خطاهای «پینگ» بالا را دقیق بخوان:");
+        console.log("      • 404 MODEL_NOT_FOUND ← مدل برای این کلید/منطقه فعال نیست");
+        console.log("      • 429 ← سهمیهٔ رایگان امروز تمام شده — فردا دوباره اجرا کن");
+        console.log("      • 403 ← API لازم در پروژهٔ گوگل فعال نشده");
+      }
     } else {
       const b = await r.text().catch(() => "");
       let reason = "";

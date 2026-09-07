@@ -33,6 +33,10 @@ let snackFlip = 0; /* میان‌وعده‌ها یکی‌درمیان sandwich/
 /* ---------- دروازه Gemini — فقط برای سازگاری امضا قدیمی ---------- */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+/* نرمال‌سازی نام برای ضدتکرار (همان پیاده‌سازی discover-dishes — نباید فرق کند) */
+const norm = (s) =>
+  String(s || '').toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک').replace(/\u200c/g, ' ').replace(/\s+/g, ' ').trim();
+
 if (!SERVICE) { console.error('❌ SUPABASE_SERVICE_ROLE_KEY missing'); process.exit(1); }
 mkdirSync('img/recipes', { recursive: true });
 

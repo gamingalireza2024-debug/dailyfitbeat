@@ -106,13 +106,14 @@ export async function geminiInit(opts = {}) {
   if (process.env.GEMINI_MODEL && avail.has(process.env.GEMINI_MODEL)) {
     st.textModels = [process.env.GEMINI_MODEL];
   } else {
-    st.textModels = PREF_TEXT.filter((m) => avail.has(m));
-    if (!st.textModels.length) {
-      st.textModels = models
-        .filter((m) => m.ok && /flash/i.test(m.name) && !/embed|vision|tts|image|audio/i.test(m.name))
-        .map((m) => m.name)
-        .slice(0, 3);
-    }
+    /* لیست گسترده: ترجیحی‌ها + بقیهٔ مدل‌های flash + حداکثر ۵ مدل متنی دیگر
+       (اگر مدل اول در لحظهٔ فراخوانی 404 داد، خودکار بعدی‌ها امتحان می‌شوند) */
+    const others = models
+      .filter((m) => m.ok && !/embed|tts|image|audio|aqa|live|native/i.test(m.name))
+      .map((m) => m.name)
+      .filter((n) => !PREF_TEXT.includes(n))
+      .sort((a, b) => (/flash/i.test(b) ? 1 : 0) - (/flash/i.test(a) ? 1 : 0));
+    st.textModels = [...new Set([...PREF_TEXT.filter((m) => avail.has(m)), ...others.slice(0, 8)])];
   }
   st.imageModel =
     PREF_IMAGE.find((m) => avail.has(m)) ||
@@ -161,11 +162,19 @@ export async function geminiText(prompt, opts = {}) {
       }
       if (r.status === 404 || r.status === 400) {
         /* این مدل برای این کلید نیست/منقضی شده → از لیست حذف و برو بعدی */
-        console.log("   ⚠ " + model + " → " + r.status + " — مدل رد شد");
+        const bb = await r.text().catch(() => "");
+        let why = ""; try { why = JSON.parse(bb).error?.message || ""; } catch (e) {}
+        console.log("   ⚠ " + model + " → " + r.status + " — مدل رد شد" + (why ? " | " + String(why).slice(0, 140) : ""));
         st.textModels = st.textModels.filter((m) => m !== model);
         break;
       }
-      if (!r.ok) { console.log("   ⚠ " + model + " → HTTP " + r.status); break; }
+      if (!r.ok) {
+        const bb = await r.text().catch(() => "");
+        let why = ""; try { why = JSON.parse(bb).error?.status || JSON.parse(bb).error?.message || ""; } catch (e) {}
+        console.log("   ⚠ " + model + " → HTTP " + r.status + (why ? " | " + String(why).slice(0, 140) : ""));
+        if (r.status === 429) { console.log("   ⏳ سهمیهٔ این مدل پر است — مدل بعدی…"); st.textModels = st.textModels.filter((m) => m !== model); }
+        break;
+      }
       try {
         const j = await r.json();
         const t = (j.candidates?.[0]?.content?.parts?.[0]?.text) || "";
