@@ -116,47 +116,31 @@ body[data-page="home"] .hm-quick .qi{width:30px;height:30px;border-radius:9px;ba
 body[data-page="home"] .hm-quick .qi svg{width:15px;height:15px;stroke:var(--accent)}
 body[data-page="home"] .hm-quick b{display:block;font-size:11.5px;font-weight:800}
 body[data-page="home"] .hm-quick small{display:block;color:var(--muted);font-size:9.5px;margin-top:1px}
-/* ───── اینستاگرام (کاملاً با حال‌وهوای اینستاگرام) ───── */
-body[data-page="home"] .hm-ig{margin:44px 0 0;padding:8px 0 56px;background:linear-gradient(180deg,transparent,#fafafa 12%,#fafafa 88%,transparent)}
-body[data-page="home"] .ig-app{background:#fff;border:1px solid #dbdbdb;border-radius:20px;overflow:hidden;max-width:640px;margin:26px auto 0;box-shadow:0 10px 30px rgba(17,24,39,.05)}
-body[data-page="home"] .ig-profile{display:flex;gap:22px;padding:26px 26px 14px;align-items:flex-start}
-body[data-page="home"] .ig-aring{flex:0 0 auto}
-body[data-page="home"] .ig-ring{display:flex;width:80px;height:80px;border-radius:50%;padding:3px;background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
-body[data-page="home"] .ig-ring img{width:74px;height:74px;border-radius:50%;border:3px solid #fff;object-fit:cover;background:#fff}
-body[data-page="home"] .ig-pmain{flex:1;min-width:0}
-body[data-page="home"] .ig-toprow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-body[data-page="home"] .ig-handle{display:inline-flex;align-items:center;gap:5px;font-size:16px;font-weight:700;color:#262626}
-body[data-page="home"] .ig-verified{width:14px;height:14px;fill:#0095f6}
+/* ───── اینستاگرام مینیمال و مدرن ───── */
+body[data-page="home"] .hm-ig{margin:30px 0 0;padding:4px 0 42px;background:linear-gradient(180deg,transparent,#fafafa 10%,#fafafa 90%,transparent)}
+body[data-page="home"] .ig-mini{background:#fff;border:1px solid #dbdbdb;border-radius:18px;max-width:560px;margin:0 auto;overflow:hidden;box-shadow:0 8px 26px rgba(17,24,39,.05)}
+body[data-page="home"] .ig-mini-head{display:flex;align-items:center;gap:11px;padding:13px 16px}
+body[data-page="home"] .ig-mini-ring{flex:0 0 auto;display:flex;width:50px;height:50px;border-radius:50%;padding:2.5px;background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
+body[data-page="home"] .ig-mini-ring img{width:100%;height:100%;border-radius:50%;border:2px solid #fff;object-fit:cover;background:#fff;box-sizing:border-box}
+body[data-page="home"] .ig-mini-id{min-width:0;display:flex;flex-direction:column;gap:1px}
+body[data-page="home"] .ig-mini-id b{display:inline-flex;align-items:center;gap:4px;font-size:13.5px;font-weight:700;color:#262626}
+body[data-page="home"] .ig-mini-id small{font-size:11px;color:#737373;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body[data-page="home"] .ig-mini-stats{display:flex;align-items:center;gap:9px;margin-right:auto}
+body[data-page="home"] .ig-mini-stats i{width:1px;height:16px;background:#dbdbdb}
+body[data-page="home"] .ig-mini-stats span{font-size:10.5px;color:#737373;white-space:nowrap}
+body[data-page="home"] .ig-mini-stats b{display:block;font-size:13.5px;color:#262626;font-weight:800;line-height:1.2}
+body[data-page="home"] .ig-verified{width:13px;height:13px;fill:#0095f6;flex:0 0 auto}
 body[data-page="home"] .ig-verified .ck{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-body[data-page="home"] .ig-btns{display:inline-flex;gap:8px;margin-right:auto}
-body[data-page="home"] .ig-follow{background:#0095f6;color:#fff;font-size:12.5px;font-weight:700;padding:8px 18px;border-radius:8px;text-decoration:none;transition:.15s}
-body[data-page="home"] .ig-follow:hover{background:#1877f2}
-body[data-page="home"] .ig-msg{background:#efefef;color:#262626;font-size:12.5px;font-weight:700;padding:8px 16px;border-radius:8px;text-decoration:none}
-body[data-page="home"] .ig-msg:hover{background:#e0e0e0}
-body[data-page="home"] .ig-stats{display:flex;gap:26px;margin:16px 0 12px}
-body[data-page="home"] .ig-stats span{font-size:13px;color:#262626}
-body[data-page="home"] .ig-stats b{font-weight:800}
-body[data-page="home"] .ig-bio{margin:0 0 6px;font-size:13px;line-height:2;color:#262626}
-body[data-page="home"] .ig-site{color:#00376b;font-size:13px;font-weight:700;text-decoration:none}
-body[data-page="home"] .ig-hls{display:flex;gap:18px;padding:12px 26px 18px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid #dbdbdb}
-body[data-page="home"] .ig-hls::-webkit-scrollbar{display:none}
-body[data-page="home"] .ig-hl{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;flex:0 0 auto}
-body[data-page="home"] .ig-hlring{width:62px;height:62px;border-radius:50%;padding:3px;background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
-body[data-page="home"] .ig-hlring::before{content:"";display:block;width:100%;height:100%;border-radius:50%;border:2.5px solid #fff;background:var(--img,none) center/cover;box-sizing:border-box}
-body[data-page="home"] .ig-hl small{font-size:11px;color:#262626;font-weight:600}
-body[data-page="home"] .ig-tabs{display:flex;border-bottom:1px solid #dbdbdb}
-body[data-page="home"] .ig-tabs span{flex:1;display:flex;gap:7px;align-items:center;justify-content:center;padding:13px 0;font-size:11.5px;font-weight:700;color:#737373;letter-spacing:.3px;position:relative}
-body[data-page="home"] .ig-tabs span.on{color:#262626}
-body[data-page="home"] .ig-tabs span.on::after{content:"";position:absolute;top:-1px;inset-inline:0;height:1px;background:#262626}
-body[data-page="home"] .ig-tabs svg{width:13px;height:13px;fill:currentColor}
-body[data-page="home"] .ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px}
+body[data-page="home"] .ig-mini-follow{flex:0 0 auto;background:#0095f6;color:#fff;font-size:12px;font-weight:700;padding:7px 15px;border-radius:8px;text-decoration:none;transition:.15s}
+body[data-page="home"] .ig-mini-follow:hover{background:#1877f2}
+body[data-page="home"] .ig-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:0 3px}
 body[data-page="home"] .ig-cell{position:relative;aspect-ratio:1/1;overflow:hidden;display:block;background:#f3f4f6}
 body[data-page="home"] .ig-cell img.ph{width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s ease}
-body[data-page="home"] .ig-cell:hover img.ph{transform:scale(1.04)}
-body[data-page="home"] .ig-ov{position:absolute;inset:0;background:rgba(0,0,0,.38);opacity:0;transition:.2s;display:flex;align-items:center;justify-content:center;gap:22px;color:#fff;font-size:14px;font-weight:800}
+body[data-page="home"] .ig-cell:hover img.ph{transform:scale(1.05)}
+body[data-page="home"] .ig-ov{position:absolute;inset:0;background:rgba(0,0,0,.38);opacity:0;transition:.2s;display:flex;align-items:center;justify-content:center;gap:20px;color:#fff;font-size:13px;font-weight:800}
 body[data-page="home"] .ig-cell:hover .ig-ov{opacity:1}
-body[data-page="home"] .ig-cta{text-align:center;margin:26px 0 0}
-body[data-page="home"] .ig-cta .hm-btn{min-width:260px}
+body[data-page="home"] .ig-mini-more{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px;font-size:12px;font-weight:700;color:#262626;text-decoration:none;border-top:1px solid #fafafa;transition:.15s}
+body[data-page="home"] .ig-mini-more:hover{color:#0095f6}
 body[data-page="home"] .hm-serv{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:48px 0}
 body[data-page="home"] .hm-serv-card{background:transparent;border:0;box-shadow:none;overflow:visible;display:flex;flex-direction:column}
 body[data-page="home"] .hm-serv-card .im{border-radius:26px;overflow:hidden;box-shadow:0 16px 40px rgba(17,24,39,.10)}
@@ -288,14 +272,40 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
    استایل اختصاصی هر صفحه در <style> داخلی همان HTML نگهداری می‌شود. */
 
 /* ---------- FOOTER ---------- */
-#ftr{background:var(--footer-bg);color:var(--footer-ink);margin-top:60px}
-#ftr .f-cols{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:44px;padding:58px 20px 34px}
-#ftr .f-logo{height:44px}
-#ftr b{color:#fff;font-size:14px;margin-bottom:12px;display:block}
-#ftr a{display:block;color:var(--footer-ink);font-size:13.5px;line-height:2.6;text-decoration:none}
-#ftr a:hover{color:var(--accent)}
-#ftr p{font-size:13.5px;color:var(--footer-ink)}
-#ftr .f-bottom{border-top:1px solid #1d3227;color:#7d8a80;padding:18px 20px;font-size:12px;text-align:center}
+#ftr{background:var(--footer-bg);color:var(--footer-ink);margin-top:56px}
+#ftr .f-min{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:14px 26px;flex-wrap:wrap;padding:26px 20px}
+#ftr .f-brand{display:flex;align-items:center;gap:11px}
+#ftr .f-logo{height:30px}
+#ftr .f-brand span{font-size:12.5px;color:var(--footer-ink)}
+#ftr .f-links{display:flex;align-items:center;gap:4px 20px;flex-wrap:wrap;margin:0 auto}
+#ftr .f-links a{color:var(--footer-ink);font-size:12.5px;text-decoration:none;transition:.15s}
+#ftr .f-links a:hover{color:var(--accent)}
+#ftr .f-ig{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;color:var(--footer-ink);font-size:12.5px;text-decoration:none;border:1px solid #2a4234;border-radius:999px;padding:7px 15px;transition:.15s}
+#ftr .f-ig:hover{color:#fff;border-color:var(--accent)}
+#ftr .f-ig svg{width:14px;height:14px;fill:currentColor}
+#ftr .f-bottom{border-top:1px solid #1d3227;color:#7d8a80;padding:13px 20px;font-size:11.5px;text-align:center}
+
+/* ---------- RECIPES: دسته‌بندی‌های عکس‌دار + دکمهٔ بیشتر ---------- */
+.rec-cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:12px;margin:6px 0 20px}
+.rec-cat{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:13px 8px 12px;font:inherit;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
+.rec-cat:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(17,24,39,.08)}
+.rec-cat.on{border-color:var(--accent);background:linear-gradient(180deg,#fff7ef,#fff);box-shadow:0 10px 24px rgba(249,115,22,.13)}
+.rec-cat.on::after{content:"";position:absolute;top:10px;inset-inline-end:10px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft,#ffe4cc)}
+.rec-cat .rc-im{width:64px;height:64px;border-radius:50%;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 14px rgba(17,24,39,.12);flex:0 0 auto;background:#f3f4f6}
+.rec-cat .rc-im.off{display:none}
+.rec-cat .rc-im img{width:100%;height:100%;object-fit:cover;display:block}
+.rec-cat b{font-size:12.5px;font-weight:800;color:var(--ink)}
+.rec-cat small{font-size:10.5px;color:var(--muted)}
+.rec-more{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:12px 30px;font:inherit;font-size:13px;font-weight:800;color:var(--ink);cursor:pointer;transition:.18s;box-shadow:var(--shadow)}
+.rec-more:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+@media(max-width:640px){
+  .rec-cats{grid-template-columns:repeat(4,1fr);gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+  .rec-cats::-webkit-scrollbar{display:none}
+  .rec-cat{padding:10px 5px 9px;border-radius:14px}
+  .rec-cat .rc-im{width:48px;height:48px;border-width:2.5px}
+  .rec-cat b{font-size:11px}
+  .rec-cat small{font-size:9.5px}
+}
 
 /* ---------- RESPONSIVE ---------- */
 @media(max-width:900px){
@@ -318,15 +328,13 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
   body[data-page="home"] .hm-lead{font-size:13.5px}
   body[data-page="home"] .hm-quick{position:relative;top:0;left:0;transform:none;width:auto;display:flex;overflow-x:auto;margin:-42px 14px 0;z-index:2}
   body[data-page="home"] .hm-quick a{flex:0 0 auto}
-  body[data-page="home"] .hm-ig{margin:40px 0 0;padding:6px 0 44px}
-  body[data-page="home"] .ig-profile{padding:20px 16px 10px;gap:14px}
-  body[data-page="home"] .ig-ring{width:66px;height:66px}
-  body[data-page="home"] .ig-ring img{width:60px;height:60px}
-  body[data-page="home"] .ig-stats{gap:16px;margin:12px 0 10px}
-  body[data-page="home"] .ig-hls{padding:12px 16px 14px;gap:14px}
+  body[data-page="home"] .hm-ig{margin:28px 0 0;padding:4px 0 38px}
+  body[data-page="home"] .ig-mini-head{padding:11px 12px;gap:9px}
+  body[data-page="home"] .ig-mini-id small{display:none}
   body[data-page="home"] .hm-serv{grid-template-columns:1fr;gap:36px;margin:44px 0}
   body[data-page="home"] .hm-find{padding:22px 16px}
-  #ftr .f-cols{gap:26px;padding:40px 20px 24px}
+  #ftr .f-min{flex-direction:column;text-align:center;padding:22px 16px}
+  #ftr .f-links{margin:0;justify-content:center}
   body[data-page="market"] #prodGrid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
   body[data-page="pro"] #planCards{grid-template-columns:1fr}
   #orderForm{grid-template-columns:1fr}
@@ -336,8 +344,9 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
   body[data-page="home"] .hm-wrap{padding:0 16px}
   body[data-page="home"] .hm-h1{font-size:28px}
   body[data-page="home"] .hm-btn{padding:12px 22px}
-  body[data-page="home"] .ig-stats{gap:12px}
-  body[data-page="home"] .ig-follow,.ig-msg{padding:7px 12px;font-size:11.5px}
+  body[data-page="home"] .ig-mini-stats span:last-child{display:none}
+  body[data-page="home"] .ig-mini-stats i{display:none}
+  body[data-page="home"] .ig-mini-follow{padding:7px 12px;font-size:11.5px}
   body[data-page="home"] .hm-find-row input{min-width:100%}
   #hdr .hactions .btn.small{display:none}
 }
@@ -346,8 +355,7 @@ body[data-page="pro"] #planCards{display:grid;grid-template-columns:repeat(auto-
   body[data-page="home"] .hm-h1{font-size:26px}
   body[data-page="home"] .hm-cta{gap:10px}
   body[data-page="home"] .hm-quick{margin:-40px 10px 0}
-  body[data-page="home"] .ig-app{border-radius:14px}
-  body[data-page="home"] .ig-tabs span{font-size:10.5px}
+  body[data-page="home"] .ig-mini{border-radius:14px}
 }
 
 /* =========================================================

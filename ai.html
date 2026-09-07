@@ -8,39 +8,79 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="img/favicon.png">
 <link rel="preload" href="fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="img/ai-hero.jpg" as="image">
 <link rel="stylesheet" href="fonts/vazirmatn.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="design.css">
 <style>
-.ai-wrap{max-width:860px;margin:0 auto;padding:16px 16px 46px;display:flex;flex-direction:column;min-height:calc(100dvh - 180px)}
-.ai-hero{text-align:center;padding:20px 0 6px}
-.ai-orb{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ffd7ae,var(--accent));box-shadow:0 0 26px rgba(249,115,22,.45);margin:0 auto 14px}
-.ai-hero h1{font-size:24px;font-weight:900;margin:0 0 8px}
-.ai-hero p{color:var(--ink-soft);font-size:13px;margin:0}
-.ai-top{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:16px 0}
-.chip-usage{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:8px 16px;font-size:12px;font-weight:800}
-.ai-tog{font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 16px;box-shadow:var(--shadow);cursor:pointer;color:var(--ink)}
-.ai-tog input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
-.btn-ghost-sm{border:0;background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--glass-br);border-radius:999px;padding:8px 16px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);color:var(--ink)}
-#chat{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);min-height:320px}
-.bub{max-width:82%;padding:12px 16px;border-radius:18px;font-size:13.5px;line-height:2;white-space:pre-wrap;word-break:break-word}
+:root{ --warm:#fbf5ec; --warm2:#f6ecdd; --ai-ink:#241d15; --ai-soft:#8a7c6b; }
+body[data-page="ai"]{background:var(--warm)}
+/* ---------- HERO ---------- */
+.ai-hero{position:relative;min-height:600px;display:flex;flex-direction:column;align-items:center;padding:34px 16px 30px;overflow:hidden;background:#f3e7d7}
+.ai-hero::before{content:"";position:absolute;inset:0;background:url('img/ai-hero.jpg') center 24%/cover no-repeat}
+.ai-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(251,245,236,0) 0%,rgba(251,245,236,.28) 46%,var(--warm) 96%)}
+.ai-hero-in{position:relative;z-index:2;width:100%;max-width:700px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.ai-hello{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.75);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.9);border-radius:999px;padding:8px 18px;font-size:12.5px;font-weight:800;color:var(--ai-ink);box-shadow:0 6px 18px rgba(120,80,30,.12);animation:aiBob 3.4s ease-in-out infinite}
+.ai-hello i{color:var(--accent);font-style:normal}
+@keyframes aiBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.ai-hero h1{margin:18px 0 10px;font-size:clamp(26px,5vw,40px);font-weight:900;color:var(--ai-ink);letter-spacing:-.5px;text-shadow:0 2px 20px rgba(255,255,255,.65)}
+.ai-hero h1 .ai-hl{color:var(--accent)}
+.ai-hero .ai-sub{margin:0;font-size:14px;line-height:2.1;color:var(--ai-soft);max-width:430px;font-weight:600;text-shadow:0 1px 12px rgba(255,255,255,.7)}
+/* ---------- کارت چت ---------- */
+.ai-card{position:relative;z-index:2;width:100%;max-width:640px;margin:26px auto 0;background:rgba(255,255,255,.86);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.95);border-radius:26px;box-shadow:0 24px 60px rgba(120,80,30,.16);padding:20px 20px 18px;text-align:right}
+.ai-card-head{display:flex;align-items:center;gap:12px;padding:0 2px 14px}
+.ai-card-head img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2.5px solid #ffe1c4;box-shadow:0 4px 12px rgba(249,115,22,.18);flex:0 0 auto}
+.ai-card-head .t b{display:block;font-size:15px;font-weight:900;color:var(--ai-ink)}
+.ai-card-head .t small{font-size:11.5px;color:var(--ai-soft);font-weight:600}
+.ai-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 2px 12px}
+.chip-usage{background:#fff3e6;color:#c2570a;border-radius:999px;padding:7px 14px;font-size:11px;font-weight:800}
+.ai-tog{font-size:11.5px;font-weight:700;display:flex;gap:6px;align-items:center;background:#fff;border:1px solid #f0e4d4;border-radius:999px;padding:7px 14px;cursor:pointer;color:var(--ai-ink)}
+.ai-tog input{accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
+.btn-ghost-sm{border:1px solid #f0e4d4;background:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;color:var(--ai-ink);transition:.15s}
+.btn-ghost-sm:hover{border-color:var(--accent);color:var(--accent)}
+#chat{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:16px;background:#fff;border:1px solid #f3ead9;border-radius:20px;min-height:220px;max-height:340px;scrollbar-width:thin}
+.bub{max-width:84%;padding:11px 15px;border-radius:17px;font-size:13px;line-height:2;white-space:pre-wrap;word-break:break-word}
 .bub.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-left-radius:6px}
-.bub.bot{align-self:flex-start;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-bottom-right-radius:6px}
-.bub.sys{align-self:center;background:#fff8e6;color:#7a5b00;font-size:12px;text-align:center;border-radius:14px;max-width:95%}
+.bub.bot{align-self:flex-start;background:var(--warm);color:var(--ai-ink);border:1px solid #f3ead9;border-bottom-right-radius:6px}
+.bub.sys{align-self:center;background:#fff8e6;color:#7a5b00;font-size:11.5px;text-align:center;border-radius:14px;max-width:95%}
 .bub.typing{display:flex;gap:5px;align-items:center}
 .bub.typing i{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:tp 1s infinite}
 .bub.typing i:nth-child(2){animation-delay:.2s}
 .bub.typing i:nth-child(3){animation-delay:.4s}
 @keyframes tp{0%,100%{opacity:.25}50%{opacity:1}}
-#quick{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px 0}
-#quick button{border:0;background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--glass-br);border-radius:999px;padding:9px 16px;font:inherit;font-size:12px;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);transition:transform .15s}
-#quick button:hover{transform:translateY(-2px)}
-.ai-input{display:flex;gap:8px;margin-top:4px}
-#msg{flex:1;resize:none;border:1px solid var(--line);border-radius:16px;padding:12px 16px;font:inherit;font-size:13.5px;max-height:120px;background:#fff;min-width:0}
-#msg:focus{outline:2px solid var(--accent);border-color:var(--accent)}
-#send{border:0;background:var(--accent);color:#fff;border-radius:16px;padding:0 26px;font:inherit;font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(249,115,22,.25)}
-#send:disabled{opacity:.5;cursor:default}
-.aimodal{position:fixed;inset:0;background:rgba(17,24,39,.45);display:none;align-items:center;justify-content:center;z-index:90;padding:14px}
+#quick{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0 0}
+#quick button{border:1px solid #f0e4d4;background:#fff;border-radius:999px;padding:8px 14px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--ai-ink);transition:.15s}
+#quick button:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.ai-input{display:flex;gap:9px;margin-top:12px}
+#msg{flex:1;resize:none;border:1.5px solid #f0e4d4;border-radius:16px;padding:12px 16px;font:inherit;font-size:13px;max-height:120px;background:#fff;min-width:0;transition:border-color .15s}
+#msg:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+#send{border:0;background:var(--accent);color:#fff;border-radius:15px;width:52px;flex:0 0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 22px rgba(249,115,22,.32);transition:.15s}
+#send:hover{transform:translateY(-2px);box-shadow:0 14px 26px rgba(249,115,22,.4)}
+#send:disabled{opacity:.5;cursor:default;transform:none}
+#send svg{width:20px;height:20px;fill:#fff;transform:scaleX(-1)}
+/* ---------- امکانات ---------- */
+.ai-feats{position:relative;z-index:2;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;width:100%;max-width:700px;margin:22px auto 0}
+.ai-feat{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.95);border-radius:16px;padding:11px 16px;box-shadow:0 6px 18px rgba(120,80,30,.09)}
+.ai-feat .ic{width:34px;height:34px;border-radius:11px;background:#fff3e6;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
+.ai-feat b{font-size:12px;color:var(--ai-ink);display:block}
+.ai-feat small{font-size:10.5px;color:var(--ai-soft)}
+/* ---------- نمونه سوال‌ها ---------- */
+.ai-samples{max-width:1060px;margin:8px auto 0;padding:34px 16px 10px}
+.ai-samples h2{text-align:center;font-size:21px;font-weight:900;color:var(--ai-ink);margin:0 0 4px}
+.ai-samples .sh-sub{text-align:center;font-size:12.5px;color:var(--ai-soft);margin:0 0 22px;font-weight:600}
+.ai-q-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.ai-q{display:flex;flex-direction:column;background:#fff;border:1px solid #f3ead9;border-radius:20px;overflow:hidden;font:inherit;cursor:pointer;text-align:right;transition:.18s;box-shadow:0 6px 18px rgba(120,80,30,.06);padding:0}
+.ai-q:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(120,80,30,.13);border-color:#ffd9b4}
+.ai-q .im{height:110px;overflow:hidden;background:#f3f4f6}
+.ai-q .im img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.ai-q:hover .im img{transform:scale(1.06)}
+.ai-q .bd{padding:13px 15px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ai-q .bd p{margin:0;font-size:12.5px;font-weight:800;color:var(--ai-ink);line-height:1.9}
+.ai-q .bd span{width:30px;height:30px;border-radius:50%;border:1.5px solid #f0e4d4;display:flex;align-items:center;justify-content:center;color:var(--accent);flex:0 0 auto;transition:.15s}
+.ai-q:hover .bd span{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ai-q .bd span svg{width:14px;height:14px;fill:currentColor}
+/* ---------- پروفایل (بدون تغییر عملکرد) ---------- */
+.aimodal{position:fixed;inset:0;background:rgba(36,29,21,.45);display:none;align-items:center;justify-content:center;z-index:90;padding:14px}
 .aimodal.open{display:flex}
 .aimodal-box{background:var(--surface);border-radius:22px;padding:24px;max-width:560px;width:100%;max-height:86dvh;overflow:auto;box-shadow:var(--shadow)}
 .aimodal-box h3{margin:0 0 14px;font-size:16px;display:flex;align-items:center;gap:10px}
@@ -53,55 +93,85 @@
 .pf-msg{display:none;border-radius:12px;padding:10px 14px;font-size:12px;margin-top:12px}
 .pf-msg.ok{display:block;background:#e8f4e9;color:#2d6a35}
 .pf-msg.err{display:block;background:#fdeaea;color:#c22}
-@media(max-width:600px){.pf-grid{grid-template-columns:1fr}.bub{max-width:92%}.ai-wrap{padding:10px 12px 36px}}
+@media(max-width:900px){.ai-q-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){
+  .pf-grid{grid-template-columns:1fr}
+  .bub{max-width:92%}
+  .ai-hero{min-height:0;padding:22px 14px 26px}
+  .ai-hero::before{background-position:center 18%;background-size:cover}
+  .ai-hero::after{background:linear-gradient(180deg,rgba(251,245,236,.05) 0%,rgba(251,245,236,.55) 34%,var(--warm) 72%)}
+  .ai-card{margin-top:190px;padding:15px 13px 14px}
+  .ai-feat small{display:none}
+  .ai-q .im{height:96px}
+  #chat{min-height:160px;max-height:280px}
+}
 </style>
 </head>
 <body data-page="ai">
 <header id="hdr"></header>
 
-<section><div class="ai-wrap">
-  <div class="ai-hero">
-    <div class="ai-orb" aria-hidden="true"></div>
-    <h1>دستیار تغذیه DailyFitBeat</h1>
-    <p>بگو چی داری، چی می‌خوای یا امروز چه هدفی داری.</p>
+<section class="ai-hero">
+  <div class="ai-hero-in">
+    <span class="ai-hello">سلام! با هم سلامت‌تر زندگی کنیم <i>♥</i></span>
+    <h1>دستیار تغذیه <span class="ai-hl">هوشمند</span> ✨</h1>
+    <p class="ai-sub">هر سؤال دربارهٔ تغذیه، رسپی و کالری داری بپرس — جواب‌ها بر پایهٔ رسپی‌های واقعی دیلی‌بیت است</p>
   </div>
 
-  <div class="ai-top">
-    <span class="chip-usage" id="usageChip">در حال دریافت سهمیه…</span>
-    <label class="ai-tog"><input type="checkbox" id="useProf"> استفاده از پروفایل تغذیه من</label>
-    <button class="btn-ghost-sm" id="profBtn">پروفایل تغذیه</button>
-  </div>
-<div class="dfb-mascot" id="mascot" aria-hidden="true">
-  <img id="mascotImg" src="img/mascot-idle.png" alt="">
-  <span class="m-shadow"></span>
-</div>
-<style>
-.dfb-mascot{width:140px;margin:6px auto 12px;position:relative;text-align:center}
-.dfb-mascot img{width:100%;display:block;animation:mFloat 3s ease-in-out infinite;transform-origin:bottom center}
-.dfb-mascot .m-shadow{display:block;width:70%;height:10px;margin:6px auto 0;background:rgba(17,24,39,.12);border-radius:50%;filter:blur(4px);animation:mShadow 3s ease-in-out infinite}
-.dfb-mascot.think img{animation:mThink 1.2s ease-in-out infinite}
-.dfb-mascot.happy img{animation:mHappy .9s ease-in-out 2}
-.dfb-mascot.sad img{animation:mSad .8s ease-in-out 2}
-@keyframes mFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes mShadow{0%,100%{transform:scaleX(1);opacity:.5}50%{transform:scaleX(.8);opacity:.3}}
-@keyframes mThink{0%,100%{transform:rotate(0)}30%{transform:rotate(-7deg)}70%{transform:rotate(5deg)}}
-@keyframes mHappy{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-14px) scale(1.05)}}
-@keyframes mSad{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-</style>
-  <div id="chat" aria-live="polite"></div>
+  <div class="ai-card">
+    <div class="ai-card-head">
+      <img src="img/ai-bot.jpg" alt="ربات دستیار دیلی‌بیت" width="46" height="46" onerror="this.onerror=null;this.src='img/logo.png';">
+      <div class="t"><b>سلام! امروز چی می‌خوای بدونی؟</b><small>غذا، رسپی، کالری و ماکرو… هر چی کنجکاوی بپرس</small></div>
+    </div>
+    <div class="ai-tools">
+      <span class="chip-usage" id="usageChip">در حال دریافت سهمیه…</span>
+      <label class="ai-tog"><input type="checkbox" id="useProf"> پروفایل تغذیه من</label>
+      <button class="btn-ghost-sm" id="profBtn">پروفایل تغذیه</button>
+    </div>
+  <div id="mascot" style="display:none" aria-hidden="true"></div>
+    <div id="chat" aria-live="polite"></div>
 
-  <div id="quick">
-    <button>امروز چی بخورم؟</button>
-    <button>با مواد یخچالم چی بپزم؟ مرغ و قارچ و نان دارم</button>
-    <button>یه شام کم‌کالری می‌خوام</button>
-    <button>پروتئین بیشتری می‌خوام</button>
+    <div id="quick">
+      <button>امروز چی بخورم؟</button>
+      <button>با مواد یخچالم چی بپزم؟ مرغ و قارچ و نان دارم</button>
+      <button>یه شام کم‌کالری می‌خوام</button>
+      <button>پروتئین بیشتری می‌خوام</button>
+    </div>
+
+    <div class="ai-input">
+      <textarea id="msg" rows="1" placeholder="سؤالت رو اینجا بنویس…" aria-label="پیام به دستیار تغذیه"></textarea>
+      <button id="send" aria-label="ارسال پیام"><svg viewBox="0 0 24 24"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+    </div>
   </div>
 
-  <div class="ai-input">
-    <textarea id="msg" rows="1" placeholder="پیامت رو بنویس… (Enter برای ارسال، Shift+Enter خط جدید)" aria-label="پیام به دستیار تغذیه"></textarea>
-    <button id="send" aria-label="ارسال پیام">ارسال</button>
+  <div class="ai-feats">
+    <div class="ai-feat"><span class="ic">🤖</span><span><b>قدرت هوش مصنوعی</b><small>با پاسخ‌های دقیق و شخصی‌سازی‌شده</small></span></div>
+    <div class="ai-feat"><span class="ic">📚</span><span><b>رسپی‌های واقعی</b><small>دسترسی به رسپی‌های دیلی‌بیت</small></span></div>
+    <div class="ai-feat"><span class="ic">👤</span><span><b>پروفایل تغذیه</b><small>پیشنهاد متناسب با بدن تو</small></span></div>
   </div>
-</div></section>
+</section>
+
+<section class="ai-samples">
+  <h2>چند نمونه سؤال محبوب</h2>
+  <p class="sh-sub">روی هر کدوم بزن تا همون‌جا از دستیار بپرسی</p>
+  <div class="ai-q-grid">
+    <button class="ai-q" data-q="با مواد ساده که الان تو یخچال دارم چی درست کنم؟">
+      <span class="im"><img src="img/cat-salad.jpg" alt="" width="300" height="200" loading="lazy" onerror="this.onerror=null;this.src='img/cat-main.jpg';"></span>
+      <span class="bd"><p>با مواد ساده چی درست کنم؟</p><span><svg viewBox="0 0 24 24"><path d="M8.6 4.6 15.9 12l-7.3 7.4 1.4 1.4L18.7 12 10 3.2z"/></svg></span></span>
+    </button>
+    <button class="ai-q" data-q="مقدار پروتئین مورد نیاز من در روز چقدره؟">
+      <span class="im"><img src="img/insta-protein.jpg" alt="" width="300" height="200" loading="lazy" onerror="this.onerror=null;this.src='img/cat-main.jpg';"></span>
+      <span class="bd"><p>پروتئین لازم من چقدره؟</p><span><svg viewBox="0 0 24 24"><path d="M8.6 4.6 15.9 12l-7.3 7.4 1.4 1.4L18.7 12 10 3.2z"/></svg></span></span>
+    </button>
+    <button class="ai-q" data-q="یه صبحانه سالم و سریع پیشنهاد بده">
+      <span class="im"><img src="img/cat-breakfast.jpg" alt="" width="300" height="200" loading="lazy" onerror="this.onerror=null;this.src='img/insta-pancake.jpg';"></span>
+      <span class="bd"><p>یه صبحانه سالم و سریع می‌خوام</p><span><svg viewBox="0 0 24 24"><path d="M8.6 4.6 15.9 12l-7.3 7.4 1.4 1.4L18.7 12 10 3.2z"/></svg></span></span>
+    </button>
+    <button class="ai-q" data-q="برای کاهش وزن روزانه چی بخورم؟">
+      <span class="im"><img src="img/insta-smoothie.jpg" alt="" width="300" height="200" loading="lazy" onerror="this.onerror=null;this.src='img/cat-soup.jpg';"></span>
+      <span class="bd"><p>برای کاهش وزن چی بخورم؟</p><span><svg viewBox="0 0 24 24"><path d="M8.6 4.6 15.9 12l-7.3 7.4 1.4 1.4L18.7 12 10 3.2z"/></svg></span></span>
+    </button>
+  </div>
+</section>
 
 <div id="profModal" class="aimodal"><div class="aimodal-box">
   <h3>پروفایل تغذیه من</h3>
@@ -130,5 +200,18 @@
 <script src="site.js"></script>
 <script src="app.js"></script>
 <script src="ai.js"></script>
+<script>
+/* نمونه سؤال‌ها → پر کردن فرم و ارسال */
+document.querySelectorAll('.ai-q').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var m = document.getElementById('msg'), s = document.getElementById('send');
+    if (!m || !s) return;
+    m.value = b.dataset.q;
+    s.click();
+    var c = document.getElementById('chat');
+    if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+});
+</script>
 </body>
 </html>

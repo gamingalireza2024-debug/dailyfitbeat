@@ -139,12 +139,12 @@ async function bootAuth() {
 function injectFooter() {
   var f = document.getElementById('ftr');
   if (!f) return;
-  f.innerHTML = '<div class="f-cols">' +
-    '<div><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><p>غذای سالم که واقعاً خوشمزه به نظر می‌رسه.</p></div>' +
-    '<div><b>رسپی‌ها</b><a href="recipes.html">ایرانی</a><a href="recipes.html">سالادها</a><a href="recipes.html">ساندویچ‌ها</a></div>' +
-    '<div><b>محصول</b><a href="planner.html">استودیو تغذیه</a><a href="index.html">امروز چی داری؟</a><a href="pro.html">PRO</a></div>' +
-    '<div><b>فیت مارکت</b><a href="market.html">محصولات دیجیتال</a><a href="https://instagram.com/dailyfitbeat">اینستاگرام</a><a href="market.html">ثبت سفارش</a></div>' +
-    '<div><b>درباره ما</b><a href="about.html">داستان دیلی‌بیت</a><a href="privacy.html">حریم خصوصی</a><a href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener">اینستاگرام</a></div>' +
+  f.innerHTML = '<div class="f-min">' +
+    '<div class="f-brand"><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><span>خوب بخور، بهتر زندگی کن</span></div>' +
+    '<nav class="f-links">' +
+    '<a href="recipes.html">رسپی‌ها</a><a href="planner.html">برنامه غذایی</a><a href="ai-assistant.html">دستیار AI</a><a href="market.html">فیت مارکت</a><a href="pro.html">PRO</a><a href="about.html">درباره ما</a>' +
+    '</nav>' +
+    '<a class="f-ig" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.8.1-1.1.1-1.5.2-1.8.3-.4.2-.7.3-1 .6-.3.3-.5.6-.6 1-.1.3-.3.7-.3 1.8-.1 1.3-.1 1.7-.1 4.8s0 3.5.1 4.8c.1 1.1.2 1.5.3 1.8.2.4.3.7.6 1 .3.3.6.5 1 .6.3.1.7.3 1.8.3 1.3.1 1.7.1 4.8.1s3.5 0 4.8-.1c1.1-.1 1.5-.2 1.8-.3.4-.2.7-.3 1-.6.3-.3.5-.6.6-1 .1-.3.3-.7.3-1.8.1-1.3.1-1.7.1-4.8s0-3.5-.1-4.8c-.1-1.1-.2-1.5-.3-1.8-.2-.4-.3-.7-.6-1-.3-.3-.6-.5-1-.6-.3-.1-.7-.3-1.8-.3-1.3-.1-1.7-.1-4.8-.1zm0 3.1a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zm5.2-2.9a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>اینستاگرام</a>' +
     '</div><div class="f-bottom">© 2026 DailyFitBeat — همه حقوق محفوظ است.</div>';
 }
 function toggleLang() {
@@ -248,19 +248,51 @@ async function loadPopular() {
   el.innerHTML = card(data[0], true) + data.slice(1).map(function (x) { return card(x); }).join('');
 }
 var curCat = 'all', curGoal = 'all', curQ = '', curRegion = 'all', mealCats = null, pendingSeo = false;
-function renderRecipes() {
+/* صفحه‌بندی نرم گرید رسپی‌ها */
+var REC_PAGE = 12, recShown = REC_PAGE;
+function recFilter(r) {
+  if (curCat !== 'all' && r.category !== curCat && !(curCat === 'main' && r.category === 'sauce')) return false;
+  if (mealCats && mealCats.indexOf(r.category) === -1) return false;
+  if (curRegion !== 'all' && (r.region || '') !== curRegion) return false;
+  if (curGoal !== 'all' && (r.tags || []).indexOf(curGoal) === -1) return false;
+  if (curQ && !curQ.split(' ').every(function (w) { return hay(r).indexOf(w) !== -1; })) return false;
+  return true;
+}
+function renderRecipes(keepShown) {
   var el = document.getElementById('recipeGrid');
   if (!el) return;
-  var list = ALL.filter(function (r) {
-    if (curCat !== 'all' && r.category !== curCat) return false;
-    if (mealCats && mealCats.indexOf(r.category) === -1) return false;
-    if (curRegion !== 'all' && (r.region || '') !== curRegion) return false;
-    if (curGoal !== 'all' && (r.tags || []).indexOf(curGoal) === -1) return false;
-    if (curQ && !curQ.split(' ').every(function (w) { return hay(r).indexOf(w) !== -1; })) return false;
-    return true;
-  });
-  el.innerHTML = list.map(function (r) { return card(r); }).join('') || '<p class="no-res">چیزی در این دسته نیست — فیلتر دیگری را امتحان کن</p>';
+  var list = ALL.filter(recFilter);
+  if (!keepShown) recShown = REC_PAGE;
+  var shown = list.slice(0, recShown);
+  var more = document.getElementById('loadMore');
+  if (more) {
+    if (list.length > recShown) {
+      more.hidden = false;
+      more.querySelector('b').textContent = (list.length - recShown).toLocaleString('fa-IR');
+    } else more.hidden = true;
+  }
+  el.innerHTML = shown.map(function (r) { return card(r); }).join('') || '<p class="no-res">چیزی در این دسته نیست — فیلتر دیگری را امتحان کن</p>';
   if (pendingSeo && ALL.length) { pendingSeo = false; applyRecipeSeo(list); }
+}
+/* ---------- کارت دسته‌بندی‌ها با عکس و تعداد ---------- */
+var CAT_IMG = { iranian: 'img/cat-iranian.jpg', main: 'img/cat-main.jpg', salad: 'img/cat-salad.jpg', sandwich: 'img/cat-sandwich.jpg', breakfast: 'img/cat-breakfast.jpg', soup: 'img/cat-soup.jpg' };
+function renderCatCards() {
+  var el = document.getElementById('catCards');
+  if (!el || !ALL.length) return;
+  var cats = [['all', 'همه رسپی‌ها', 'img/hero-salmon.jpg'], ['breakfast', 'صبحانه', 'img/cat-breakfast.jpg'], ['iranian', 'ایرانی', 'img/cat-iranian.jpg'], ['main', 'غذای اصلی', 'img/cat-main.jpg'], ['salad', 'سالاد', 'img/cat-salad.jpg'], ['soup', 'سوپ و آش', 'img/cat-soup.jpg'], ['sandwich', 'ساندویچ', 'img/cat-sandwich.jpg']];
+  el.innerHTML = cats.map(function (c) {
+    var n = c[0] === 'all' ? ALL.length : ALL.filter(function (r) { return r.category === c[0] || (c[0] === 'main' && r.category === 'sauce'); }).length;
+    if (c[0] !== 'all' && !n) return '';
+    return '<button class="rec-cat' + (curCat === c[0] ? ' on' : '') + '" data-cat="' + c[0] + '"><span class="rc-im"><img src="' + c[2] + '" alt="" width="150" height="150" loading="lazy" onerror="this.parentNode.classList.add(\'off\');"></span><b>' + c[1] + '</b><small>' + n.toLocaleString('fa-IR') + ' رسپی</small></button>';
+  }).join('');
+  el.querySelectorAll('.rec-cat').forEach(function (b) {
+    b.onclick = function () {
+      curCat = b.dataset.cat; mealCats = null;
+      el.querySelectorAll('.rec-cat').forEach(function (x) { x.classList.toggle('on', x === b); });
+      pendingSeo = true; syncUrl(); renderTiles(); renderRecipes();
+      try { window.dfbTrack('recipes_cat', { cat: curCat }); } catch (e) {}
+    };
+  });
 }
 /* ---------- SEO داینامیک صفحات فیلتردار: meta + H1 + ItemList + Breadcrumb ---------- */
 function syncUrl() {
@@ -364,17 +396,9 @@ function initRecipes() {
   if (pr) curRegion = pr;
   if (pq) { curQ = norm(pq); var si = document.getElementById('recipeSearch'); if (si) si.value = pq; }
   if (pc || pg || pm || pcu || pr || pq) pendingSeo = true;
-  document.querySelectorAll('.filters .chip[data-cat]').forEach(function (c) { c.classList.toggle('on', c.dataset.cat === curCat); });
   document.querySelectorAll('.filters .chip[data-goal]').forEach(function (c) { c.classList.toggle('on', c.dataset.goal === curGoal); });
   var sr = document.getElementById('recipeSearch');
   if (sr) sr.oninput = function () { curQ = norm(sr.value); syncUrl(); renderRecipes(); };
-  document.querySelectorAll('.filters .chip[data-cat]').forEach(function (ch) {
-    ch.onclick = function () {
-      curCat = ch.dataset.cat; mealCats = null;
-      document.querySelectorAll('.filters .chip[data-cat]').forEach(function (x) { x.classList.toggle('on', x === ch); });
-      pendingSeo = true; syncUrl(); renderTiles(); renderRecipes();
-    };
-  });
   document.querySelectorAll('.filters .chip[data-goal]').forEach(function (ch) {
     ch.onclick = function () {
       curGoal = ch.dataset.goal;
@@ -382,6 +406,8 @@ function initRecipes() {
       pendingSeo = true; syncUrl(); renderRecipes();
     };
   });
+  var lm = document.getElementById('loadMore');
+  if (lm) lm.onclick = function () { recShown += REC_PAGE; renderRecipes(true); };
 }
 async function initDetail() {
   if (page !== 'recipe') return;
@@ -598,4 +624,4 @@ document.documentElement.lang = lang;
 document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
 initSearch(); initFinder(); initRecipes(); initDetail(); initOrder(); initMarket(); initPro();
 if (page === 'home') loadPopular();
-if (page === 'recipes') loadAll().then(function () { renderTiles(); renderRecipes(); });
+if (page === 'recipes') loadAll().then(function () { renderCatCards(); renderTiles(); renderRecipes(); });
