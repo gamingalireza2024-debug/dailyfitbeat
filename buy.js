@@ -26,6 +26,8 @@
   function errMsg(status, j) {
     if (status === 401) return 'نشست تو تمام شده. لطفاً دوباره وارد شو.';
     if (status === 404) return 'محصول یا پلن پیدا نشد.';
+    if (j && (j.error === 'terms-not-accepted')) return 'برای خرید باید قوانین و مقررات را بپذیری.';
+    if (j && j.fa) return esc(j.fa);
     if (j && j.error === 'coupon invalid') return 'کد تخفیف معتبر نیست.';
     if (j && j.error === 'coupon expired') return 'کد تخفیف منقضی شده.';
     if (j && j.error) return 'خطا: ' + esc(j.error);
@@ -64,6 +66,7 @@
       '<p style="background:#f2f7f2;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700">' + esc(sel.title) + '</p>' +
       '<p style="color:#667066;font-size:12px;margin:6px 0">کد تخفیف (اختیاری):</p>' +
       '<input id="bmCoupon" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid #d8e2d8;font:inherit;font-size:13px" placeholder="مثال: FIT1404">' +
+      '<label for="bmTerms" style="display:flex;align-items:flex-start;gap:8px;margin:12px 0 2px;font-size:12px;line-height:1.9;cursor:pointer;color:#475047"><input type="checkbox" id="bmTerms" style="width:16px;height:16px;accent-color:#2d6a35;flex:0 0 auto;margin-top:3px"><span><a href="terms.html" target="_blank" rel="noopener" style="color:#2d6a35;font-weight:800">قوانین و مقررات</a> را خواندم و می‌پذیرم. با این تیک، خرید من مشمول شرایط بازگشت وجه محصولات دیجیتال هم می‌شود.</span></label>' +
       '<p id="bmErr" style="color:#c22;font-size:12px;display:none"></p>' +
       '<div style="display:flex;gap:8px;margin-top:10px"><button id="bmNext" style="flex:1;border:0;background:#2d6a35;color:#fff;border-radius:14px;padding:12px;font:inherit;font-size:13px;font-weight:800;cursor:pointer">ادامه و دریافت اطلاعات پرداخت</button><button id="bmCancel" style="border:1.5px solid #2d6a35;background:#fff;color:#2d6a35;border-radius:14px;padding:12px 18px;font:inherit;font-size:13px;font-weight:800;cursor:pointer">انصراف</button></div>';
     document.getElementById('bmCancel').onclick = closeModal;
@@ -73,15 +76,22 @@
   async function doCheckout() {
     var err = document.getElementById('bmErr');
     err.style.display = 'none';
+    var terms = document.getElementById('bmTerms');
+    if (!terms || !terms.checked) {
+      err.textContent = 'برای ادامه خرید، اول قوانین و مقررات را بپذیر.';
+      err.style.display = 'block';
+      return;
+    }
     var btn = document.getElementById('bmNext');
     btn.disabled = true;
     btn.textContent = 'در حال ثبت سفارش…';
     var code = (document.getElementById('bmCoupon').value || '').trim();
     var body = sel.type === 'plan' ? { plan_id: sel.id } : { product_id: sel.id };
     if (code) body.coupon = code;
+    body.accept_terms = true;
     try {
       var r = await api('checkout', { method: 'POST', body: JSON.stringify(body) });
-      var j = parseJSON(r);
+      var j = await parseJSON(r);
       if (!r.ok) {
         err.textContent = errMsg(r.status, j);
         err.style.display = 'block';
@@ -90,7 +100,7 @@
         return;
       }
       payId = j.payment_id || (j.payment && j.payment.id) || j.id || null;
-      var amount = (j.amount != null) ? j.amount : (j.order && j.order.total != null ? j.order.total : null);
+      var amount = (j.amount != null) ? j.amount : (j.order && j.order.total != null ? j.order.total : j.total);
       var card = j.card_number || (j.payment && j.payment.card_number) || '';
       var discount = (j.discount != null) ? j.discount : 0;
       step2(amount, card, discount);
@@ -128,7 +138,7 @@
     btn.textContent = 'در حال ثبت…';
     try {
       var r = await api('submit_payment', { method: 'POST', body: JSON.stringify({ payment_id: payId, ref: ref }) });
-      var j = parseJSON(r);
+      var j = await parseJSON(r);
       if (!r.ok) {
         submitted = false;
         btn.disabled = false;

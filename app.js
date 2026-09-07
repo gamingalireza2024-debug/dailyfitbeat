@@ -150,7 +150,7 @@ function injectFooter() {
   f.innerHTML = '<div class="f-min">' +
     '<div class="f-brand"><img class="f-logo" src="img/logo.png" alt="DailyFitBeat"><span>خوب بخور، بهتر زندگی کن</span></div>' +
     '<nav class="f-links">' +
-    '<a href="recipes.html">رسپی‌ها</a><a href="planner.html">برنامه غذایی</a><a href="ai-assistant.html">دستیار AI</a><a href="market.html">فیت مارکت</a><a href="pro.html">PRO</a><a href="about.html">درباره ما</a>' +
+    '<a href="recipes.html">رسپی‌ها</a><a href="planner.html">برنامه غذایی</a><a href="ai-assistant.html">دستیار AI</a><a href="market.html">فیت مارکت</a><a href="pro.html">PRO</a><a href="terms.html">قوانین</a><a href="privacy.html">حریم خصوصی</a><a href="about.html">درباره ما</a>' +
     '</nav>' +
     '<a class="f-ig" href="https://instagram.com/dailyfitbeat" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.8.1-1.1.1-1.5.2-1.8.3-.4.2-.7.3-1 .6-.3.3-.5.6-.6 1-.1.3-.3.7-.3 1.8-.1 1.3-.1 1.7-.1 4.8s0 3.5.1 4.8c.1 1.1.2 1.5.3 1.8.2.4.3.7.6 1 .3.3.6.5 1 .6.3.1.7.3 1.8.3 1.3.1 1.7.1 4.8.1s3.5 0 4.8-.1c1.1-.1 1.5-.2 1.8-.3.4-.2.7-.3 1-.6.3-.3.5-.6.6-1 .1-.3.3-.7.3-1.8.1-1.3.1-1.7.1-4.8s0-3.5-.1-4.8c-.1-1.1-.2-1.5-.3-1.8-.2-.4-.3-.7-.6-1-.3-.3-.6-.5-1-.6-.3-.1-.7-.3-1.8-.3-1.3-.1-1.7-.1-4.8-.1zm0 3.1a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zm5.2-2.9a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>اینستاگرام</a>' +
     '</div><div class="f-bottom">© 2026 DailyFitBeat — همه حقوق محفوظ است.</div>';
@@ -537,17 +537,42 @@ async function initDetail() {
 function initOrder() {
   var f = document.getElementById('orderForm');
   if (!f) return;
+  var t0 = Date.now(); /* تله زمان ضدربات: ارسال سریع‌تر از ۲.۵ ثانیه = ربات */
   f.onsubmit = async function (e) {
     e.preventDefault();
     /* honeypot: فیلد مخفی — ربات‌ها آن را پر می‌کنند */
     var hp = f.querySelector('input[name="website"]');
-    var o = { name: document.getElementById('oName').value, phone: document.getElementById('oPhone').value, email: document.getElementById('oEmail').value, product: document.getElementById('oProduct').value, note: document.getElementById('oNote').value, ref: document.getElementById('oRef').value, user_id: USER ? USER.id : null, website: hp ? hp.value : '' };
-    var r = await fetch('/api/db?t=order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(o) });
-    var res = await r.json();
-    var ok = document.getElementById('orderOk');
-    ok.style.display = 'block';
-    ok.innerHTML = 'سفارش تو با کد <b>' + (res.id || '—') + '</b> ثبت شد<br>تلگرام: ' + (res.tg ? 'بله' : 'خیر') + ' — ایمیل: ' + (res.mail === 'ok' ? 'بله' : 'خیر') + (USER ? '<br>در پنل کاربری قابل پیگیریه' : '');
-    f.reset();
+    var terms = document.getElementById('oTerms');
+    if (!terms || !terms.checked) {
+      var okE = document.getElementById('orderOk');
+      okE.style.display = 'block';
+      okE.innerHTML = '<b>اول قوانین و مقررات را بپذیر.</b> برای ثبت سفارش باید تیک پذیرش قوانین را بزنی — <a href="terms.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:800">خواندن قوانین</a>';
+      return;
+    }
+    var btn = f.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'در حال ثبت…'; }
+    var o = { name: document.getElementById('oName').value, phone: document.getElementById('oPhone').value, email: document.getElementById('oEmail').value, product: document.getElementById('oProduct').value, note: document.getElementById('oNote').value, ref: document.getElementById('oRef').value, user_id: USER ? USER.id : null, website: hp ? hp.value : '', accept_terms: true, form_time: Date.now() - t0 };
+    try {
+      var r = await fetch('/api/db?t=order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(o) });
+      var res = await r.json();
+      var ok = document.getElementById('orderOk');
+      ok.style.display = 'block';
+      if (!r.ok || (!res.id && res.error)) {
+        ok.innerHTML = '<b>ثبت نشد:</b> ' + esc(res.error || 'خطای موقت — دوباره تلاش کن');
+      } else if (!res.id) {
+        ok.innerHTML = 'سفارش ثبت نشد — اطلاعات فرم را بررسی کن و دوباره تلاش کن.';
+      } else {
+        ok.innerHTML = 'سفارش تو با کد <b>' + (res.id || '—') + '</b> ثبت شد<br>تلگرام: ' + (res.tg ? 'بله' : 'خیر') + ' — ایمیل: ' + (res.mail === 'ok' ? 'بله' : 'خیر') + (USER ? '<br>در پنل کاربری قابل پیگیریه' : '');
+        f.reset();
+        var t2 = document.getElementById('oTerms'); if (t2) t2.checked = false;
+        t0 = Date.now();
+      }
+    } catch (err2) {
+      var ok2 = document.getElementById('orderOk');
+      ok2.style.display = 'block';
+      ok2.innerHTML = '<b>اتصال برقرار نشد.</b> اینترنت را چک کن و دوباره تلاش کن.';
+    }
+    if (btn) { btn.disabled = false; btn.textContent = 'ثبت سفارش'; }
   };
 }
 async function initMarket() {
@@ -589,8 +614,26 @@ async function initPro() {
   if (!box) return;
   var data = await (await fetch('/api/db?t=plans')).json();
   if (!Array.isArray(data)) return;
+  var CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true" class="pf-check"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>';
   box.innerHTML = data.map(function (pl) {
-    return '<div class="price-card' + (pl.key === 'yearly' ? ' hot' : '') + '" data-key="' + esc(pl.key) + '" data-id="' + esc(pl.id) + '">' + (pl.key === 'yearly' ? '<span class="ribbon">پیشنهاد ویژه</span>' : '') + '<h3>' + esc(pl.title_fa) + '</h3><div class="p">' + rial(pl.price_rial) + '<small> / ' + esc(pl.period) + '</small></div>' + (pl.old_price_rial ? '<s class="oldp">' + rial(pl.old_price_rial) + '</s>' : '') + '<ul>' + (pl.features || []).map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul><a class="btn" data-id="' + esc(pl.id) + '" href="pro.html#buy">انتخاب پلان</a></div>';
+    var hot = pl.key === 'yearly';
+    /* معادل ماهانه برای پلن‌های بلندمدت تا مقایسه راحت باشد */
+    var perMonth = '';
+    var per = esc(pl.period || '').trim();
+    if (/سالانه|سال/.test(per) && Number(pl.price_rial) > 0) {
+      perMonth = '<span class="p-permo">معادل ' + rial(Math.round(Number(pl.price_rial) / 12)) + ' در ماه</span>';
+    }
+    var savePct = '';
+    if (pl.old_price_rial && Number(pl.old_price_rial) > Number(pl.price_rial)) {
+      savePct = '<span class="p-save">' + Math.round((1 - Number(pl.price_rial) / Number(pl.old_price_rial)) * 100).toLocaleString('fa-IR') + '٪ صرفه‌جویی</span>';
+    }
+    return '<div class="price-card' + (hot ? ' hot' : '') + '" data-key="' + esc(pl.key) + '" data-id="' + esc(pl.id) + '">' + (hot ? '<span class="ribbon">پیشنهاد ویژه</span>' : '') +
+      '<h3>' + esc(pl.title_fa) + '</h3>' + (savePct ? '<div class="p-badges">' + savePct + '</div>' : '') +
+      '<div class="p">' + rial(pl.price_rial) + '<small> / ' + per + '</small></div>' +
+      (pl.old_price_rial ? '<s class="oldp">' + rial(pl.old_price_rial) + '</s>' : '') + perMonth +
+      '<ul>' + (pl.features || []).map(function (f) { return '<li>' + CHECK + esc(f) + '</li>'; }).join('') + '</ul>' +
+      '<a class="btn' + (hot ? '' : ' ghost') + '" data-id="' + esc(pl.id) + '" href="pro.html#buy">انتخاب پلن</a>' +
+      '<span class="p-note">فعال‌سازی بعد از تأیید پرداخت — طبق قوانین</span></div>';
   }).join('');
   document.querySelectorAll('.plan-tog button').forEach(function (b) {
     b.onclick = function () {

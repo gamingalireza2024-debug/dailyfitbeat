@@ -17,6 +17,8 @@
     { "source": "/pro", "destination": "/pro.html" },
     { "source": "/ai", "destination": "/ai.html" },
     { "source": "/about", "destination": "/about.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/weight-loss", "destination": "/weight-loss.html" },
     { "source": "/weekly-plan", "destination": "/weekly-plan.html" },
     { "source": "/ai-assistant", "destination": "/ai-assistant.html" }

@@ -28,11 +28,14 @@ const CARD_NUMBER = "6037-9975-0000-0000"; // شماره کارت واقعی خ�
     document.getElementById('smTitle').textContent = 'خرید: ' + title;
     document.getElementById('smBody').innerHTML = `<p style="font-size:13px;color:#667">کد تخفیف داری؟ (اختیاری)</p>
       <input id="smCoupon" placeholder="کد تخفیف" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;font:inherit">
+      <label for="smTerms" style="display:flex;align-items:flex-start;gap:8px;margin:12px 0 2px;font-size:12px;line-height:1.9;cursor:pointer;color:#475047"><input type="checkbox" id="smTerms" style="width:16px;height:16px;accent-color:#2d6a35;flex:0 0 auto;margin-top:3px"><span><a href="terms.html" target="_blank" rel="noopener" style="color:#2d6a35;font-weight:800">قوانین و مقررات</a> را خواندم و می‌پذیرم.</span></label>
       <button id="smGo" class="btn" style="margin-top:10px;width:100%">ادامه</button>` + closeBtn();
     bindClose();
     document.getElementById('smGo').onclick = async () => {
+      const t = document.getElementById('smTerms');
+      if (!t || !t.checked) { alert('برای ادامه خرید، اول قوانین و مقررات را بپذیر.'); return; }
       const coupon = document.getElementById('smCoupon').value.trim();
-      const r = await api('checkout', { method: 'POST', body: JSON.stringify(Object.assign({}, payload, { coupon: coupon || undefined, method: 'MANUAL' })) });
+      const r = await api('checkout', { method: 'POST', body: JSON.stringify(Object.assign({}, payload, { coupon: coupon || undefined, method: 'MANUAL', accept_terms: true })) });
       const j = await r.json();
       if (!r.ok) { alert(j.error === 'invalid coupon' ? 'کد تخفیف معتبر نیست' : (j.error || 'خطا')); return; }
       document.getElementById('smBody').innerHTML = `
