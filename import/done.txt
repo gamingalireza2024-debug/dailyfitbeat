@@ -81,3 +81,8 @@
 کاسه اسموتی میوه و ماست | برزیل | breakfast  →  RETRY-next-run
 پنکیک جو دوسر و موز | کانادا | breakfast  →  RETRY-next-run
 
+2026-09-07T07:51:11.416Z — 0 ok / 0 skip / 3 retry
+تخم‌مرغ آب‌پز و نان چاودار | دانمارک | breakfast  →  RETRY-next-run
+املت گوجه و پنیر فتا | قبرس | breakfast  →  RETRY-next-run
+پودینگ چیا با نارگیل و انبه | تایلند | breakfast  →  RETRY-next-run
+
