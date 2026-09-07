@@ -86,3 +86,8 @@
 املت گوجه و پنیر فتا | قبرس | breakfast  →  RETRY-next-run
 پودینگ چیا با نارگیل و انبه | تایلند | breakfast  →  RETRY-next-run
 
+2026-09-07T08:05:25.666Z — 2 ok / 0 skip / 1 retry
+نان سبوس‌دار با پنیر و خیار | هلند | breakfast  →  OK(whole-grain-bread-cheese-cucumber)
+کاسه ماست و توت‌های جنگلی | سوئد | breakfast  →  RETRY-next-run
+فرنی چیا و توت‌فرنگی | آمریکا | breakfast  →  OK(strawberry-chia-pudding)
+
