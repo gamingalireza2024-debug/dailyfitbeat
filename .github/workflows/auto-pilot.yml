@@ -2,8 +2,8 @@ name: auto-pilot
 
 on:
   schedule:
-    # هر ۲ روز یک‌بار ساعت ۰۵:۰۰ UTC (۸:۳۰ صبح ایران)
-    - cron: "0 5 */2 * *"
+    # هفته‌ای فقط ۲ روز — شنبه و سه‌شنبه ساعت ۰۵:۰۰ UTC (۰۸:۳۰ صبح ایران)
+    - cron: "0 5 * * 6,3"
   workflow_dispatch:
     inputs:
       enrich_limit:
