@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /* ============================================================
-   DailyFitBeat — Audit Images (v1)
+   DailyFitBeat — Audit Images (v2)
    عکسهای بی‌استفادهٔ img/ را پیدا (و با CLEAN=1 پاک) می‌کند.
-   محافظه‌کار: به‌جای اسکن لفظی، هر دو شکل img/<slug>.jpg و
-   img/recipes/<slug>.jpg برای «هر» رسپی دیتابیس جزو استفاده‌شده‌هاست
-   (چون gen-images بین این دو مسیر مهاجرت می‌کند) — پس هیچ عکس
-   متصل به یک رسپی واقعی حذف نمی‌شود.
+   v2: مهاجرت مسیرها کامل شد — دیتابیس برای همهٔ رسپی‌ها از
+   img/recipes/<slug>.jpg استفاده می‌کند؛ پس فقط مسیرِ ثبت‌شده در
+   دیتابیس + رفرنس لفظی سورس محافظت می‌شود و ۱۹۴ کپی تکراری
+   قدیمیِ img/<slug>.jpg آزاد می‌شوند.
    اجرا:      node scripts/audit-images.mjs          (فقط گزارش)
    اجرا:      CLEAN=1 node scripts/audit-images.mjs  (حذف واقعی)
    ============================================================ */
@@ -23,10 +23,10 @@ const svcH = { apikey: SERVICE, Authorization: "Bearer " + SERVICE };
 
 /* ---------- ۱) مسیرهای استفاده‌شده از دیتابیس ---------- */
 const referenced = new Set();
-const slugForms = new Set();
+let recipeCount = 0;
 
 async function dbRefs() {
-  // recipes: image فعلی + هر دو شکل مسیر برای همهٔ اسلاگ‌ها
+  // recipes: فقط مسیر image ثبت‌شده در دیتابیس محافظت می‌شود (v2)
   let off = 0;
   while (true) {
     const r = await fetch(SB_URL + "/rest/v1/recipes?select=slug,image&limit=1000&offset=" + off, { headers: svcH });
@@ -34,8 +34,7 @@ async function dbRefs() {
     if (!Array.isArray(j) || !j.length) break;
     for (const x of j) {
       if (x.image) referenced.add(x.image.trim());
-      slugForms.add("img/" + x.slug + ".jpg");
-      slugForms.add("img/recipes/" + x.slug + ".jpg");
+      recipeCount++;
     }
     if (j.length < 1000) break;
     off += 1000;
@@ -48,8 +47,7 @@ async function dbRefs() {
   } catch (e) { console.log("⚠ products خوانده نشد: " + e.message); }
 }
 await dbRefs();
-for (const p of slugForms) referenced.add(p);
-console.log("🗄 از دیتابیس: " + referenced.size + " مسیر محافظت‌شده (" + slugForms.size / 2 + " رسپی)");
+console.log("🗄 از دیتابیس: " + referenced.size + " مسیر محافظت‌شده (" + recipeCount + " رسپی)");
 
 /* ---------- ۲) ارجاع‌های متنی در سورس ---------- */
 function walk(dir, out = []) {
