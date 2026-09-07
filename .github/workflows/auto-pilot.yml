@@ -36,19 +36,22 @@ jobs:
       - name: Install sharp
         run: npm i sharp@0.33.5 --no-fund --no-audit
 
-      - name: "۰) بررسی سلامت کلیدها (گزارش)"
+      - id: s0
+        name: "۰) بررسی سلامت کلیدها (گزارش)"
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node scripts/check-keys.mjs
 
-      - name: "۱) پر کردن صف غذای جدید (کشف خودکار)"
+      - id: s1
+        name: "۱) پر کردن صف غذای جدید (کشف خودکار)"
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node scripts/discover-dishes.mjs
 
-      - name: "۲) تکمیل فیلدهای خالی رسپی‌های قدیمی"
+      - id: s2
+        name: "۲) تکمیل فیلدهای خالی رسپی‌های قدیمی"
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -56,21 +59,24 @@ jobs:
           LIMIT: ${{ github.event.inputs.enrich_limit || '30' }}
         run: node scripts/enrich-recipes.mjs
 
-      - name: "۳) ساخت عکس رسپی‌های بدون عکس"
+      - id: s3
+        name: "۳) ساخت عکس رسپی‌های بدون عکس"
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           LIMIT: ${{ github.event.inputs.images_limit || '15' }}
         run: node scripts/gen-images.mjs
 
-      - name: "۴) افزودن غذاهای جدید"
+      - id: s4
+        name: "۴) افزودن غذاهای جدید"
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           LIMIT: ${{ github.event.inputs.import_limit || '3' }}
         run: node scripts/import-recipes.mjs
 
-      - name: "۵) فشرده‌سازی عکس‌های سنگین"
+      - id: s5
+        name: "۵) فشرده‌سازی عکس‌های سنگین"
         run: node scripts/optimize-images.mjs
 
       - name: Commit results
@@ -86,3 +92,29 @@ jobs:
           git commit -m "auto-pilot: enrich + images + new recipes [skip ci]"
           git pull --rebase origin main
           git push
+
+      - name: "۶) گزارش به ربات تلگرام ادمین"
+        if: always()
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+        run: |
+          if [ -z "$TG_TOKEN" ] || [ -z "$TG_CHAT" ]; then
+            echo "Secrets تلگرام (TG_TOKEN / TG_CHAT) تنظیم نشده — گزارش ارسال نشد"
+            exit 0
+          fi
+          mark() { if [ "$2" = "success" ]; then echo "1"; else echo "0"; fi; }
+          T0=$(mark s0 "${{ steps.s0.outcome }}"); T1=$(mark s1 "${{ steps.s1.outcome }}")
+          T2=$(mark s2 "${{ steps.s2.outcome }}"); T3=$(mark s3 "${{ steps.s3.outcome }}")
+          T4=$(mark s4 "${{ steps.s4.outcome }}"); T5=$(mark s5 "${{ steps.s5.outcome }}")
+          TEXT="🤖 گزارش auto-pilot دیلی‌بیت
+          وضعیت کل ران: ${{ job.status }}
+          ۰) سلامت کلیدها: ${{ steps.s0.outcome }}
+          ۱) کشف غذا: ${{ steps.s1.outcome }}
+          ۲) غنی‌سازی: ${{ steps.s2.outcome }}
+          ۳) ساخت عکس: ${{ steps.s3.outcome }}
+          ۴) ایمپورت: ${{ steps.s4.outcome }}
+          ۵) بهینه‌سازی عکس: ${{ steps.s5.outcome }}
+          🔗 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s --max-time 20 -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" --data-urlencode text="$TEXT" > /dev/null || true
