@@ -101,3 +101,8 @@
 کاسه اسموتی میوه و ماست | برزیل | breakfast  →  OK(greek-yogurt-fruit-smoothie-bowl)
 پنکیک جو دوسر و موز | کانادا | breakfast  →  OK(oatmeal-banana-pancakes)
 
+2026-09-09T10:00:02.149Z — 3 ok / 0 skip / 0 retry
+ساندویچ بوقلمون و پنیر ریکوتا | ایتالیا | sandwich  →  OK(turkey-and-ricotta-cheese-sandwich)
+ساندویچ توفو و سبزیجات گریل | ژاپن | sandwich  →  OK(grilled-tofu-and-vegetable-sandwich)
+ساندویچ بادمجان گریل و پنیر فتا | یونان | sandwich  →  OK(grilled-eggplant-feta-sandwich)
+
