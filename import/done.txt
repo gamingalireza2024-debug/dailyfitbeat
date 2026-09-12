@@ -106,3 +106,8 @@
 ساندویچ توفو و سبزیجات گریل | ژاپن | sandwich  →  OK(grilled-tofu-and-vegetable-sandwich)
 ساندویچ بادمجان گریل و پنیر فتا | یونان | sandwich  →  OK(grilled-eggplant-feta-sandwich)
 
+2026-09-12T09:32:59.023Z — 3 ok / 0 skip / 0 retry
+ساندویچ بادام زمینی و سیب | آمریکا | sandwich  →  OK(peanut-butter-apple-sandwich)
+سوپ اسفناج و شیر بادام | فرانسه | soup  →  OK(spinach-almond-milk-soup)
+سوپ گل کلم و سیر | انگلستان | soup  →  OK(roasted-cauliflower-garlic-soup)
+
