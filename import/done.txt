@@ -111,3 +111,8 @@
 سوپ اسفناج و شیر بادام | فرانسه | soup  →  OK(spinach-almond-milk-soup)
 سوپ گل کلم و سیر | انگلستان | soup  →  OK(roasted-cauliflower-garlic-soup)
 
+2026-09-19T09:40:49.735Z — 3 ok / 0 skip / 0 retry
+سالاد کلم بروکلی و زغال اخته | اسپانیا | salad  →  OK(broccoli-cranberry-salad)
+سالاد لوبیا چشم بلبلی و جعفری | ترکیه | salad  →  OK(black-eyed-pea-and-parsley-salad)
+ساندویچ بوقلمون دودی و خیار | فرانسه | sandwich  →  OK(smoked-turkey-and-cucumber-sandwich)
+
