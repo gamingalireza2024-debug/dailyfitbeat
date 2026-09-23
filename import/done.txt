@@ -116,3 +116,8 @@
 سالاد لوبیا چشم بلبلی و جعفری | ترکیه | salad  →  OK(black-eyed-pea-and-parsley-salad)
 ساندویچ بوقلمون دودی و خیار | فرانسه | sandwich  →  OK(smoked-turkey-and-cucumber-sandwich)
 
+2026-09-23T10:22:48.101Z — 3 ok / 0 skip / 0 retry
+ساندویچ فیله مرغ گریل و سس خردل | آلمان | sandwich  →  OK(grilled-chicken-fillet-sandwich-mustard)
+ساندویچ تن ماهی و ذرت رژیمی | مکزیک | sandwich  →  OK(diet-tuna-and-corn-sandwich)
+ساندویچ کدو سبز گریل و پنیر خامه‌ای کم‌چرب | ایتالیا | sandwich  →  OK(grilled-zucchini-low-fat-cream-cheese-sandwich)
+
