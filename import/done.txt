@@ -121,3 +121,8 @@
 ساندویچ تن ماهی و ذرت رژیمی | مکزیک | sandwich  →  OK(diet-tuna-and-corn-sandwich)
 ساندویچ کدو سبز گریل و پنیر خامه‌ای کم‌چرب | ایتالیا | sandwich  →  OK(grilled-zucchini-low-fat-cream-cheese-sandwich)
 
+2026-09-26T10:25:49.894Z — 3 ok / 0 skip / 0 retry
+سوپ نخود فرنگی و نعناع | بریتانیا | soup  →  OK(pea-and-mint-soup)
+سوپ گوجه فرنگی و ریحان | ایتالیا | soup  →  OK(roasted-tomato-basil-soup)
+سالاد گل کلم و ارده | لبنان | salad  →  OK(roasted-cauliflower-tahini-salad)
+
