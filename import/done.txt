@@ -126,3 +126,8 @@
 سوپ گوجه فرنگی و ریحان | ایتالیا | soup  →  OK(roasted-tomato-basil-soup)
 سالاد گل کلم و ارده | لبنان | salad  →  OK(roasted-cauliflower-tahini-salad)
 
+2026-09-30T11:24:11.079Z — 3 ok / 0 skip / 0 retry
+سالاد عدس و خیار | یونان | salad  →  OK(lentil-cucumber-salad)
+ساندویچ فیله بوقلمون و پنیر گودا کم‌چرب | بین‌المللی | sandwich  →  OK(turkey-fillet-low-fat-gouda-sandwich)
+ساندویچ تخم مرغ آب‌پز و شوید | ایران | sandwich  →  OK(boiled-egg-and-dill-sandwich)
+
