@@ -131,3 +131,8 @@
 ساندویچ فیله بوقلمون و پنیر گودا کم‌چرب | بین‌المللی | sandwich  →  OK(turkey-fillet-low-fat-gouda-sandwich)
 ساندویچ تخم مرغ آب‌پز و شوید | ایران | sandwich  →  OK(boiled-egg-and-dill-sandwich)
 
+2026-10-03T10:12:28.993Z — 3 ok / 0 skip / 0 retry
+ساندویچ ماهی سالمون دودی و خیارشور | نروژ | sandwich  →  OK(smoked-salmon-pickle-sandwich)
+سالاد کلم‌پیچ و سیب سبز | آمریکا | salad  →  OK(cabbage-and-green-apple-salad)
+سالاد لوبیا قرمز و ذرت شیرین | مکزیک | salad  →  OK(red-kidney-bean-sweet-corn-salad)
+
