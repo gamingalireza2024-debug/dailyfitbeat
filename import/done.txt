@@ -136,3 +136,8 @@
 سالاد کلم‌پیچ و سیب سبز | آمریکا | salad  →  OK(cabbage-and-green-apple-salad)
 سالاد لوبیا قرمز و ذرت شیرین | مکزیک | salad  →  OK(red-kidney-bean-sweet-corn-salad)
 
+2026-10-07T11:42:37.948Z — 2 ok / 0 skip / 1 retry
+سوپ دال‌عدس و لیمو | هند | soup  →  RETRY-next-run
+سوپ جوجه و جو دوسر | ایران | soup  →  OK(chicken-and-oatmeal-soup)
+املت سبزیجات و پنیر ریکوتا | ایتالیا | breakfast  →  OK(vegetable-ricotta-omelet)
+
