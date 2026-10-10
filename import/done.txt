@@ -141,3 +141,8 @@
 سوپ جوجه و جو دوسر | ایران | soup  →  OK(chicken-and-oatmeal-soup)
 املت سبزیجات و پنیر ریکوتا | ایتالیا | breakfast  →  OK(vegetable-ricotta-omelet)
 
+2026-10-10T10:54:21.270Z — 3 ok / 0 skip / 0 retry
+ساندویچ پنیر هالومی و فلفل دلمه ای کباب شده | یونان | sandwich  →  OK(grilled-halloumi-roasted-bell-pepper-sandwich)
+ساندویچ میگو گریل و کاهو | تایلند | sandwich  →  OK(grilled-shrimp-lettuce-sandwich)
+ساندویچ فیله بوقلمون و ریحان تازه | ایتالیا | sandwich  →  OK(turkey-fillet-fresh-basil-sandwich)
+
