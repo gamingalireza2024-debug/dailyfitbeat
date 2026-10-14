@@ -146,3 +146,8 @@
 ساندویچ میگو گریل و کاهو | تایلند | sandwich  →  OK(grilled-shrimp-lettuce-sandwich)
 ساندویچ فیله بوقلمون و ریحان تازه | ایتالیا | sandwich  →  OK(turkey-fillet-fresh-basil-sandwich)
 
+2026-10-14T09:56:14.372Z — 3 ok / 0 skip / 0 retry
+سوپ کرفس و لیمو | ایران | soup  →  OK(celery-lemon-soup)
+سوپ بروکلی و سیب زمینی شیرین | ایرلند | soup  →  OK(broccoli-sweet-potato-soup)
+سالاد خیار و کرفس با سس لیمو | لبنان | salad  →  OK(cucumber-celery-salad-lemon-dressing)
+
