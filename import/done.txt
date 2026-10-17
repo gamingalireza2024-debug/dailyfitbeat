@@ -151,3 +151,8 @@
 سوپ بروکلی و سیب زمینی شیرین | ایرلند | soup  →  OK(broccoli-sweet-potato-soup)
 سالاد خیار و کرفس با سس لیمو | لبنان | salad  →  OK(cucumber-celery-salad-lemon-dressing)
 
+2026-10-17T08:57:59.508Z — 3 ok / 0 skip / 0 retry
+سالاد کینوا و شاهی | پرو | salad  →  OK(quinoa-and-watercress-salad)
+پودینگ چیا با شیر بادام و دارچین | مکزیک | breakfast  →  OK(cinnamon-almond-milk-chia-pudding)
+سوپ هویج و زنجبیل با شیر نارگیل | تایلند | soup  →  OK(creamy-carrot-ginger-coconut-soup)
+
