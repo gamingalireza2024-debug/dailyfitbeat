@@ -156,3 +156,8 @@
 پودینگ چیا با شیر بادام و دارچین | مکزیک | breakfast  →  OK(cinnamon-almond-milk-chia-pudding)
 سوپ هویج و زنجبیل با شیر نارگیل | تایلند | soup  →  OK(creamy-carrot-ginger-coconut-soup)
 
+2026-10-21T09:54:25.920Z — 3 ok / 0 skip / 0 retry
+سوپ ماش و گشنیز | ایران | soup  →  OK(mung-bean-coriander-soup)
+سوپ لوبیا سفید و اسفناج | ایتالیا | soup  →  OK(white-bean-spinach-soup)
+املت مارچوبه و پنیر پارمسان | فرانسه | breakfast  →  OK(asparagus-parmesan-omelette)
+
