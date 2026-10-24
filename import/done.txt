@@ -161,3 +161,8 @@
 سوپ لوبیا سفید و اسفناج | ایتالیا | soup  →  OK(white-bean-spinach-soup)
 املت مارچوبه و پنیر پارمسان | فرانسه | breakfast  →  OK(asparagus-parmesan-omelette)
 
+2026-10-24T09:16:02.562Z — 3 ok / 0 skip / 0 retry
+پنکیک چاودار با بلوبری | فنلاند | breakfast  →  OK(rye-pancakes-with-blueberries)
+ساندویچ مرغ گریل و سس پستو رژیمی | ایتالیا | sandwich  →  OK(healthy-grilled-chicken-pesto-sandwich)
+ساندویچ پنیر کوتاژ و تربچه | لهستان | sandwich  →  OK(cottage-cheese-and-radish-sandwich)
+
