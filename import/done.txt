@@ -166,3 +166,8 @@
 ساندویچ مرغ گریل و سس پستو رژیمی | ایتالیا | sandwich  →  OK(healthy-grilled-chicken-pesto-sandwich)
 ساندویچ پنیر کوتاژ و تربچه | لهستان | sandwich  →  OK(cottage-cheese-and-radish-sandwich)
 
+2026-10-28T10:57:28.588Z — 3 ok / 0 skip / 0 retry
+سالاد کلم قرمز و هویج با سس ماست | آلمان | salad  →  OK(red-cabbage-carrot-yogurt-salad)
+سوپ دال‌عدس و لیمو | هند | soup  →  OK(red-lentil-and-lemon-soup)
+املت سفیده تخم مرغ و فلفل دلمه ای | مکزیک | breakfast  →  OK(egg-white-bell-pepper-omelet)
+
