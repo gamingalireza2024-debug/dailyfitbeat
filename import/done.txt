@@ -171,3 +171,8 @@
 سوپ دال‌عدس و لیمو | هند | soup  →  OK(red-lentil-and-lemon-soup)
 املت سفیده تخم مرغ و فلفل دلمه ای | مکزیک | breakfast  →  OK(egg-white-bell-pepper-omelet)
 
+2026-10-31T10:43:06.676Z — 3 ok / 0 skip / 0 retry
+تخم مرغ پوچ شده روی اسفناج بخارپز | فرانسه | breakfast  →  OK(poached-eggs-steamed-garlic-spinach)
+تخم مرغ پخته در آووکادو | مکزیک | breakfast  →  OK(baked-egg-in-avocado)
+سوپ لیمو و مرغ یونانی | یونان | soup  →  OK(greek-lemon-chicken-soup)
+
