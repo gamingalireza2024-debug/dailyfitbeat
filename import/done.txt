@@ -176,3 +176,8 @@
 تخم مرغ پخته در آووکادو | مکزیک | breakfast  →  OK(baked-egg-in-avocado)
 سوپ لیمو و مرغ یونانی | یونان | soup  →  OK(greek-lemon-chicken-soup)
 
+2026-11-04T12:48:33.438Z — 3 ok / 0 skip / 0 retry
+سوپ چغندر و اسفناج | روسیه | soup  →  OK(beetroot-and-spinach-soup)
+سوپ کدو سبز و لیموترش | ایتالیا | soup  →  OK(zucchini-lemon-soup)
+سالاد جوانه گندم و خیار | ایران | salad  →  OK(wheat-sprout-cucumber-salad)
+
