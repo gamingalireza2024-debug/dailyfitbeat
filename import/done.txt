@@ -181,3 +181,8 @@
 سوپ کدو سبز و لیموترش | ایتالیا | soup  →  OK(zucchini-lemon-soup)
 سالاد جوانه گندم و خیار | ایران | salad  →  OK(wheat-sprout-cucumber-salad)
 
+2026-11-07T11:27:05.929Z — 3 ok / 0 skip / 0 retry
+سالاد کدو حلوایی کبابی و پنیر بز | یونان | salad  →  OK(roasted-butternut-squash-goat-cheese-salad)
+سالاد چغندر بخارپز و گردو | ایران | salad  →  OK(steamed-beetroot-and-walnut-salad)
+سالاد خیار و نعناع با ماست چکیده | یونان | salad  →  OK(cucumber-mint-strained-yogurt-salad)
+
