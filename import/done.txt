@@ -186,3 +186,8 @@
 سالاد چغندر بخارپز و گردو | ایران | salad  →  OK(steamed-beetroot-and-walnut-salad)
 سالاد خیار و نعناع با ماست چکیده | یونان | salad  →  OK(cucumber-mint-strained-yogurt-salad)
 
+2026-11-11T12:18:41.248Z — 3 ok / 0 skip / 0 retry
+سالاد گوجه‌فرنگی و پنیر بز | ایتالیا | salad  →  OK(tomato-and-goat-cheese-salad)
+املت ژامبون بوقلمون و قارچ | فرانسه | breakfast  →  OK(turkey-ham-mushroom-omelette)
+پنکیک پروتئینی کدو حلوایی | آمریکا | breakfast  →  OK(pumpkin-protein-pancakes)
+
