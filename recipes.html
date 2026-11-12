@@ -30,12 +30,24 @@
 <section><div class="container">
   <div id="catCards" class="rec-cats" aria-label="دسته‌بندی رسپی‌ها"></div>
   <div class="rec-search"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg></span><input id="recipeSearch" placeholder="جستجو در رسپی‌ها: اسم غذا، ماده، کشور... مثلاً: ژاپنی، بادمجان"></div>
-  <div class="filters">
+  <div class="filters" aria-label="فیلتر وعدهٔ غذایی">
+    <span class="filter-label">وعده:</span>
+    <button class="chip on" data-meal="all">هر وعده‌ای</button>
+    <button class="chip" data-meal="breakfast">صبحانه</button>
+    <button class="chip" data-meal="lunch">ناهار</button>
+    <button class="chip" data-meal="dinner">شام</button>
+    <button class="chip" data-meal="quick-dinner">شام فوری</button>
+    <button class="chip" data-meal="snack">میان‌وعده</button>
+  </div>
+  <div class="filters" aria-label="فیلتر هدف غذایی">
+    <span class="filter-label">هدف:</span>
     <button class="chip on" data-goal="all">هر هدفی</button>
     <button class="chip" data-goal="high-protein">پروتئین بالا</button>
     <button class="chip" data-goal="weight-loss">کاهش وزن</button>
     <button class="chip" data-goal="quick">سریع</button>
     <button class="chip" data-goal="vegetarian">گیاهی</button>
+    <button class="chip" data-goal="low-carb">کم‌کربو</button>
+    <button class="chip" data-goal="keto">کتوژنیک</button>
   </div>
   <div id="recipeGrid" class="cards"></div>
   <div style="text-align:center;margin:26px 0 6px">

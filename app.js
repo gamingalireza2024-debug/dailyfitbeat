@@ -15,8 +15,8 @@ var ADJ = { 'ایران': 'ایرانی', 'گیلان': 'گیلانی', 'ژاپ�
 var countryFa = function (reg) { return 'غذای ' + (ADJ[reg] || reg || 'ایرانی'); };
 /* ---------- برچسب‌های SEO برای صفحات فیلتردار ---------- */
 var CAT_FA = { iranian: 'ایرانی', main: 'غذای اصلی', salad: 'سالاد', sandwich: 'ساندویچ', breakfast: 'صبحانه', soup: 'سوپ' };
-var GOAL_FA = { 'high-protein': 'پروتئین بالا', 'weight-loss': 'کاهش وزن', quick: 'سریع و آسان', vegetarian: 'گیاهی' };
-var MEAL_FA = { breakfast: 'صبحانه', lunch: 'ناهار', dinner: 'شام', snack: 'میان‌وعده' };
+var GOAL_FA = { 'high-protein': 'پروتئین بالا', 'weight-loss': 'کاهش وزن', quick: 'سریع و آسان', vegetarian: 'گیاهی', 'low-carb': 'کم‌کربوهیدرات', keto: 'کتوژنیک' };
+var MEAL_FA = { breakfast: 'صبحانه', lunch: 'ناهار', dinner: 'شام', 'quick-dinner': 'شام فوری', snack: 'میان‌وعده' };
 var MEAL_CATS = { breakfast: ['breakfast'], lunch: ['main', 'iranian', 'salad'], dinner: ['main', 'iranian', 'soup'], snack: ['salad', 'sandwich'] };
 var CUISINES = { iran: 'ایران', gilan: 'گیلان', italian: 'ایتالیا', japanese: 'ژاپن', thai: 'تایلند', spanish: 'اسپانیا', moroccan: 'مراکش', french: 'فرانسه', chinese: 'چین', indian: 'هند', turkish: 'ترکیه', mexican: 'مکزیک', english: 'انگلستان', greek: 'یونان', korean: 'کره', lebanese: 'لبنان', argentinian: 'آرژانتین', brazilian: 'برزیل', australian: 'استرالیا', american: 'آمریکا' };
 var NAV = [['home', 'index.html', 'خانه', 'Home'], ['recipes', 'recipes.html', 'رسپی‌ها', 'Recipes'], ['planner', 'planner.html', 'استودیو تغذیه', 'Nutrition Studio'], ['market', 'market.html', 'فیت مارکت', 'Fit Market'], ['ai', 'ai.html', 'دستیار AI', 'AI Assistant'], ['pro', 'pro.html', 'PRO', 'PRO']];
@@ -175,7 +175,20 @@ function hay(r) {
   return [r.name_fa, r.name_en, r.region, countryFa(r.region), r.desc_fa, r.category, (r.tags || []).join(' ')].map(norm).join(' | ');
 }
 function card(r, big) {
-  return '<a class="card' + (big ? ' big' : '') + '" href="/recipes/' + encodeURIComponent(r.slug) + '"><div class="c-img"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" data-fb="' + esc(FALL[r.category] || 'img/cat-main.jpg') + '" onerror="this.onerror=null;this.src=this.dataset.fb;" loading="lazy" decoding="async" alt="' + esc(r.name_fa) + '"></div><div class="c-body"><h3>' + esc(r.name_fa) + '</h3><div class="c-meta"><span>پخت: ' + r.time_min + ' دقیقه</span><span>' + r.kcal + ' کالری</span><span>پروتئین ' + r.protein + 'g</span></div><div class="c-tags"><i>' + diff(r.time_min) + '</i><i>' + esc(countryFa(r.region)) + '</i></div></div></a>';
+  /* تگ‌های نمایشی کارت: اولویت با meal_tags، بعد tags قدیمی */
+  var allTags = Array.isArray(r.meal_tags) ? r.meal_tags : (Array.isArray(r.tags) ? r.tags : []);
+  var tagHtml = '';
+  var shown = 0;
+  var tagOrder = ['quick-dinner','breakfast','lunch','dinner','snack','high-protein','vegetarian','weight-loss','quick','low-carb','keto'];
+  for (var i = 0; i < tagOrder.length && shown < 3; i++) {
+    var t = tagOrder[i];
+    if (allTags.indexOf(t) !== -1) {
+      var fa = MEAL_FA[t] || GOAL_FA[t] || '';
+      if (fa) { tagHtml += '<i class="mt-' + t + '">' + fa + '</i>'; shown++; }
+    }
+  }
+  if (!tagHtml) tagHtml = '<i>' + esc(countryFa(r.region)) + '</i>';
+  return '<a class="card' + (big ? ' big' : '') + '" href="/recipes/' + encodeURIComponent(r.slug) + '"><div class="c-img"><img src="' + esc(r.image || FALL[r.category] || 'img/cat-main.jpg') + '" data-fb="' + esc(FALL[r.category] || 'img/cat-main.jpg') + '" onerror="this.onerror=null;this.src=this.dataset.fb;" loading="lazy" decoding="async" alt="' + esc(r.name_fa) + '"></div><div class="c-body"><h3>' + esc(r.name_fa) + '</h3><div class="c-meta"><span>پخت: ' + r.time_min + ' دقیقه</span><span>' + r.kcal + ' کالری</span><span>پروتئین ' + r.protein + 'g</span></div><div class="c-tags">' + tagHtml + '</div></div></a>';
 }
 function initSearch() {
   var inp = document.getElementById('searchInput'), box = document.getElementById('searchRes');
@@ -253,14 +266,23 @@ async function loadPopular() {
   if (!data.length) return;
   el.innerHTML = card(data[0], true) + data.slice(1).map(function (x) { return card(x); }).join('');
 }
-var curCat = 'all', curGoal = 'all', curQ = '', curRegion = 'all', mealCats = null, pendingSeo = false;
+var curCat = 'all', curGoal = 'all', curMeal = 'all', curQ = '', curRegion = 'all', mealCats = null, pendingSeo = false;
 /* صفحه‌بندی نرم گرید رسپی‌ها */
 var REC_PAGE = 12, recShown = REC_PAGE;
 function recFilter(r) {
   if (curCat !== 'all' && r.category !== curCat && !(curCat === 'main' && r.category === 'sauce')) return false;
   if (mealCats && mealCats.indexOf(r.category) === -1) return false;
   if (curRegion !== 'all' && (r.region || '') !== curRegion) return false;
-  if (curGoal !== 'all' && (r.tags || []).indexOf(curGoal) === -1) return false;
+  /* فیلتر هدف: اول meal_tags، بعد tags قدیمی (برای رسپی‌های قدیمی که meal_tags ندارند) */
+  if (curGoal !== 'all') {
+    var inMealTags = Array.isArray(r.meal_tags) && r.meal_tags.indexOf(curGoal) !== -1;
+    var inOldTags = (r.tags || []).indexOf(curGoal) !== -1;
+    if (!inMealTags && !inOldTags) return false;
+  }
+  /* فیلتر وعده: فقط از meal_tags */
+  if (curMeal !== 'all') {
+    if (!Array.isArray(r.meal_tags) || r.meal_tags.indexOf(curMeal) === -1) return false;
+  }
   if (curQ && !curQ.split(' ').every(function (w) { return hay(r).indexOf(w) !== -1; })) return false;
   return true;
 }
@@ -305,6 +327,7 @@ function syncUrl() {
   var sp = new URLSearchParams();
   if (curCat !== 'all') sp.set('cat', curCat);
   if (curGoal !== 'all') sp.set('goal', curGoal);
+  if (curMeal !== 'all' && !mealCats) sp.set('meal', curMeal);
   if (curRegion !== 'all' && !mealCats) { var cs = Object.keys(CUISINES).find(function (k) { return CUISINES[k] === curRegion; }); if (cs) sp.set('cuisine', cs); }
   if (mealCats) { var mk = Object.keys(MEAL_CATS).find(function (k) { return MEAL_CATS[k] === mealCats; }); if (mk) sp.set('meal', mk); }
   if (curQ) sp.set('q', curQ);
@@ -326,6 +349,12 @@ function applyRecipeSeo(list) {
     fa = ADJ[curRegion] ? 'غذاهای ' + ADJ[curRegion] : curRegion; bcName = fa; path = '/recipes/cuisine/' + ckey;
     title = fa + ' اصیل با رسپی گام‌به‌گام';
     desc = 'رسپی‌های واقعی ' + fa + ' با مواد در دسترس، کالری دقیق و مراحل پخت ساده — امتحانش کن.';
+  } else if (curMeal !== 'all' && MEAL_FA[curMeal]) {
+    fa = 'رسپی‌های ' + MEAL_FA[curMeal]; bcName = fa; path = '/recipes/meal/' + curMeal;
+    title = fa + ' با کالری و ماکرو دقیق';
+    desc = curMeal === 'quick-dinner'
+      ? 'رسپی‌های شام فوری زیر ۲۰ دقیقه — سالم، سیرکننده و سریع برای شب‌های شلوغ.'
+      : 'مجموعه رسپی‌های ' + MEAL_FA[curMeal] + ' سالم با کالری، پروتئین و زمان پخت مشخص — مناسب برنامه غذایی هفتگی.';
   } else if (curGoal !== 'all' && GOAL_FA[curGoal]) {
     fa = 'رسپی‌های ' + GOAL_FA[curGoal]; bcName = fa; path = '/recipes/goal/' + curGoal;
     title = fa + ' با کالری و پروتئین مشخص';
@@ -397,12 +426,17 @@ function initRecipes() {
   }
   if (pc && (pc === 'all' || CAT_FA[pc])) curCat = pc;
   if (pg && (pg === 'all' || GOAL_FA[pg])) curGoal = pg;
-  if (pm && MEAL_CATS[pm]) mealCats = MEAL_CATS[pm];
+  /* pm (meal): اول تلاش کن با meal_tags جدیده کار کنه؛ اگه قدیمی بود با MEAL_CATS */
+  if (pm) {
+    if (MEAL_FA[pm]) curMeal = pm;
+    else if (MEAL_CATS[pm]) mealCats = MEAL_CATS[pm];
+  }
   if (pcu && CUISINES[pcu]) curRegion = CUISINES[pcu];
   if (pr) curRegion = pr;
   if (pq) { curQ = norm(pq); var si = document.getElementById('recipeSearch'); if (si) si.value = pq; }
   if (pc || pg || pm || pcu || pr || pq) pendingSeo = true;
   document.querySelectorAll('.filters .chip[data-goal]').forEach(function (c) { c.classList.toggle('on', c.dataset.goal === curGoal); });
+  document.querySelectorAll('.filters .chip[data-meal]').forEach(function (c) { c.classList.toggle('on', c.dataset.meal === curMeal); });
   var sr = document.getElementById('recipeSearch');
   if (sr) sr.oninput = function () { curQ = norm(sr.value); syncUrl(); renderRecipes(); };
   document.querySelectorAll('.filters .chip[data-goal]').forEach(function (ch) {
@@ -410,6 +444,17 @@ function initRecipes() {
       curGoal = ch.dataset.goal;
       document.querySelectorAll('.filters .chip[data-goal]').forEach(function (x) { x.classList.toggle('on', x === ch); });
       pendingSeo = true; syncUrl(); renderRecipes();
+      try { window.dfbTrack('recipes_goal', { goal: curGoal }); } catch (e) {}
+    };
+  });
+  /* چیپ‌های وعدهٔ غذایی (جدید) */
+  document.querySelectorAll('.filters .chip[data-meal]').forEach(function (ch) {
+    ch.onclick = function () {
+      curMeal = ch.dataset.meal;
+      mealCats = null; /* meal_tags جایگزین mealCats می‌شود */
+      document.querySelectorAll('.filters .chip[data-meal]').forEach(function (x) { x.classList.toggle('on', x === ch); });
+      pendingSeo = true; syncUrl(); renderRecipes();
+      try { window.dfbTrack('recipes_meal', { meal: curMeal }); } catch (e) {}
     };
   });
   var lm = document.getElementById('loadMore');
