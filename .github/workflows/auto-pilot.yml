@@ -2,19 +2,29 @@ name: auto-pilot
 
 on:
   schedule:
-    # هفته‌ای فقط ۲ روز — شنبه و سه‌شنبه ساعت ۰۵:۰۰ UTC (۰۸:۳۰ صبح ایران)
-    - cron: "0 5 * * 6,3"
+    # هفته‌ای ۳ بار — شنبه، دوشنبه، چهارشنبه ساعت ۰۵:۰۰ UTC (۰۸:۳۰ صبح ایران)
+    # قبل‌تر ۲ بار بود (شنبه/سه‌شنبه)؛ حالا با ۳ بار، رسپی‌های ناقص سریع‌تر تمیز می‌شوند
+    # اما سقف هر اجرا کمتر شده تا به لیمیت روزانه Gemini (۱۵۰۰ req/day رایگان) نخوریم
+    - cron: "0 5 * * 6,1,3"
   workflow_dispatch:
     inputs:
       enrich_limit:
-        description: "تکمیل اطلاعات چند رسپی قدیمی (۵ تا ۱۰۰)"
-        default: "30"
+        description: "تکمیل اطلاعات چند رسپی قدیمی (۵ تا ۱۰۰) — پیشنهاد: ۲۰"
+        default: "20"
       images_limit:
-        description: "ساخت عکس چند رسپی بدون عکس (۵ تا ۱۰۰)"
-        default: "15"
+        description: "ساخت عکس چند رسپی بدون عکس (۱ تا ۱۰۰) — پیشنهاد: ۱۰"
+        default: "10"
       import_limit:
-        description: "چند غذای جدید اضافه شود"
-        default: "3"
+        description: "چند غذای جدید اضافه شود (۱ تا ۱۰) — پیشنهاد: ۲"
+        default: "2"
+      focus:
+        description: "تمرکز این اجرا: enrich (تمیزسازی رسپی قدیمی) | images (عکس) | all (همه)"
+        type: choice
+        default: all
+        options:
+          - all
+          - enrich
+          - images
 
 permissions:
   contents: write
@@ -36,6 +46,7 @@ jobs:
       - name: Install sharp
         run: npm i sharp@0.33.5 --no-fund --no-audit
 
+      # ───────── مرحله ۰: بررسی سلامت کلیدها (گزارش، بدون توقف) ─────────
       - id: s0
         name: "۰) بررسی سلامت کلیدها (گزارش)"
         env:
@@ -43,38 +54,55 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node scripts/check-keys.mjs
 
+      # ───────── مرحله ۱: پر کردن صف غذای جدید (خفیف، ۸ درخواست AI) ─────────
       - id: s1
         name: "۱) پر کردن صف غذای جدید (کشف خودکار)"
+        if: ${{ github.event.inputs.focus != 'images' }}
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node scripts/discover-dishes.mjs
 
+      # ───────── مرحله ۲: تمیز کردن رسپی‌های قدیمی ناقص ─────────
+      # این قلب کار است: فیلدهای خالی steps/tips/desc/region/macros/substitutions را پر می‌کند.
+      # سقف پیشنهادی ۲۰ به‌جای ۳۰، تا ۳ بار در هفته بدون خوردن به لیمیت روزانه Gemini اجرا شود.
+      # اگر در یک روز همه‌اش ۴۲۹ (Rate Limit) بگیریم، در اجرای بعدی همان رسپی‌ها را ادامه می‌دهد.
       - id: s2
         name: "۲) تکمیل فیلدهای خالی رسپی‌های قدیمی"
+        if: ${{ github.event.inputs.focus != 'images' }}
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
-          LIMIT: ${{ github.event.inputs.enrich_limit || '30' }}
+          LIMIT: ${{ github.event.inputs.enrich_limit || '20' }}
         run: node scripts/enrich-recipes.mjs
 
+      # ───────── مرحله ۳: ساخت عکس رسپی‌های بدون عکس ─────────
+      # عکس‌ها از Pollinations (رایگان، بدون لیمیت) تولید می‌شوند؛
+      # Gemini فقط برای vision check روی نسخه ۵۱۲px استفاده می‌شود (مصرف کم).
+      # سقف پیشنهادی ۱۰ به‌جای ۱۵، چون هر عکس ۱ تولید + حداکثر ۳ vision check می‌خورد.
       - id: s3
         name: "۳) ساخت عکس رسپی‌های بدون عکس"
+        if: ${{ github.event.inputs.focus != 'enrich' }}
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          LIMIT: ${{ github.event.inputs.images_limit || '15' }}
+          LIMIT: ${{ github.event.inputs.images_limit || '10' }}
         run: node scripts/gen-images.mjs
 
+      # ───────── مرحله ۴: افزودن غذاهای جدید (خفیف) ─────────
+      # هر غذا ۱ تولید عکس + ۱ تولید JSON + ۱ vision check ≈ ۳ درخواست AI.
+      # سقف ۲ در هر اجرا → حداکثر ۶ غذا در هفته → رشد آرام و باکیفیت.
       - id: s4
         name: "۴) افزودن غذاهای جدید"
+        if: ${{ github.event.inputs.focus == 'all' || github.event.inputs.focus == '' }}
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          LIMIT: ${{ github.event.inputs.import_limit || '3' }}
+          LIMIT: ${{ github.event.inputs.import_limit || '2' }}
         run: node scripts/import-recipes.mjs
 
+      # ───────── مرحله ۵: فشرده‌سازی عکس‌های سنگین (بدون API) ─────────
       - id: s5
         name: "۵) فشرده‌سازی عکس‌های سنگین"
         run: node scripts/optimize-images.mjs
@@ -93,6 +121,7 @@ jobs:
           git pull --rebase origin main
           git push
 
+      # ───────── مرحله ۶: گزارش به ربات تلگرام ادمین ─────────
       - name: "۶) گزارش به ربات تلگرام ادمین"
         if: always()
         env:
@@ -111,9 +140,9 @@ jobs:
           وضعیت کل ران: ${{ job.status }}
           ۰) سلامت کلیدها: ${{ steps.s0.outcome }}
           ۱) کشف غذا: ${{ steps.s1.outcome }}
-          ۲) غنی‌سازی: ${{ steps.s2.outcome }}
+          ۲) غنی‌سازی رسپی قدیمی: ${{ steps.s2.outcome }}
           ۳) ساخت عکس: ${{ steps.s3.outcome }}
-          ۴) ایمپورت: ${{ steps.s4.outcome }}
+          ۴) ایمپورت غذا جدید: ${{ steps.s4.outcome }}
           ۵) بهینه‌سازی عکس: ${{ steps.s5.outcome }}
           🔗 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           curl -s --max-time 20 -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
