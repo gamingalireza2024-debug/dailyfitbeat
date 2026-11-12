@@ -87,6 +87,8 @@ jobs:
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           LIMIT: ${{ github.event.inputs.images_limit || '10' }}
         run: node scripts/gen-images.mjs
 
@@ -107,6 +109,16 @@ jobs:
         name: "۵) فشرده‌سازی عکس‌های سنگین"
         run: node scripts/optimize-images.mjs
 
+      # ───────── مرحله ۵b: استانداردسازی تگ‌ها و وعدهٔ غذایی ─────────
+      # برای هر رسپی که meal_tags خالی دارد، تگ‌های وعده + هدف رو از روی
+      # category/meal_type/kcal/time_min/macros استنتاج می‌کند. بدون API، فقط منطق.
+      # این کار را در هر اجرا تکرار می‌کند تا رسپی‌های جدید هم فوراً تگ بگیرن.
+      - id: s5b
+        name: "۵b) استانداردسازی تگ‌های وعده و هدف"
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/migrate-meal-tags.mjs
+
       - name: Commit results
         if: always()
         run: |
@@ -118,8 +130,35 @@ jobs:
             exit 0
           fi
           git commit -m "auto-pilot: enrich + images + new recipes [skip ci]"
-          git pull --rebase origin main
-          git push
+          # مقاوم در برابر rebase conflict:
+          # ۱) fetch بدون لمس working tree
+          # ۲) rebase تلاش میشه؛ اگه conflict داد، stash + pull + drop + re-apply
+          # ۳) اگه باز هم نشد، push با --force-with-lease برای overwrite امن
+          git fetch origin main
+          if git rebase origin/main; then
+            echo "✅ rebase تمیز"
+          else
+            echo "⚠ rebase conflict — راه‌حل: stash + reset + commit دوباره"
+            git rebase --abort 2>/dev/null || true
+            git stash --include-untracked 2>/dev/null || true
+            git reset --hard origin/main
+            git stash pop 2>/dev/null || true
+            git add img import 2>/dev/null || true
+            git diff --staged --quiet || git commit -m "auto-pilot: enrich + images + new recipes [skip ci]"
+          fi
+          # push با retry ساده (۳ بار با فاصلهٔ ۱۰ ثانیه)
+          for i in 1 2 3; do
+            if git push; then
+              echo "✅ push موفق"
+              exit 0
+            fi
+            echo "⚠ push شکست (تلاش $i/۳) — صبر ۱۰ث و fetch مجدد"
+            sleep 10
+            git fetch origin main
+            git rebase origin/main 2>/dev/null || git rebase --abort 2>/dev/null || true
+          done
+          echo "❌ push بعد از ۳ تلاش ناموفق بود — تغییرات local باقی می‌مانند"
+          exit 1
 
       # ───────── مرحله ۶: گزارش به ربات تلگرام ادمین ─────────
       - name: "۶) گزارش به ربات تلگرام ادمین"
@@ -136,6 +175,7 @@ jobs:
           T0=$(mark s0 "${{ steps.s0.outcome }}"); T1=$(mark s1 "${{ steps.s1.outcome }}")
           T2=$(mark s2 "${{ steps.s2.outcome }}"); T3=$(mark s3 "${{ steps.s3.outcome }}")
           T4=$(mark s4 "${{ steps.s4.outcome }}"); T5=$(mark s5 "${{ steps.s5.outcome }}")
+          T5B=$(mark s5b "${{ steps.s5b.outcome }}")
           TEXT="🤖 گزارش auto-pilot دیلی‌بیت
           وضعیت کل ران: ${{ job.status }}
           ۰) سلامت کلیدها: ${{ steps.s0.outcome }}
@@ -144,6 +184,7 @@ jobs:
           ۳) ساخت عکس: ${{ steps.s3.outcome }}
           ۴) ایمپورت غذا جدید: ${{ steps.s4.outcome }}
           ۵) بهینه‌سازی عکس: ${{ steps.s5.outcome }}
+          ۵b) استانداردسازی تگ‌ها: ${{ steps.s5b.outcome }}
           🔗 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           curl -s --max-time 20 -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             -d chat_id="${TG_CHAT}" --data-urlencode text="$TEXT" > /dev/null || true
