@@ -1,0 +1,43 @@
+# DailyFitBeat — gitignore
+# وابستگی‌ها
+node_modules/
+.pnp.*
+.yarn/
+
+# خروجی بیلد / Vercel
+.vercel/
+.next/
+dist/
+build/
+
+# فایل‌های محلی و سیستم‌عامل
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+desktop.ini
+
+# لاگ و کش
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.cache/
+.eslintcache
+
+# متغیرهای محیطی محلی (هیچ‌وقت commit نشوند)
+.env
+.env.*
+!.env.example
+.env.local
+
+# ادیتورها
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.code-workspace
+
+# فایل‌های موقت اسکریپت‌ها
+tmp/
+*.tmp

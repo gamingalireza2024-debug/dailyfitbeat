@@ -1,0 +1,28 @@
+{
+  "name": "dailyfitbeat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DailyFitBeat | دیلی‌بیت — سایت رسپی‌های سالم با کالری دقیق، برنامه غذایی هوشمند، فیت مارکت و دستیار AI تغذیه",
+  "homepage": "https://dailyfitbeat.ir",
+  "license": "UNLICENSED",
+  "scripts": {
+    "serve": "npx serve .",
+    "audit:images": "node scripts/audit-images.mjs",
+    "audit:images:clean": "CLEAN=1 node scripts/audit-images.mjs",
+    "discover": "node scripts/discover-dishes.mjs",
+    "enrich": "node scripts/enrich-recipes.mjs",
+    "gen-images": "node scripts/gen-images.mjs",
+    "import-recipes": "node scripts/import-recipes.mjs",
+    "optimize-images": "node scripts/optimize-images.mjs",
+    "check-keys": "node scripts/check-keys.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "sharp": "0.33.5"
+  },
+  "comments": {
+    "sharp": "تنها وابستگی واقعی — فقط برای scripts/ و GitHub Actions استفاده می‌شود (فشرده‌سازی و تغییر اندازه عکس). سایت خودش استاتیک است و در فرانت نیازی به package ندارد."
+  }
+}

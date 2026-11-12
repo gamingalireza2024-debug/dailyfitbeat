@@ -1,40 +1,98 @@
-# دیلی‌بیت — پکیج پولیش UI (فاز ۱۱)
+# دیلی‌بیت (DailyFitBeat)
 
-## این پکیج چیه؟
-۶ درخواست آخرت یکجا انجام شد:
-1. **ربات صفحه AI** دیگه پشت چت گم نمی‌شه
-2. **پنل کاربری** کوچیک‌تر، پریمیوم‌تر و عکس‌دار شد
-3. **کل سایت بدون ایموجی** شد (به‌جز چت‌ها) — همه با آیکون SVG حرفه‌ای
-4. **پرش منوها حل شد** — هدر و فوتر از اول توی HTML هست و دیگه صفحه نمی‌پره
-5. **فیت مارکت** هیروی عکس‌دار فروشگاهی گرفت
-6. عکس‌های واقعی و فتورئال جدید برای AI / پنل / مارکت ساخته شد
+> خوب بخور، بهتر زندگی کن.
 
-## آپلود — فقط ۳ قدم
+سایت رسپی‌های سالم ایرانی و جهانی با کالری و ماکروهای دقیق، همراه با استودیوی تغذیه، فیت مارکت و دستیار AI تغذیه. کاملاً رایگان، بدون ثبت‌نام برای خواندن رسپی‌ها.
 
-### قدم ۱: آپلود ۵ عکس
-هر ۵ فایل داخل پوشه `img/` را در پوشه `img/` ریپو آپلود کن (Replace کن اگر پرسید):
+🌐 **سایت زنده:** https://dailyfitbeat.ir
+📦 **ریپو:** https://github.com/gamingalireza2024-debug/dailyfitbeat
 
-| فایل | جای آن |
-|------|--------|
-| `ai-hero.jpg` | جایگزین قبلی — ربات حالا سمت راست کادره |
-| `market-hero.jpg` | جدید |
-| `user-cover.jpg` | جدید |
-| `u-empty-plan.jpg` | جدید |
-| `u-empty-recipes.jpg` | جدید |
+---
 
-### قدم ۲: آپلود ۹ فایل کد (ریشه ریپو)
-`ai.html` — `user.html` — `market.html` — `app.js` — `design.css` — `site.js` — `user.js` — `admin.js` — `shop.js`
+## معماری در یک نگاه
 
-### قدم ۳: آپلود ۱۴ صفحه html باقی‌مانده
-`index.html` — `recipes.html` — `recipe.html` — `planner.html` — `pro.html` — `about.html` — `privacy.html` — `ai-assistant.html` — `weekly-plan.html` — `weight-loss.html` — `404.html` — `recipe-seo.js`
+| لایه | فناوری |
+|---|---|
+| فرانت | HTML + CSS + JS خالص (بدون build step)، میزبانی استاتیک روی Vercel |
+| بک‌اند | Vercel Serverless Functions در `api/` |
+| دیتابیس / Auth / Storage | Supabase (Postgres + RLS) |
+| تولید محتوا | GitHub Actions با Gemini + Pollinations |
+| پنل ادمین | `admin.html` + `admin.js` — احراز هویت با Google OAuth و جدول `admins` |
 
-> دلیل: هدر و فوتر استاتیک باید در **همهٔ صفحات** جایگزین شود وگرنه همان صفحه‌ها منو را دیر نشان می‌دهند.
+## ساختار پوشه‌ها
 
-## نکات فنی
-- **پرش منو**: قبلاً هدر بعد از لود JS و اتصال Supabase ساخته می‌شد (دو بار پرش). حالا HTML استاتیک است + اسکلتون خاکستری جای دکمهٔ ورود می‌ایستد تا هیچ جابه‌جایی اتفاق نیفتد.
-- **تغییر زبان و خروج/ورود** هم تست شده — هدر فقط وقتی بازسازی می‌شود که واقعاً لازم باشد (بدون فلیکر).
-- **اتوپایلوت دست نخورده** — همین کارش را می‌کند.
-- عملکرد چت AI (سهمیه، پروفایل، ارسال) عین قبل است؛ فقط ظاهر نو شد.
+```
+dailyfitbeat/
+├── *.html            ← صفحات سایت (index, recipes, planner, ai, admin, …)
+├── *.js              ← منطق فرانت (app.js, admin.js, planner.js, …)
+├── api/              ← endpointهای serverless (db, ai, mealplan, nutrition, sitemap, …)
+├── scripts/          ← اسکریپت‌های GitHub Actions (mjs)
+├── lib/              ← منطق مشترک (planbuilder.js)
+├── img/              ← عکس‌های ثابت سایت (هیرو، دسته‌بندی، لوگو، …)
+├── img/recipes/      ← عکس هر رسپی به‌صورت img/recipes/<slug>.jpg
+├── fonts/            ← فونت Vazirmatn (woff2)
+├── import/           ← صف غذاهای جدید (dishes.txt) + تاریخچه (done.txt)
+├── docs/             ← ARCHITECTURE.md (مستندات فنی کامل)
+├── .github/workflows/  ← auto-pilot.yml + cleanup-images.yml
+├── vercel.json       ← rewriteها، redirectها، headerهای امنیتی
+└── robots.txt + manifest.webmanifest
+```
 
-## بعدش: سئو
-هر وقت این پکیج را آپلودی و تأیید کردی، بگو «بریم سراغ سئو» تا فاز سئو (متا، اسکیما، سرچ کنسول، Core Web Vitals و...) را شروع کنیم.
+## توسعه محلی
+
+نیازی به build نیست. کافیه یک سرور استاتیک روی پوشه اجرا کنی:
+
+```bash
+npx serve .
+# یا
+python3 -m http.server 8000
+```
+
+سپس به `http://localhost:3000` (یا 8000) برو. برای کار کردن کاملِ APIها و Supabase، باید روی Vercel دیپلوی بشه.
+
+### وابستگی‌ها
+
+فقط برای اسکریپت‌های `scripts/` (فشرده‌سازی عکس با sharp) لازمه:
+
+```bash
+npm install
+```
+
+## GitHub Actions
+
+### `auto-pilot.yml`
+هفته‌ای **۳ بار** (شنبه، دوشنبه، چهارشنبه ساعت ۰۸:۳۰ ایران) اجرا می‌شود و:
+1. سلامت کلیدها را بررسی می‌کند
+2. صف غذای جدید را با AI پر می‌کند
+3. فیلدهای خالی رسپی‌های قدیمی را تکمیل می‌کند (steps, tips, desc, macros, region, substitutions)
+4. برای رسپی‌های بدون عکس، عکس تولید می‌کند (Pollinations + Gemini vision check)
+5. غذاهای جدید را اضافه می‌کند
+6. عکس‌های سنگین را فشرده می‌کند
+7. به تلگرام ادمین گزارش می‌دهد
+
+مدیریت لیمیت Gemini:
+- فاصلهٔ ۶ ثانیه‌ای بین درخواست‌ها
+- بک‌آف ۶۰ ثانیه‌ای روی 429
+- توقف خودکار بعد از ۳ شکست پشت‌سرهم
+- fallback به GitHub Models (رایگان با `GITHUB_TOKEN`)
+- سقف هر مرحله کم گرفته شده تا ۳ بار در هفته بدون خوردن به سهمیه روزانه اجرا شود
+
+### `cleanup-images.yml`
+دستی اجرا می‌شود. عکس‌های بلااستفاده را در `img/` پیدا می‌کند و با تأیید `DELETE` پاک می‌کند.
+
+## متغیرهای محیطی (Vercel + GitHub Secrets)
+
+| نام | کاربرد |
+|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | دسترسی سرور به Supabase (هرگز در فرانت) |
+| `GEMINI_API_KEY` | کلید رایگان از https://aistudio.google.com/app/apikey |
+| `TG_TOKEN` / `TG_CHAT` | ربات تلگرام ادمین برای گزارش |
+| `EJ_SERVICE` / `EJ_TEMPLATE` / `EJ_USER` / `EJ_PRIVATE` | EmailJS برای ایمیل |
+
+## دیپلوی
+
+هر commit روی `main` → دیپلوی خودکار Vercel.
+
+---
+
+© 2026 DailyFitBeat — همه حقوق محفوظ است.

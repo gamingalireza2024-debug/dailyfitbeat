@@ -1,7 +1,8 @@
 {
   "trailingSlash": false,
   "redirects": [
-    { "source": "/mealplan.html", "destination": "/planner.html", "permanent": true }
+    { "source": "/mealplan.html", "destination": "/planner.html", "permanent": true },
+    { "source": "/mealplan", "destination": "/planner.html", "permanent": true }
   ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
