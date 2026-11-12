@@ -24,7 +24,7 @@ async function loadAll() {
   const out = [];
   let offset = 0;
   while (true) {
-    const r = await fetch(SB_URL + '/rest/v1/recipes?select=slug,name_fa,name_en,kcal,protein,carbs,fat,fiber,sugar,desc_fa,desc_en,region,ingredients,steps,tips,substitutions&limit=1000&offset=' + offset, { headers: svcH });
+    const r = await fetch(SB_URL + '/rest/v1/recipes?select=slug,name_fa,name_en,kcal,protein,carbs,fat,fiber,sugar,desc_fa,desc_en,region,ingredients,steps,tips,substitutions,meal_type,meal_tags,time_min,category,tags&limit=1000&offset=' + offset, { headers: svcH });
     if (!r.ok) break;
     const j = await r.json();
     if (!Array.isArray(j) || !j.length) break;
@@ -82,6 +82,38 @@ function parseJSON(txt) {
   return null;
 }
 
+/* ---------- استنتاج meal_tags از روی category/meal_type/macros/time_min ----------
+   مجموعه تگ‌های استاندارد برای منوی صفحهٔ رسپی‌ها:
+   وعده: breakfast, lunch, dinner, quick-dinner, snack
+   هدف: high-protein, vegetarian, weight-loss, quick, low-carb, keto
+   هماهنگ با scripts/migrate-meal-tags.mjs — هر تغییری اینجا و آنجا باید هم‌زمان باشد. */
+function deriveMealTags(r) {
+  const out = new Set();
+  const cat = (r.category || "").toLowerCase();
+  const mt = Array.isArray(r.meal_type) ? r.meal_type.map((s) => String(s).toLowerCase()) : [];
+  const kcal = Number(r.kcal) || 0;
+  const time = Number(r.time_min) || 0;
+  const protein = Number(r.protein) || 0;
+  const carbs = Number(r.carbs) || 0;
+  const fat = Number(r.fat) || 0;
+  const tags = Array.isArray(r.tags) ? r.tags.map((s) => String(s).toLowerCase()) : [];
+
+  if (cat === "breakfast" || mt.includes("breakfast")) out.add("breakfast");
+  if (mt.includes("lunch") || cat === "main" || cat === "iranian") out.add("lunch");
+  if (mt.includes("dinner") || (kcal >= 300 && kcal <= 450 && cat !== "breakfast")) out.add("dinner");
+  if (time > 0 && time <= 20 && (out.has("dinner") || cat === "main")) out.add("quick-dinner");
+  if (cat === "sandwich" || (kcal > 0 && kcal <= 250)) out.add("snack");
+
+  if (protein >= 25) out.add("high-protein");
+  if (tags.includes("vegetarian") || tags.includes("گیاهی")) out.add("vegetarian");
+  if (kcal > 0 && kcal <= 350) out.add("weight-loss");
+  if (time > 0 && time <= 20) out.add("quick");
+  if (carbs > 0 && carbs <= 15) out.add("low-carb");
+  if (carbs > 0 && carbs <= 10 && fat >= 15) out.add("keto");
+
+  return Array.from(out).sort();
+}
+
 const ENRICH_PROMPT = (r, ings) => `تو سرآشپز و متخصص تغذیه هستی. برای غذای «${r.name_fa}» (${r.name_en || ''}) با مواد: ${ings || 'نامشخص'}، فقط یک JSON معتبر برگردان با این ساختار:
 {
   "steps":["حداقل ۵ مرحله پخت با جزئیات واقعی","..."],
@@ -90,9 +122,10 @@ const ENRICH_PROMPT = (r, ings) => `تو سرآشپز و متخصص تغذیه �
   "desc_en":"One-sentence English description of the dish",
   "region":"کشور مبدأ مثل ایران، ایتالیا، ژاپن یا اگر ایرانی است استان مثل گیلان، آذربایجان شرقی، خوزستان",
   "substitutions":[{"from":"نام یک مادهٔ اصلی","to":"جایگزین منطقی"},{"from":"نام مادهٔ دیگر","to":"جایگزین"}],
+  "meal_type":["بر اساس ماهیت غذا: breakfast و/یا lunch و/یا dinner و/یا snack"],
   "protein":32,"carbs":40,"fat":22,"fiber":5,"sugar":3
 }
-region را فقط یکی از این‌ها بگذار (یا استان ایرانی اگر غذا ایرانی است): ایران، ایتالیا، ژاپن، تایلند، اسپانیا، مراکش، فرانسه، چین، هند، ترکیه، مکزیک، انگلستان، یونان، کره، لبنان، آمریکا، آرژانتین، برزیل، بین‌المللی. اعداد ماکرو منطقی و هماهنگ با کالری حدود ${r.kcal || 400}. فقط JSON.`;
+region را فقط یکی از این‌ها بگذار (یا استان ایرانی اگر غذا ایرانی است): ایران، ایتالیا، ژاپن، تایلند، اسپانیا، مراکش، فرانسه، چین، هند، ترکیه، مکزیک، انگلستان، یونان، کره، لبنان، آمریکا، آرژانتین، برزیل، بین‌المللی. اعداد ماکرو منطقی و هماهنگ با کالری حدود ${r.kcal || 400}. meal_type آرایه‌ای است از این مقادیر مجاز: breakfast, lunch, dinner, snack (می‌تواند چند وعده باشد). فقط JSON.`;
 
 (async () => {
   await geminiInit();
@@ -144,6 +177,21 @@ region را فقط یکی از این‌ها بگذار (یا استان ایر�
         .slice(0, 4)
         .map(s => ({ from: String(s.from).trim(), to: String(s.to).trim() }));
       if (subs.length) patch.substitutions = subs;
+    }
+
+    /* meal_type: اگه AI داده و الان خالیه، ذخیره کن */
+    if ((!Array.isArray(r.meal_type) || !r.meal_type.length) && Array.isArray(p.meal_type) && p.meal_type.length) {
+      const mt = p.meal_type
+        .map(s => String(s).toLowerCase().trim())
+        .filter(s => ['breakfast', 'lunch', 'dinner', 'snack'].includes(s));
+      if (mt.length) patch.meal_type = [...new Set(mt)];
+    }
+
+    /* meal_tags: همیشه از روی داده‌های جدید بازمحاسبه کن (منطق محلی، نه AI) */
+    const merged = Object.assign({}, r, patch);
+    const mealTags = deriveMealTags(merged);
+    if (mealTags.length && JSON.stringify(mealTags) !== JSON.stringify(r.meal_tags || [])) {
+      patch.meal_tags = mealTags;
     }
 
     /* kcal: اول مقدار AI، بعد تخمین از ماکروها (۴/۴/۴/۹) */

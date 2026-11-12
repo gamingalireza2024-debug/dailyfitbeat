@@ -1,14 +1,20 @@
-/* DailyFitBeat — gen-images v3 (PRO)
-   اصلاح v3:
-   ۱) یکسان‌سازی مسیر عکس‌ها با importer: همه‌چیز در img/recipes/<slug>.jpg
-   ۲) مهاجرت خودکار عکس‌های قدیمی img/<slug>.jpg بدون هزینه AI (فقط کپی + PATCH)
-   ۳) visionCheck روی نسخه ۵۱۲px (جلوگیری از payload بزرگ و رد بی‌دلیل)
-   ۴) timeout برای درخواست‌های Gemini + بررسی پاسخ PATCH
-   ۵) سقف LIMIT هر اجرا برای کنترل هزینه */
+/* DailyFitBeat — gen-images v4 (PRO + Cloudflare)
+   اصلاحات v4:
+   ۱) دروازهٔ مشترک _image-providers.mjs با زنجیرهٔ fallback:
+      CF FLUX-schnell → Gemini Image → Pollinations sana
+   ۲) عکس‌ها با کیفیت بالاتر (1024px) تولید می‌شوند و سپس به 800px فشرده
+   ۳) گزارش منبع (provider) هر عکس در لاگ
+   از v3:
+   ۱) یکسان‌سازی مسیر عکس‌ها با importer: img/recipes/<slug>.jpg
+   ۲) مهاجرت خودکار عکس‌های قدیمی بدون هزینه AI
+   ۳) visionCheck روی نسخه ۵۱۲px (پیشگیری از payload بزرگ)
+   ۴) timeout برای درخواست‌ها + بررسی PATCH
+   ۵) سقف LIMIT برای کنترل هزینه */
 import sharp from "sharp";
 import fs from "fs";
 import { execSync } from "child_process";
 import { geminiInit, geminiText, geminiVision } from "./_gemini.mjs";
+import { generateImage, ensureGeminiInit } from "./_image-providers.mjs";
 
 const SB_URL = "https://hvqchqqlfcjxsohxywbd.supabase.co";
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -30,23 +36,12 @@ function push() {
   catch (e) { console.log("push err", String(e).slice(0, 200)); }
 }
 
-/* ---------- Gemini: توصیف ظاهری اختصاصی هر غذا (دروازهٔ مشترک) ---------- */
+/* ---------- Gemini: توصیف ظاهری اختصاصی هر غذا ---------- */
 async function describeDish(r) {
   const ings = Array.isArray(r.ingredients) ? r.ingredients.slice(0, 6).map(i => i.fa).join("، ") : "";
   const out = await geminiText(`تو یک عکاس حرفه‌ای غذا هستی. برای غذای «${r.name_fa}» (${r.name_en || ""}) از دسته ${r.category} با مواد اصلی: ${ings || "نامشخص"}، فقط یک جمله انگلیسی بنویس که ظاهر دقیق غذای پخته‌شده را توصیف کند (رنگ، بافت، گارنیش، نحوه سرو در بشقاب). فقط همان جمله.`, { quiet: true });
   if (out && out.length < 400) { console.log("   🧠 desc:", out.slice(0, 90)); return out; }
   return (r.name_en || r.name_fa) + ": " + (DISH[r.category] || "a delicious healthy dish") + ". " + (r.desc_en || "");
-}
-
-/* ---------- تولید تصویر ---------- */
-async function genPollinations(prompt) {
-  try {
-    const url = "https://image.pollinations.ai/prompt/" + encodeURIComponent(prompt) + "?width=800&height=800&nologo=true&seed=" + Math.floor(Math.random() * 1000000);
-    const r = await fetch(url, { signal: AbortSignal.timeout(90000) });
-    if (!r.ok) { console.log("   ⚠ pollinations", r.status); return null; }
-    const buf = Buffer.from(await r.arrayBuffer());
-    return buf.length > 2000 ? buf : null;
-  } catch (e) { console.log("   ⚠ pollinations err"); return null; }
 }
 
 /* ---------- کنترل بینایی (روی نسخه کوچک ۵۱۲px) ---------- */
@@ -57,19 +52,39 @@ async function visionCheck(buf, nameFa) {
   return { ok: /^\s*YES/i.test(txt), reason: txt.trim().split("\n").pop() };
 }
 
+/* ---------- تولید تصویر با زنجیره fallback ---------- */
+// از _image-providers.mjs استفاده می‌کند: CF FLUX → Gemini → Pollinations.
+// برای هر تلاش، یک provider متفاوت امتحان می‌شود تا باکیفیت‌ترین در دسترس برگردد.
 async function produceImage(r, styleDesc) {
+  const fullPrompt = styleDesc + ". " + STYLE;
   let lastBuf = null, lastReason = "";
+  const providersTried = new Set();
+
   for (let attempt = 0; attempt < 3; attempt++) {
-    const refined = attempt === 0 ? styleDesc : styleDesc + ". Previous issue: " + lastReason + ". Fix it, more authentic Persian styling.";
-    const buf = await genPollinations(refined + ". " + STYLE);
-    if (!buf) { lastReason = "no image"; await sleep(3000); continue; }
+    const refined = attempt === 0 ? fullPrompt : fullPrompt + ". Previous issue: " + lastReason + ". Fix it, more authentic Persian styling.";
+    const { buf, provider } = await generateImage(refined);
+    providersTried.add(provider);
+
+    if (!buf) { lastReason = "no image from any provider"; await sleep(3000); continue; }
+
+    // اگه Pollinations بود، حتماً vision check کن (کیفیت پایین‌تر)
+    // اگه CF/Gemini بود، vision check اختیاریه ولی برای اطمینان انجام میشه
     const check = await visionCheck(buf, r.name_fa);
-    if (check.ok) { console.log("   👁 ✓", check.reason); return buf; }
+    if (check.ok) {
+      console.log(`   👁 ✓ [${provider}]`, check.reason);
+      return { buf, provider };
+    }
     lastBuf = buf; lastReason = check.reason;
-    console.log("   👁 ✗", check.reason, "— retry", attempt + 1);
+    console.log(`   👁 ✗ [${provider}]`, check.reason, "— retry", attempt + 1);
     await sleep(1500);
   }
-  return lastBuf;
+
+  // اگه همه تلاش‌ها reject شد ولی حداقل یه عکس داریم، همان را بپذیر
+  if (lastBuf) {
+    console.log("   ⚠ accepted without vision pass (last resort)");
+    return { buf: lastBuf, provider: "fallback" };
+  }
+  return { buf: null, provider: "none" };
 }
 
 async function patchImage(slug, path) {
@@ -83,11 +98,14 @@ async function patchImage(slug, path) {
 }
 
 /* ---------- main ---------- */
+await ensureGeminiInit();
 await geminiInit();
 const recipes = await (await fetch(SB_URL + "/rest/v1/recipes?select=slug,name_fa,name_en,desc_en,category,image,ingredients&limit=2000", { headers: H })).json();
 console.log("recipes:", recipes.length, "| FORCE:", FORCE, "| LIMIT:", LIMIT);
+console.log("CF configured:", process.env.CF_API_TOKEN ? "yes ✓" : "no (will skip CF, use Gemini→Pollinations)");
 
 let done = 0, migrated = 0, skip = 0;
+const providerStats = {};
 for (const r of recipes) {
   if (done >= LIMIT) { console.log("سقف LIMIT رسید — بقیه به اجرای بعد موکول شد."); break; }
 
@@ -109,16 +127,19 @@ for (const r of recipes) {
 
   console.log("•", r.slug);
   const styleDesc = await describeDish(r);
-  const buf = await produceImage(r, styleDesc);
-  if (!buf) { console.log("   skip (no image)"); continue; }
+  const { buf, provider } = await produceImage(r, styleDesc);
+  if (!buf) { console.log("   skip (no image from any provider)"); continue; }
 
+  providerStats[provider] = (providerStats[provider] || 0) + 1;
   await sharp(buf).resize(800, 800, { fit: "cover" }).jpeg({ quality: 72 }).toFile(newPath);
   if (!patchImage(r.slug, newPath)) console.log("   ⚠ DB آپدیت نشد — مسیر فایل: " + newPath);
   done++;
-  console.log("   ok →", newPath);
+  console.log("   ok →", newPath, "[" + provider + "]");
 
   if (done % 5 === 0) push();
   await sleep(3000);
 }
 push();
 console.log("🏁 done:", done, "| migrated:", migrated, "| skipped:", skip);
+console.log("📊 providers used:", JSON.stringify(providerStats));
+
